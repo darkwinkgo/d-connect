@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Dusit Connect — ลงทะเบียน</title>
+
+  <!-- LINE LIFF SDK -->
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js" defer></script>
+
+  <!-- Google Fonts: Sarabun -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --green:       #06C755;
+      --green-dark:  #05a847;
+      --green-light: #e8f9ed;
+      --text:        #1a1a2e;
+      --text-muted:  #6b7280;
+      --border:      #e5e7eb;
+      --bg:          #f3f4f6;
+      --white:       #ffffff;
+      --red:         #ef4444;
+      --radius:      14px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Sarabun', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .page-wrapper {
+      width: 100%;
+      max-width: 390px;
+      min-height: 100vh;
+      background: var(--white);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      background: var(--green);
+      padding: 24px 20px 20px;
+      text-align: center;
+      color: var(--white);
+    }
+
+    .header-title { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+    .header-subtitle { font-size: 14px; font-weight: 400; opacity: 0.85; }
+
+    .profile-card {
+      margin: 16px 16px 0;
+      background: var(--green-light);
+      border: 1.5px solid var(--green);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .profile-avatar {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--green);
+    }
+
+    .profile-avatar-placeholder {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: var(--green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .profile-info { flex: 1; }
+    .profile-label { font-size: 11px; color: var(--green-dark); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .profile-name { font-size: 15px; font-weight: 600; color: var(--text); }
+    .profile-id { font-size: 11px; color: var(--text-muted); font-family: monospace; }
+
+    .form-body {
+      flex: 1;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--green-dark);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: -6px;
+    }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+
+    label { font-size: 14px; font-weight: 600; color: var(--text); }
+    label span.required { color: var(--red); margin-left: 3px; }
+
+    input[type="text"],
+    input[type="tel"],
+    select {
+      width: 100%;
+      height: 52px;
+      padding: 0 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-family: 'Sarabun', sans-serif;
+      font-size: 16px;
+      color: var(--text);
+      background: var(--white);
+      appearance: none;
+      -webkit-appearance: none;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+
+    input[type="text"]:focus,
+    input[type="tel"]:focus,
+    select:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(6,199,85,0.12);
+    }
+
+    input::placeholder { color: #adb5bd; }
+
+    .select-wrapper { position: relative; }
+    .select-wrapper::after {
+      content: "▾";
+      position: absolute;
+      right: 14px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+      font-size: 14px;
+    }
+
+    .btn-submit {
+      width: 100%;
+      height: 56px;
+      background: var(--green);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius);
+      font-family: 'Sarabun', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 6px;
+    }
+
+    .btn-submit:active { transform: scale(0.97); background: var(--green-dark); }
+    .btn-submit:disabled { background: #9ca3af; cursor: not-allowed; transform: none; }
+
+    #loading-screen {
+      position: fixed; inset: 0;
+      background: var(--white);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      z-index: 100;
+    }
+
+    .spinner {
+      width: 44px; height: 44px;
+      border: 4px solid var(--green-light);
+      border-top-color: var(--green);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #loading-screen p { font-size: 15px; color: var(--text-muted); }
+
+    .toast {
+      position: fixed;
+      bottom: 32px; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--text);
+      color: var(--white);
+      padding: 12px 24px;
+      border-radius: 100px;
+      font-size: 14px; font-weight: 500;
+      opacity: 0;
+      transition: all 0.3s;
+      white-space: nowrap;
+      z-index: 200;
+      max-width: 340px;
+      text-align: center;
+    }
+
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.success { background: var(--green); }
+    .toast.error   { background: var(--red); }
+
+    #success-screen {
+      display: none;
+      position: fixed; inset: 0;
+      background: var(--white);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 32px;
+      text-align: center;
+    }
+
+    #success-screen.show { display: flex; }
+
+    .success-icon {
+      width: 80px; height: 80px;
+      background: var(--green-light);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+    }
+
+    .success-title { font-size: 22px; font-weight: 700; color: var(--text); }
+    .success-desc { font-size: 15px; color: var(--text-muted); line-height: 1.6; }
+
+    .success-note {
+      background: var(--green-light);
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 13px;
+      color: var(--green-dark);
+      font-weight: 500;
+      width: 100%;
+    }
+
+    .btn-close {
+      width: 100%; height: 52px;
+      background: var(--green);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius);
+      font-family: 'Sarabun', sans-serif;
+      font-size: 17px; font-weight: 700;
+      cursor: pointer;
+    }
+
+    .divider { height: 1px; background: var(--border); margin: 2px 0; }
+  </style>
+</head>
+<body>
+
+<div id="loading-screen">
+  <div class="spinner"></div>
+  <p>กำลังโหลด กรุณารอสักครู่...</p>
+</div>
+
+<div id="success-screen">
+  <div class="success-icon">✅</div>
+  <div class="success-title">ส่งคำขอสำเร็จ!</div>
+  <div class="success-desc">ระบบได้รับคำขอลงทะเบียนของคุณแล้ว<br>กรุณารอการอนุมัติจากผู้ดูแลระบบ</div>
+  <div class="success-note">⏳ โดยปกติจะได้รับการอนุมัติภายใน 1 วันทำการ</div>
+  <button class="btn-close" onclick="closeLiff()">ปิดหน้าต่างนี้</button>
+</div>
+
+<div class="page-wrapper" id="main-page" style="display:none;">
+  <div class="header">
+    <div class="header-title">Dusit Connect</div>
+    <div class="header-subtitle">ลงทะเบียนเข้าใช้งานระบบ</div>
+  </div>
+
+  <div class="profile-card">
+    <div id="profile-img-wrap">
+      <div class="profile-avatar-placeholder">👤</div>
+    </div>
+    <div class="profile-info">
+      <div class="profile-label">🟢 LINE Account</div>
+      <div class="profile-name" id="display-name">กำลังโหลด...</div>
+      <div class="profile-id" id="user-id-display"></div>
+    </div>
+  </div>
+
+  <div class="form-body">
+
+    <div class="section-label">สาขา</div>
+    <div class="field">
+      <label for="branch">สาขา <span class="required">*</span></label>
+      <div class="select-wrapper">
+        <select id="branch">
+          <option value="" disabled selected>— เลือกสาขา —</option>
+          <option value="Dusit Central Park">Dusit Central Park</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-label">ข้อมูลส่วนตัว</div>
+
+    <div class="field">
+      <label for="full-name">ชื่อ-นามสกุล <span class="required">*</span></label>
+      <input type="text" id="full-name" placeholder="เช่น สมหญิง ใจดี" autocomplete="name" />
+    </div>
+
+    <div class="field">
+      <label for="nickname">ชื่อเล่น</label>
+      <input type="text" id="nickname" placeholder="เช่น แอ๊ม, นุ่น, โอ๋" />
+    </div>
+
+    <div class="field">
+      <label for="phone">เบอร์โทรศัพท์</label>
+      <input type="tel" id="phone" placeholder="0XX-XXX-XXXX" inputmode="tel" maxlength="10" />
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-label">ข้อมูลการทำงาน</div>
+
+    <div class="field">
+      <label for="role">ตำแหน่ง <span class="required">*</span></label>
+      <div class="select-wrapper">
+        <select id="role">
+          <option value="" disabled selected>— เลือกตำแหน่ง —</option>
+          <option value="แม่บ้าน">แม่บ้าน</option>
+          <option value="หัวหน้าแม่บ้าน">หัวหน้าแม่บ้าน</option>
+          <option value="ฝ่ายต้อนรับ">ฝ่ายต้อนรับ</option>
+          <option value="ผู้จัดการ">ผู้จัดการ</option>
+          <option value="แอดมิน">แอดมิน</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="department">แผนก <span class="required">*</span></label>
+      <div class="select-wrapper">
+        <select id="department">
+          <option value="" disabled selected>— เลือกแผนก —</option>
+          <option value="แผนกแม่บ้าน">แผนกแม่บ้าน</option>
+          <option value="แผนกต้อนรับ">แผนกต้อนรับ</option>
+          <option value="แอดมิน">แอดมิน</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="btn-submit" id="btn-submit" onclick="submitForm()">
+      ส่งคำขอลงทะเบียน
+    </button>
+
+    <div style="height:24px;"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const LIFF_ID = "2009946209-G2AuX4DH";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbyBSlxsIqNsxW7fO0vhsbgvJeKC783a0lQXvkChO-Sm_UofN9pZ0Xu3ceLxEF9M0s_vNg/exec";
+
+  let lineProfile = { userId: "", displayName: "", pictureUrl: "" };
+
+  // รอ SDK โหลดก่อน (เพราะใช้ defer)
+  function waitForLiff(callback) {
+    if (typeof liff !== "undefined") {
+      callback();
+    } else {
+      setTimeout(() => waitForLiff(callback), 100);
+    }
+  }
+
+  async function initLiff() {
+    try {
+      await liff.init({ liffId: LIFF_ID });
+
+      if (!liff.isLoggedIn()) {
+        liff.login();
+        return;
+      }
+
+      const profile = await liff.getProfile();
+      lineProfile.userId      = profile.userId;
+      lineProfile.displayName = profile.displayName;
+      lineProfile.pictureUrl  = profile.pictureUrl || "";
+
+      document.getElementById("display-name").textContent = profile.displayName;
+      document.getElementById("user-id-display").textContent = "ID: " + profile.userId.substring(0, 12) + "...";
+
+      if (profile.pictureUrl) {
+        document.getElementById("profile-img-wrap").innerHTML =
+          `<img class="profile-avatar" src="${profile.pictureUrl}" alt="avatar" />`;
+      }
+
+    } catch (err) {
+      console.warn("LIFF init failed:", err.message);
+      lineProfile.userId      = "dev-" + Date.now();
+      lineProfile.displayName = "Dev User";
+      document.getElementById("display-name").textContent = "Dev User (ทดสอบ)";
+      document.getElementById("user-id-display").textContent = "ID: dev-mode";
+    }
+
+    document.getElementById("loading-screen").style.display = "none";
+    document.getElementById("main-page").style.display = "flex";
+  }
+
+  async function submitForm() {
+    const fullName   = document.getElementById("full-name").value.trim();
+    const nickname   = document.getElementById("nickname").value.trim();
+    const phone      = document.getElementById("phone").value.trim();
+    const branch     = document.getElementById("branch").value;
+    const role       = document.getElementById("role").value;
+    const department = document.getElementById("department").value;
+
+    if (!branch)     { showToast("กรุณาเลือกสาขา", "error"); return; }
+    if (!fullName)   { showToast("กรุณากรอกชื่อ-นามสกุล", "error"); return; }
+    if (!role)       { showToast("กรุณาเลือกตำแหน่ง", "error"); return; }
+    if (!department) { showToast("กรุณาเลือกแผนก", "error"); return; }
+
+    const btn = document.getElementById("btn-submit");
+    btn.disabled = true;
+    btn.textContent = "กำลังส่ง...";
+
+    const payload = {
+      lineUserId:      lineProfile.userId,
+      lineDisplayName: lineProfile.displayName,
+      branch,
+      fullName,
+      nickname,
+      phone,
+      role,
+      department
+    };
+
+    try {
+      const resp = await fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        redirect: "follow"
+      });
+
+      const result = await resp.json();
+
+      if (result.success) {
+        document.getElementById("success-screen").classList.add("show");
+      } else {
+        showToast(result.message, "error");
+        btn.disabled = false;
+        btn.textContent = "ส่งคำขอลงทะเบียน";
+      }
+
+    } catch (err) {
+      console.error(err);
+      showToast("เกิดข้อผิดพลาด กรุณาลองใหม่", "error");
+      btn.disabled = false;
+      btn.textContent = "ส่งคำขอลงทะเบียน";
+    }
+  }
+
+  let toastTimer;
+  function showToast(msg, type = "") {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.className = "toast show " + type;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.className = "toast", 3000);
+  }
+
+  function closeLiff() {
+    try { liff.closeWindow(); } catch(e) { window.close(); }
+  }
+
+  waitForLiff(initLiff);
+</script>
+
+</body>
+</html>
