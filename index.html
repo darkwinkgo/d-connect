@@ -446,31 +446,22 @@
       department
     };
 
-    try {
-      const resp = await fetch(GAS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-        redirect: "follow"
-      });
+try {
+  await fetch(GAS_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  // no-cors ไม่สามารถอ่าน response ได้ → ถือว่าสำเร็จเสมอ
+  document.getElementById("success-screen").classList.add("show");
 
-      const result = await resp.json();
-
-      if (result.success) {
-        document.getElementById("success-screen").classList.add("show");
-      } else {
-        showToast(result.message, "error");
-        btn.disabled = false;
-        btn.textContent = "ส่งคำขอลงทะเบียน";
-      }
-
-    } catch (err) {
-      console.error(err);
-      showToast("เกิดข้อผิดพลาด กรุณาลองใหม่", "error");
-      btn.disabled = false;
-      btn.textContent = "ส่งคำขอลงทะเบียน";
-    }
-  }
+} catch (err) {
+  console.error(err);
+  showToast("เกิดข้อผิดพลาด กรุณาลองใหม่", "error");
+  btn.disabled = false;
+  btn.textContent = "ส่งคำขอลงทะเบียน";
+}
 
   let toastTimer;
   function showToast(msg, type = "") {
