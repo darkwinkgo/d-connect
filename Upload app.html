@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>Dusit Connect</title>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js" defer></script>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --green:#06C755; --green-dark:#05a847; --green-light:#e8f9ed;
+  --red:#ef4444; --red-light:#fef2f2;
+  --orange:#f97316; --orange-light:#fff7ed;
+  --blue:#3b82f6; --blue-light:#eff6ff;
+  --yellow:#eab308; --yellow-light:#fefce8;
+  --purple:#8b5cf6; --purple-light:#f5f3ff;
+  --text:#111827; --text-muted:#6b7280;
+  --border:#e5e7eb; --bg:#f9fafb; --white:#fff;
+  --radius:14px; --shadow:0 2px 12px rgba(0,0,0,0.08);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.app{max-width:390px;margin:0 auto;min-height:100vh;background:var(--white);display:flex;flex-direction:column}
+
+/* ── Header ── */
+.header{padding:16px 16px 0;background:var(–white);position:sticky;top:0;z-index:50;border-bottom:1px solid var(–border)}
+.header-top{display:flex;align-items:center;justify-content:space-between;padding-bottom:12px}
+.header-brand{font-size:17px;font-weight:700;color:var(–text)}
+.header-role{font-size:11px;font-weight:600;padding:3px 10px;border-radius:100px;letter-spacing:.5px}
+.role-supervisor{background:#fef3c7;color:#92400e}
+.role-housekeeper{background:var(–green-light);color:var(–green-dark)}
+.role-frontdesk{background:var(–blue-light);color:#1d4ed8}
+.role-manager{background:var(–purple-light);color:#6d28d9}
+.header-name{font-size:13px;color:var(–text-muted);padding-bottom:10px}
+
+/* ── Tab Bar ── */
+.tabs{display:flex;gap:4px;padding:0 4px 10px}
+.tab{flex:1;padding:7px 4px;border:none;background:transparent;font-family:‘Sarabun’,sans-serif;font-size:12px;font-weight:600;color:var(–text-muted);border-radius:8px;cursor:pointer;transition:all .15s}
+.tab.active{background:var(–green);color:var(–white)}
+
+/* ── Content ── */
+.content{flex:1;padding:12px;overflow-y:auto}
+
+/* ── Loading ── */
+#loading{position:fixed;inset:0;background:var(–white);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:100}
+.spinner{width:36px;height:36px;border:3px solid var(–green-light);border-top-color:var(–green);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Room Card ── */
+.room-card{background:var(–white);border:1.5px solid var(–border);border-radius:var(–radius);padding:14px;margin-bottom:10px;transition:border-color .15s}
+.room-card:active{border-color:var(–green)}
+.room-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.room-number{font-size:20px;font-weight:700;letter-spacing:.5px}
+.room-floor{font-size:12px;color:var(–text-muted)}
+.status-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px;letter-spacing:.3px}
+.status-pending{background:#f3f4f6;color:#374151}
+.status-cleaning{background:var(–orange-light);color:#c2410c}
+.status-done{background:var(–yellow-light);color:#a16207}
+.status-passed{background:var(–green-light);color:var(–green-dark)}
+.status-ack{background:#f0fdf4;color:#166534}
+.status-failed{background:var(–red-light);color:#991b1b}
+.room-info{font-size:13px;color:var(–text-muted);margin-bottom:10px}
+.room-info span{color:var(–text);font-weight:600}
+.room-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ── Buttons ── */
+.btn{height:40px;padding:0 16px;border:none;border-radius:10px;font-family:‘Sarabun’,sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn:active{transform:scale(.96)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-green{background:var(–green);color:var(–white)}
+.btn-green:hover{background:var(–green-dark)}
+.btn-red{background:var(–red);color:var(–white)}
+.btn-blue{background:var(–blue);color:var(–white)}
+.btn-gray{background:#f3f4f6;color:var(–text)}
+.btn-full{width:100%;justify-content:center;height:48px;font-size:16px;margin-top:8px}
+.btn-sm{height:34px;font-size:13px}
+
+/* ── Section Label ── */
+.section-label{font-size:11px;font-weight:700;color:var(–text-muted);text-transform:uppercase;letter-spacing:1px;margin:16px 0 8px}
+
+/* ── Stats Row ── */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.stat-card{background:var(–white);border:1.5px solid var(–border);border-radius:var(–radius);padding:12px 8px;text-align:center}
+.stat-num{font-size:22px;font-weight:700}
+.stat-label{font-size:11px;color:var(–text-muted);margin-top:2px}
+
+/* ── Progress Bar ── */
+.progress-wrap{margin-bottom:10px}
+.progress-label{display:flex;justify-content:space-between;font-size:12px;color:var(–text-muted);margin-bottom:4px}
+.progress-bar{height:6px;background:#f3f4f6;border-radius:100px;overflow:hidden}
+.progress-fill{height:100%;background:var(–green);border-radius:100px;transition:width .4s}
+
+/* ── Modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+.modal{background:var(–white);border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:390px;max-height:80vh;overflow-y:auto}
+.modal-handle{width:36px;height:4px;background:var(–border);border-radius:100px;margin:0 auto 16px}
+.modal-title{font-size:17px;font-weight:700;margin-bottom:16px}
+.modal-room{font-size:28px;font-weight:700;color:var(–green);text-align:center;margin-bottom:4px}
+.modal-floor{font-size:13px;color:var(–text-muted);text-align:center;margin-bottom:16px}
+
+/* ── Select & Input ── */
+select,textarea,input[type=text]{width:100%;padding:10px 14px;border:1.5px solid var(–border);border-radius:10px;font-family:‘Sarabun’,sans-serif;font-size:15px;color:var(–text);background:var(–white);outline:none;transition:border-color .2s;-webkit-appearance:none}
+select:focus,textarea:focus,input[type=text]:focus{border-color:var(–green);box-shadow:0 0 0 3px rgba(6,199,85,.1)}
+textarea{height:80px;resize:none;line-height:1.5}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+label{font-size:14px;font-weight:600}
+.select-wrap{position:relative}
+.select-wrap::after{content:“▾”;position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(–text-muted);pointer-events:none}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);background:var(–text);color:var(–white);padding:10px 20px;border-radius:100px;font-size:14px;font-weight:500;opacity:0;transition:all .3s;white-space:nowrap;z-index:300;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.success{background:var(–green)}
+.toast.error{background:var(–red)}
+
+/* ── Empty State ── */
+.empty{text-align:center;padding:48px 16px;color:var(–text-muted)}
+.empty-icon{font-size:40px;margin-bottom:12px}
+.empty-text{font-size:15px}
+
+/* ── Filter chips ── */
+.filter-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none}
+.filter-row::-webkit-scrollbar{display:none}
+.chip{padding:5px 14px;border:1.5px solid var(–border);border-radius:100px;font-size:12px;font-weight:600;color:var(–text-muted);background:var(–white);cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0}
+.chip.active{border-color:var(–green);background:var(–green-light);color:var(–green-dark)}
+
+/* ── Timeline ── */
+.timeline{padding:8px 0}
+.timeline-item{display:flex;gap:12px;margin-bottom:12px}
+.timeline-dot{width:8px;height:8px;border-radius:50%;background:var(–green);margin-top:6px;flex-shrink:0}
+.timeline-content{flex:1}
+.timeline-action{font-size:13px;font-weight:600}
+.timeline-meta{font-size:11px;color:var(–text-muted)}
+
+/* ── Dashboard Charts ── */
+.chart-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.chart-bar-label{font-size:12px;width:64px;flex-shrink:0;text-align:right;color:var(–text-muted)}
+.chart-bar-fill{height:20px;background:var(–green);border-radius:4px;min-width:4px;transition:width .4s}
+.chart-bar-val{font-size:12px;font-weight:700;color:var(–text);white-space:nowrap}
+</style>
+
+</head>
+<body>
+<div id="loading">
+  <div class="spinner"></div>
+  <p style="font-size:14px;color:var(--text-muted)">กำลังโหลด...</p>
+</div>
+
+<div class="app" id="app" style="display:none">
+  <div class="header">
+    <div class="header-top">
+      <div class="header-brand">🏨 Dusit Connect</div>
+      <div class="header-role" id="role-badge">—</div>
+    </div>
+    <div class="header-name" id="header-name">—</div>
+    <div class="tabs" id="tab-bar"></div>
+  </div>
+  <div class="content" id="content"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===================================================
+// CONFIG
+// ===================================================
+const LIFF_ID = "2009946209-G2AuX4DH";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyBSlxsIqNsxW7fO0vhsbgvJeKC783a0lQXvkChO-Sm_UofN9pZ0Xu3ceLxEF9M0s_vNg/exec";
+
+// ===================================================
+// State
+// ===================================================
+let state = {
+  lineProfile: { userId: "", displayName: "", pictureUrl: "" },
+  role: "",
+  staffName: "",
+  rooms: [],
+  staff: [],
+  filter: "all",
+  currentTab: 0
+};
+
+// ===================================================
+// API
+// ===================================================
+async function api(payload) {
+  try {
+    await fetch(GAS_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    return { success: true };
+  } catch(e) {
+    return { success: false, message: e.message };
+  }
+}
+
+// ใช้ fetch แบบปกติสำหรับ GET data (ต้องใช้ JSONP หรือ script tag trick)
+// เนื่องจาก no-cors ใช้ read response ไม่ได้ → ใช้ mock data สำหรับ GET
+// และส่ง POST แบบ fire-and-forget
+
+// ===================================================
+// Mock Data (สำหรับ read/display)
+// ===================================================
+const MOCK_ROOMS = generateMockRooms();
+const MOCK_STAFF = [
+  { id: "HK001", name: "สมหญิง ใจดี",    nickname: "หญิง" },
+  { id: "HK002", name: "มาลี รักงาน",     nickname: "มาลี" },
+  { id: "HK003", name: "นุ่น สวยงาม",     nickname: "นุ่น" },
+  { id: "HK004", name: "แอ๊ม ขยัน",       nickname: "แอ๊ม" },
+];
+
+function generateMockRooms() {
+  const statuses = ["pending","cleaning","done","passed","ack"];
+  const staff = [
+    { id: "HK001", name: "หญิง" },
+    { id: "HK002", name: "มาลี" },
+    { id: "HK003", name: "นุ่น" },
+    { id: "HK004", name: "แอ๊ม" },
+  ];
+  const rooms = [];
+  let i = 0;
+  for (let floor = 8; floor <= 12; floor++) {
+    for (let num = 1; num <= 8; num++) {
+      const roomStr = String(floor) + String(num).padStart(2,"0");
+      if (roomStr.endsWith("4")) continue;
+      const s = staff[i % staff.length];
+      rooms.push({
+        id: roomStr,
+        floor,
+        status: statuses[i % statuses.length],
+        assignedTo: s.id,
+        assignedName: s.name,
+        startTime: i % 5 !== 0 ? Date.now() - 3600000 : null,
+        endTime: i % 5 >= 2 ? Date.now() - 1800000 : null,
+        note: ""
+      });
+      i++;
+    }
+  }
+  return rooms;
+}
+
+// ===================================================
+// LIFF Init
+// ===================================================
+function waitForLiff(cb) {
+  if (typeof liff !== "undefined") cb();
+  else setTimeout(() => waitForLiff(cb), 100);
+}
+
+async function initLiff() {
+  try {
+    await liff.init({ liffId: LIFF_ID });
+    if (!liff.isLoggedIn()) { liff.login(); return; }
+    const profile = await liff.getProfile();
+    state.lineProfile = { userId: profile.userId, displayName: profile.displayName };
+  } catch(e) {
+    // Dev mode
+    state.lineProfile = { userId: "SUP001", displayName: "Dev Supervisor" };
+  }
+  detectRole();
+}
+
+// ===================================================
+// Role Detection (mock)
+// ===================================================
+function detectRole() {
+  const uid = state.lineProfile.userId;
+  // Map dev user IDs to roles
+  const roleMap = {
+    "SUP001": { role: "supervisor",  name: "สมชาย หัวหน้า" },
+    "HK001":  { role: "housekeeper", name: "สมหญิง ใจดี" },
+    "FD001":  { role: "frontdesk",   name: "วิชัย ต้อนรับดี" },
+    "MGR001": { role: "manager",     name: "พิมพ์ใจ บริหาร" },
+  };
+  const found = roleMap[uid] || { role: "supervisor", name: state.lineProfile.displayName };
+  state.role = found.role;
+  state.staffName = found.name;
+  state.staff = MOCK_STAFF;
+
+  // กรอง rooms ตาม role
+  if (state.role === "housekeeper") {
+    state.rooms = MOCK_ROOMS.filter(r => r.assignedTo === uid || r.assignedTo === "HK001");
+  } else if (state.role === "frontdesk") {
+    state.rooms = MOCK_ROOMS.filter(r => r.status === "passed");
+  } else {
+    state.rooms = [...MOCK_ROOMS];
+  }
+
+  renderApp();
+}
+
+// ===================================================
+// Render App
+// ===================================================
+function renderApp() {
+  document.getElementById("loading").style.display = "none";
+  document.getElementById("app").style.display = "flex";
+
+  // Role badge
+  const badge = document.getElementById("role-badge");
+  const roleLabels = {
+    supervisor:  "👑 หัวหน้า",
+    housekeeper: "🧹 แม่บ้าน",
+    frontdesk:   "🛎 Front Desk",
+    manager:     "📊 ผู้จัดการ"
+  };
+  badge.textContent = roleLabels[state.role] || state.role;
+  badge.className = "header-role role-" + state.role;
+  document.getElementById("header-name").textContent = state.staffName;
+
+  // Tabs per role
+  const tabConfigs = {
+    supervisor:  [{ label: "ห้องทั้งหมด", view: "supervisorRooms" }, { label: "Assign", view: "assignView" }],
+    housekeeper: [{ label: "ห้องของฉัน", view: "myRooms" }],
+    frontdesk:   [{ label: "รอรับทราบ", view: "ackView" }],
+    manager:     [{ label: "Dashboard", view: "dashboard" }, { label: "ห้องทั้งหมด", view: "allRooms" }],
+  };
+  const tabs = tabConfigs[state.role] || [];
+  const tabBar = document.getElementById("tab-bar");
+  tabBar.innerHTML = tabs.map((t,i) =>
+    `<button class="tab ${i===state.currentTab?'active':''}" onclick="switchTab(${i},'${t.view}')">${t.label}</button>`
+  ).join("");
+
+  // Render current view
+  const currentView = tabs[state.currentTab]?.view;
+  renderView(currentView);
+}
+
+function switchTab(idx, view) {
+  state.currentTab = idx;
+  renderApp();
+}
+
+function renderView(view) {
+  const content = document.getElementById("content");
+  switch(view) {
+    case "supervisorRooms": content.innerHTML = renderSupervisorRooms(); break;
+    case "assignView":      content.innerHTML = renderAssignView(); break;
+    case "myRooms":         content.innerHTML = renderMyRooms(); break;
+    case "ackView":         content.innerHTML = renderAckView(); break;
+    case "dashboard":       content.innerHTML = renderDashboard(); break;
+    case "allRooms":        content.innerHTML = renderAllRooms(); break;
+    default: content.innerHTML = `<div class="empty"><div class="empty-icon">🚧</div><div class="empty-text">กำลังพัฒนา</div></div>`;
+  }
+}
+
+// ===================================================
+// STATUS HELPERS
+// ===================================================
+const STATUS_LABEL = {
+  pending:  "รอทำความสะอาด",
+  cleaning: "กำลังทำ",
+  done:     "รอตรวจ",
+  passed:   "ผ่านการตรวจ",
+  ack:      "รับทราบแล้ว",
+  failed:   "ไม่ผ่าน"
+};
+
+function statusBadge(status) {
+  return `<span class="status-badge status-${status}">${STATUS_LABEL[status]||status}</span>`;
+}
+
+function elapsed(ms) {
+  if (!ms) return "";
+  const m = Math.floor((Date.now()-ms)/60000);
+  if (m < 60) return `${m} นาที`;
+  return `${Math.floor(m/60)} ชม. ${m%60} นาที`;
+}
+
+// ===================================================
+// SUPERVISOR — ห้องทั้งหมด
+// ===================================================
+function renderSupervisorRooms() {
+  const filters = ["all","done","cleaning","pending"];
+  const filterLabels = { all:"ทั้งหมด", done:"รอตรวจ", cleaning:"กำลังทำ", pending:"รอทำ" };
+  const filtered = state.filter === "all" ? state.rooms : state.rooms.filter(r => r.status === state.filter);
+
+  return `
+    <div class="filter-row">
+      ${filters.map(f => `<div class="chip ${state.filter===f?'active':''}" onclick="setFilter('${f}')">${filterLabels[f]} (${f==='all'?state.rooms.length:state.rooms.filter(r=>r.status===f).length})</div>`).join("")}
+    </div>
+    ${filtered.length === 0 ? `<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">ไม่มีห้องในสถานะนี้</div></div>` : ""}
+    ${filtered.map(r => `
+      <div class="room-card">
+        <div class="room-header">
+          <div>
+            <div class="room-number">${r.id}</div>
+            <div class="room-floor">ชั้น ${r.floor}</div>
+          </div>
+          ${statusBadge(r.status)}
+        </div>
+        <div class="room-info">แม่บ้าน: <span>${r.assignedName || "—"}</span>${r.startTime ? ` · ใช้เวลา <span>${elapsed(r.startTime)}</span>` : ""}</div>
+        <div class="room-actions">
+          ${r.status === "done" ? `<button class="btn btn-green btn-sm" onclick="openInspectModal('${r.id}')">🔍 ตรวจห้อง</button>` : ""}
+          <button class="btn btn-gray btn-sm" onclick="openAssignModal('${r.id}')">🔄 Re-assign</button>
+        </div>
+      </div>
+    `).join("")}
+  `;
+}
+
+// ===================================================
+// SUPERVISOR — Assign View
+// ===================================================
+function renderAssignView() {
+  const unassigned = state.rooms.filter(r => !r.assignedTo || r.status === "pending");
+  return `
+    <div class="section-label">ห้องที่ยังไม่ได้ assign (${unassigned.length})</div>
+    ${unassigned.length === 0 ? `<div class="empty"><div class="empty-icon">🎉</div><div class="empty-text">Assign ครบทุกห้องแล้ว</div></div>` : ""}
+    ${unassigned.map(r => `
+      <div class="room-card">
+        <div class="room-header">
+          <div>
+            <div class="room-number">${r.id}</div>
+            <div class="room-floor">ชั้น ${r.floor}</div>
+          </div>
+          ${statusBadge(r.status)}
+        </div>
+        ${r.assignedName ? `<div class="room-info">Assign ให้: <span>${r.assignedName}</span></div>` : ""}
+        <div class="room-actions">
+          <button class="btn btn-green btn-sm" onclick="openAssignModal('${r.id}')">+ Assign แม่บ้าน</button>
+        </div>
+      </div>
+    `).join("")}
+  `;
+}
+
+// ===================================================
+// HOUSEKEEPER — ห้องของฉัน
+// ===================================================
+function renderMyRooms() {
+  const myRooms = state.rooms;
+  const done = myRooms.filter(r => ["done","passed","ack"].includes(r.status)).length;
+  return `
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num" style="color:var(--green)">${done}</div><div class="stat-label">เสร็จแล้ว</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:var(--orange)">${myRooms.filter(r=>r.status==="cleaning").length}</div><div class="stat-label">กำลังทำ</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:var(--text-muted)">${myRooms.filter(r=>r.status==="pending").length}</div><div class="stat-label">รอทำ</div></div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-label"><span>ความคืบหน้าวันนี้</span><span>${done}/${myRooms.length}</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${myRooms.length?Math.round(done/myRooms.length*100):0}%"></div></div>
+    </div>
+    ${myRooms.map(r => `
+      <div class="room-card">
+        <div class="room-header">
+          <div>
+            <div class="room-number">${r.id}</div>
+            <div class="room-floor">ชั้น ${r.floor}</div>
+          </div>
+          ${statusBadge(r.status)}
+        </div>
+        ${r.status === "cleaning" && r.startTime ? `<div class="room-info">เริ่มทำมาแล้ว <span>${elapsed(r.startTime)}</span></div>` : ""}
+        ${r.note ? `<div class="room-info" style="color:var(--red)">📝 <span>${r.note}</span></div>` : ""}
+        <div class="room-actions">
+          ${r.status === "pending"  ? `<button class="btn btn-green btn-sm" onclick="doUpdateStatus('${r.id}','cleaning')">▶ เริ่มทำ</button>` : ""}
+          ${r.status === "cleaning" ? `<button class="btn btn-blue  btn-sm" onclick="doUpdateStatus('${r.id}','done')">✓ เสร็จแล้ว</button>` : ""}
+          ${["done","passed","ack"].includes(r.status) ? `<div style="font-size:12px;color:var(--green-dark)">✅ เสร็จแล้ว</div>` : ""}
+        </div>
+      </div>
+    `).join("")}
+  `;
+}
+
+// ===================================================
+// FRONT DESK — รับทราบ
+// ===================================================
+function renderAckView() {
+  const rooms = state.rooms;
+  return `
+    <div class="section-label">ห้องพร้อม Check-in (${rooms.length})</div>
+    ${rooms.length === 0 ? `<div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">ยังไม่มีห้องพร้อม</div></div>` : ""}
+    ${rooms.map(r => `
+      <div class="room-card">
+        <div class="room-header">
+          <div>
+            <div class="room-number">${r.id}</div>
+            <div class="room-floor">ชั้น ${r.floor}</div>
+          </div>
+          ${statusBadge(r.status)}
+        </div>
+        <div class="room-info">ทำความสะอาดโดย: <span>${r.assignedName}</span></div>
+        <div class="room-actions">
+          <button class="btn btn-green btn-sm" onclick="doAck('${r.id}')">✓ รับทราบ</button>
+        </div>
+      </div>
+    `).join("")}
+  `;
+}
+
+// ===================================================
+// MANAGER — Dashboard
+// ===================================================
+function renderDashboard() {
+  const rooms = MOCK_ROOMS;
+  const total = rooms.length;
+  const counts = { pending:0, cleaning:0, done:0, passed:0, ack:0 };
+  rooms.forEach(r => { if(counts[r.status]!==undefined) counts[r.status]++; });
+  const completed = counts.passed + counts.ack;
+  const pct = Math.round(completed/total*100);
+
+  // By staff
+  const byStaff = {};
+  rooms.forEach(r => {
+    if (!r.assignedName) return;
+    byStaff[r.assignedName] = byStaff[r.assignedName] || { name: r.assignedName, done: 0, total: 0 };
+    byStaff[r.assignedName].total++;
+    if (["done","passed","ack"].includes(r.status)) byStaff[r.assignedName].done++;
+  });
+  const staffArr = Object.values(byStaff).sort((a,b) => b.done-a.done);
+  const maxDone = Math.max(...staffArr.map(s=>s.done), 1);
+
+  // By floor
+  const byFloor = {};
+  rooms.forEach(r => {
+    byFloor[r.floor] = byFloor[r.floor] || { floor: r.floor, done: 0, total: 0 };
+    byFloor[r.floor].total++;
+    if (["done","passed","ack"].includes(r.status)) byFloor[r.floor].done++;
+  });
+  const floorArr = Object.values(byFloor).sort((a,b)=>a.floor-b.floor);
+
+  return `
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num" style="color:var(--green)">${pct}%</div><div class="stat-label">เสร็จแล้ว</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:var(--orange)">${counts.cleaning}</div><div class="stat-label">กำลังทำ</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:var(--yellow)">${counts.done}</div><div class="stat-label">รอตรวจ</div></div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-label"><span>ภาพรวมทั้งหมด</span><span>${completed}/${total} ห้อง</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    </div>
+
+    <div class="section-label">สถานะรายละเอียด</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+      ${[
+        { k:"pending",  label:"รอทำ",     color:"var(--text-muted)" },
+        { k:"cleaning", label:"กำลังทำ",  color:"var(--orange)" },
+        { k:"done",     label:"รอตรวจ",   color:"var(--yellow)" },
+        { k:"passed",   label:"ผ่านตรวจ", color:"var(--green)" },
+        { k:"ack",      label:"รับทราบ",  color:"#166534" },
+      ].map(s => `
+        <div class="stat-card">
+          <div class="stat-num" style="color:${s.color}">${counts[s.k]||0}</div>
+          <div class="stat-label">${s.label}</div>
+        </div>
+      `).join("")}
+    </div>
+
+    <div class="section-label">ผลงานรายคน</div>
+    ${staffArr.map(s => `
+      <div class="chart-bar-row">
+        <div class="chart-bar-label">${s.name}</div>
+        <div style="flex:1">
+          <div class="chart-bar-fill" style="width:${Math.round(s.done/maxDone*100)}%"></div>
+        </div>
+        <div class="chart-bar-val">${s.done}/${s.total}</div>
+      </div>
+    `).join("")}
+
+    <div class="section-label" style="margin-top:16px">ความคืบหน้าตามชั้น</div>
+    ${floorArr.map(f => `
+      <div class="progress-wrap">
+        <div class="progress-label"><span>ชั้น ${f.floor}</span><span>${f.done}/${f.total}</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${Math.round(f.done/f.total*100)}%"></div></div>
+      </div>
+    `).join("")}
+  `;
+}
+
+// ===================================================
+// MANAGER — ห้องทั้งหมด
+// ===================================================
+function renderAllRooms() {
+  return `
+    <div class="filter-row">
+      ${["all","pending","cleaning","done","passed","ack"].map(f =>
+        `<div class="chip ${state.filter===f?'active':''}" onclick="setFilter('${f}')">${f==="all"?"ทั้งหมด":STATUS_LABEL[f]}</div>`
+      ).join("")}
+    </div>
+    ${(state.filter==="all"?MOCK_ROOMS:MOCK_ROOMS.filter(r=>r.status===state.filter)).map(r => `
+      <div class="room-card">
+        <div class="room-header">
+          <div><div class="room-number">${r.id}</div><div class="room-floor">ชั้น ${r.floor}</div></div>
+          ${statusBadge(r.status)}
+        </div>
+        <div class="room-info">แม่บ้าน: <span>${r.assignedName||"—"}</span></div>
+      </div>
+    `).join("")}
+  `;
+}
+
+// ===================================================
+// ACTIONS
+// ===================================================
+function setFilter(f) {
+  state.filter = f;
+  renderApp();
+}
+
+function doUpdateStatus(roomId, newStatus) {
+  const room = state.rooms.find(r => r.id === roomId);
+  if (!room) return;
+  room.status = newStatus;
+  if (newStatus === "cleaning") room.startTime = Date.now();
+  if (newStatus === "done")     room.endTime = Date.now();
+  // fire to GAS
+  api({ action: "updateStatus", roomId, status: newStatus, lineUserId: state.lineProfile.userId, staffName: state.staffName });
+  showToast("อัปเดตสถานะสำเร็จ", "success");
+  renderApp();
+}
+
+function doAck(roomId) {
+  const room = MOCK_ROOMS.find(r => r.id === roomId);
+  if (room) room.status = "ack";
+  state.rooms = state.rooms.filter(r => r.id !== roomId);
+  api({ action: "ackRoom", roomId, lineUserId: state.lineProfile.userId, staffName: state.staffName });
+  showToast("รับทราบแล้ว ✅", "success");
+  renderApp();
+}
+
+// ===================================================
+// MODALS
+// ===================================================
+function openAssignModal(roomId) {
+  const room = state.rooms.find(r => r.id === roomId) || MOCK_ROOMS.find(r => r.id === roomId);
+  const staffOptions = MOCK_STAFF.map(s =>
+    `<option value="${s.id}" data-name="${s.name}" ${room.assignedTo===s.id?"selected":""}>${s.name} (${s.nickname})</option>`
+  ).join("");
+
+  showModal(`
+    <div class="modal-handle"></div>
+    <div class="modal-room">${roomId}</div>
+    <div class="modal-floor">ชั้น ${room.floor} · Assign ห้อง</div>
+    <div class="field">
+      <label>เลือกแม่บ้าน</label>
+      <div class="select-wrap">
+        <select id="assign-staff">${staffOptions}</select>
+      </div>
+    </div>
+    <button class="btn btn-green btn-full" onclick="confirmAssign('${roomId}')">✓ Assign ห้องนี้</button>
+    <button class="btn btn-gray btn-full" onclick="closeModal()" style="margin-top:8px">ยกเลิก</button>
+  `);
+}
+
+function confirmAssign(roomId) {
+  const sel = document.getElementById("assign-staff");
+  const staffId = sel.value;
+  const staffName = sel.options[sel.selectedIndex].dataset.name;
+  const room = state.rooms.find(r => r.id === roomId) || MOCK_ROOMS.find(r => r.id === roomId);
+  if (room) {
+    room.assignedTo   = staffId;
+    room.assignedName = staffName;
+    room.status       = "pending";
+  }
+  api({ action: "assignRoom", roomId, staffId, staffName, lineUserId: state.lineProfile.userId, supervisorName: state.staffName });
+  closeModal();
+  showToast(`Assign ให้ ${staffName} แล้ว`, "success");
+  renderApp();
+}
+
+function openInspectModal(roomId) {
+  const room = state.rooms.find(r => r.id === roomId);
+  const staffOptions = MOCK_STAFF.map(s =>
+    `<option value="${s.id}" data-name="${s.name}" ${room.assignedTo===s.id?"selected":""}>${s.name} (${s.nickname})</option>`
+  ).join("");
+
+  showModal(`
+    <div class="modal-handle"></div>
+    <div class="modal-room">${roomId}</div>
+    <div class="modal-floor">ชั้น ${room.floor} · ตรวจห้อง</div>
+    <div class="field">
+      <label>หมายเหตุ (ถ้ามี)</label>
+      <textarea id="inspect-note" placeholder="เช่น ผ้าปูเตียงยังไม่เรียบ..."></textarea>
+
+```
+</div>
+<div id="reassign-section">
+  <div class="field">
+    <label>Re-assign ให้ (กรณีไม่ผ่าน)</label>
+    <div class="select-wrap">
+      <select id="inspect-staff">${staffOptions}</select>
+    </div>
+  </div>
+</div>
+<button class="btn btn-green btn-full" onclick="confirmInspect('${roomId}','passed')">✅ ผ่าน</button>
+<button class="btn btn-red   btn-full" onclick="confirmInspect('${roomId}','failed')" style="margin-top:8px">❌ ไม่ผ่าน — ให้ทำใหม่</button>
+<button class="btn btn-gray  btn-full" onclick="closeModal()" style="margin-top:8px">ยกเลิก</button>
+```
+
+`);
+}
+
+function confirmInspect(roomId, result) {
+const note    = document.getElementById(“inspect-note”)?.value || “”;
+const sel     = document.getElementById(“inspect-staff”);
+const newStaffId   = sel?.value || “”;
+const newStaffName = sel?.options[sel.selectedIndex]?.dataset.name || “”;
+const room = state.rooms.find(r => r.id === roomId);
+if (room) {
+room.status = result === “passed” ? “passed” : “pending”;
+room.note   = note;
+if (result === “failed”) {
+room.assignedTo   = newStaffId;
+room.assignedName = newStaffName;
+}
+}
+api({ action: “inspect”, roomId, result, note, newStaffId, newStaffName, lineUserId: state.lineProfile.userId, supervisorName: state.staffName });
+closeModal();
+showToast(result === “passed” ? “✅ ห้องผ่านการตรวจ” : “❌ ส่งกลับให้ทำใหม่”, result === “passed” ? “success” : “error”);
+renderApp();
+}
+
+// ===================================================
+// Modal Helpers
+// ===================================================
+function showModal(html) {
+const overlay = document.createElement(“div”);
+overlay.className = “modal-overlay”;
+overlay.id = “modal-overlay”;
+overlay.innerHTML = `<div class="modal">${html}</div>`;
+overlay.addEventListener(“click”, e => { if (e.target === overlay) closeModal(); });
+document.body.appendChild(overlay);
+}
+
+function closeModal() {
+document.getElementById(“modal-overlay”)?.remove();
+}
+
+// ===================================================
+// Toast
+// ===================================================
+let toastTimer;
+function showToast(msg, type = “”) {
+const t = document.getElementById(“toast”);
+t.textContent = msg;
+t.className = “toast show “ + type;
+clearTimeout(toastTimer);
+toastTimer = setTimeout(() => t.className = “toast”, 2500);
+}
+
+// ===================================================
+// INIT
+// ===================================================
+waitForLiff(initLiff);
+</script>
+
+</body>
+</html>
