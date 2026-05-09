@@ -11,10 +11,9 @@ const SH_LOG    = "ประวัติ";
 // doGet
 // -------------------------------------------------------
 function doGet(e) {
-  return HtmlService
-    .createHtmlOutputFromFile("app")
-    .setTitle("Dusit Connect")
-    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  return ContentService
+    .createTextOutput(JSON.stringify({ status: "Dusit Connect API running" }))
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
 // -------------------------------------------------------
