@@ -8,13 +8,14 @@
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <style>
 :root{
-  --g:#06C755;--gd:#05a847;--gl:#e8f9ed;
-  --r:#ef4444;--rl:#fef2f2;
-  --o:#f97316;--ol:#fff7ed;
-  --b:#3b82f6;--bl:#eff6ff;
-  --y:#d97706;--yl:#fffbeb;
-  --p:#7c3aed;--pl:#f5f3ff;
-  --tx:#111827;--mu:#6b7280;--br:#e5e7eb;--bg:#f9fafb;--wh:#fff;
+  --g:#C49A3C;--gd:#9B7B2A;--gl:#FDF6E7;
+  --green:#15803D;--greenl:#DCFCE7;
+  --r:#DC2626;--rl:#FEF2F2;
+  --o:#D46B08;--ol:#FFF7ED;
+  --b:#1A56DB;--bl:#EFF6FF;
+  --y:#B45309;--yl:#FFFBEB;
+  --p:#7C3AED;--pl:#F5F3FF;
+  --tx:#1C1C1C;--mu:#737373;--br:#E8E0D0;--bg:#FAFAF8;--wh:#FFFFFF;
   --rd:12px;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -23,14 +24,14 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--tx);min-h
 
 /* Login */
 #login-screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px}
-.login-logo{font-size:40px;margin-bottom:8px}
+.login-logo{font-size:52px;font-weight:700;color:var(--g);letter-spacing:-2px;margin-bottom:4px;font-family:'Sarabun',sans-serif}
 .login-brand{font-size:22px;font-weight:700;margin-bottom:4px}
 .login-sub{font-size:13px;color:var(--mu);margin-bottom:32px}
 .login-box{width:100%;background:var(--wh);border:1.5px solid var(--br);border-radius:var(--rd);padding:20px}
 .login-box .field{margin-bottom:14px}
 .login-box label{font-size:13px;font-weight:600;display:block;margin-bottom:6px}
 .login-box input{width:100%;height:48px;padding:0 14px;border:1.5px solid var(--br);border-radius:9px;font-family:'Sarabun',sans-serif;font-size:16px;color:var(--tx);background:var(--wh);outline:none;transition:border-color .2s;-webkit-appearance:none}
-.login-box input:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(6,199,85,.1)}
+.login-box input:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(196,154,60,.15)}
 .login-err{font-size:13px;color:var(--r);text-align:center;margin-top:8px;min-height:20px}
 
 /* Main App */
@@ -39,21 +40,22 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--tx);min-h
 /* Header */
 .hdr{background:var(--wh);border-bottom:1px solid var(--br);padding:12px 16px 0;position:sticky;top:0;z-index:40}
 .hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
-.hdr-title{font-size:16px;font-weight:700}
+.hdr-title{font-size:15px;font-weight:700;letter-spacing:.3px}
 .hdr-right{display:flex;align-items:center;gap:8px}
 .badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px}
-.b-supervisor{background:#fef3c7;color:#92400e}
-.b-housekeeper{background:var(--gl);color:var(--gd)}
-.b-frontdesk{background:var(--bl);color:#1e40af}
-.b-manager{background:var(--pl);color:var(--p)}
+.b-supervisor{background:#FEF3C7;color:#92400E}
+.b-housekeeper{background:var(--greenl);color:var(--green)}
+.b-frontdesk{background:var(--bl);color:#1E40AF}
+.b-manager{background:var(--gl);color:var(--gd)}
 .hdr-name{font-size:12px;color:var(--mu);margin-bottom:6px}
 .logout-btn{font-size:11px;color:var(--mu);background:none;border:1px solid var(--br);border-radius:20px;padding:3px 9px;cursor:pointer;font-family:'Sarabun',sans-serif}
 
 /* Date nav */
 .date-nav{display:flex;align-items:center;justify-content:center;gap:10px;padding:6px 16px;border-top:1px solid var(--br)}
-.date-btn{width:26px;height:26px;border:1.5px solid var(--br);border-radius:50%;background:var(--wh);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Sarabun',sans-serif;line-height:1}
+.date-btn{width:28px;height:28px;border:1.5px solid var(--br);border-radius:50%;background:var(--wh);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Sarabun',sans-serif;line-height:1;color:var(--tx)}
 .date-btn:disabled{opacity:.3;cursor:default}
-.date-lbl{font-size:13px;font-weight:600;color:var(--tx);flex:1;text-align:center}
+.date-lbl{font-size:13px;font-weight:600;color:var(--tx);flex:1;text-align:center;cursor:pointer;padding:5px 8px;border-radius:8px;transition:background .15s;user-select:none}
+.date-lbl:hover{background:var(--gl)}
 .date-today{font-size:10px;font-weight:700;color:var(--g);background:var(--gl);padding:2px 7px;border-radius:20px}
 
 /* Tabs */
@@ -77,24 +79,25 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--tx);min-h
 .rinfo{font-size:13px;color:var(--mu);margin-bottom:8px}
 .rinfo b{color:var(--tx)}
 .rnote{font-size:12px;color:var(--r);background:var(--rl);padding:6px 10px;border-radius:8px;margin-bottom:8px}
-.rnote-green{font-size:12px;color:var(--gd);background:var(--gl);padding:6px 10px;border-radius:8px;margin-bottom:8px}
+.rnote-ok{font-size:12px;color:var(--green);background:var(--greenl);padding:6px 10px;border-radius:8px;margin-bottom:8px}
 
 /* Status */
 .s{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap}
-.s-pending{background:#f3f4f6;color:#374151}
-.s-cleaning{background:var(--ol);color:#c2410c}
-.s-done{background:var(--yl);color:var(--y)}
-.s-passed{background:var(--gl);color:var(--gd)}
-.s-ack{background:#f0fdf4;color:#166534}
+.s-pending{background:#F3F4F6;color:#374151}
+.s-cleaning{background:var(--ol);color:#C2410C}
+.s-done{background:var(--bl);color:#1E40AF}
+.s-passed{background:var(--greenl);color:var(--green)}
+.s-ack{background:#F0FDF4;color:#166534}
 
 /* Buttons */
-.btn{height:38px;padding:0 14px;border:none;border-radius:9px;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.btn{height:38px;padding:0 16px;border:none;border-radius:9px;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
 .btn:active{opacity:.75;transform:scale(.97)}
 .btn:disabled{opacity:.4;pointer-events:none}
 .bg{background:var(--g);color:#fff}
+.bg:hover{background:var(--gd)}
 .br2{background:var(--r);color:#fff}
-.bb{background:var(--b);color:#fff}
-.bw{background:#f3f4f6;color:var(--tx)}
+.bb{background:var(--green);color:#fff}
+.bw{background:#F3F4F6;color:var(--tx)}
 .btn-lg{height:48px;font-size:15px;width:100%;justify-content:center;border-radius:var(--rd)}
 .btn-full{height:44px;font-size:14px;width:100%;justify-content:center;margin-top:8px}
 .acts{display:flex;gap:6px;flex-wrap:wrap}
@@ -114,7 +117,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--tx);min-h
 /* Progress */
 .prog{margin-bottom:10px}
 .prog-hd{display:flex;justify-content:space-between;font-size:12px;color:var(--mu);margin-bottom:4px}
-.prog-bar{height:6px;background:#f3f4f6;border-radius:20px;overflow:hidden}
+.prog-bar{height:6px;background:#F3F4F6;border-radius:20px;overflow:hidden}
 .prog-fill{height:100%;background:var(--g);border-radius:20px;transition:width .4s}
 
 /* Donut chart */
@@ -131,13 +134,11 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--tx);min-h
 /* Bar chart */
 .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
 .bar-lbl{font-size:11px;width:52px;flex-shrink:0;text-align:right;color:var(--mu);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.bar-track{flex:1;background:#f3f4f6;border-radius:4px;overflow:hidden}
+.bar-track{flex:1;background:#F3F4F6;border-radius:4px;overflow:hidden}
 .bar-fill{height:18px;background:var(--g);border-radius:4px;min-width:3px;transition:width .4s}
 .bar-val{font-size:11px;font-weight:700;white-space:nowrap;width:32px;text-align:right}
 
-/* Report table */
-.rpt-row{display:flex;align-items:center;gap:6px;padding:8px 0;border-bottom:1px solid var(--br);font-size:12px}
-.rpt-date{font-weight:700;width:80px;flex-shrink:0}
+/* Report */
 .rpt-bars{flex:1;display:flex;gap:2px;height:16px;border-radius:4px;overflow:hidden}
 .rpt-seg{height:100%;transition:width .3s;min-width:0}
 
@@ -146,11 +147,11 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--tx);min-h
 
 /* Empty */
 .empty{text-align:center;padding:44px 16px;color:var(--mu)}
-.empty-ic{font-size:36px;margin-bottom:10px}
+.empty-ic{font-size:28px;font-weight:300;color:var(--br);margin-bottom:10px;letter-spacing:4px}
 
 /* Modal */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:flex;align-items:flex-end;justify-content:center}
-.modal{background:var(--wh);border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:390px;max-height:85vh;overflow-y:auto}
+.modal{background:var(--wh);border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:390px;max-height:88vh;overflow-y:auto}
 .modal-hd{width:32px;height:4px;background:var(--br);border-radius:20px;margin:0 auto 14px}
 .modal-room{font-size:30px;font-weight:700;text-align:center;color:var(--g)}
 .modal-fl{font-size:12px;color:var(--mu);text-align:center;margin-bottom:14px}
@@ -166,18 +167,37 @@ textarea{height:74px;resize:none;line-height:1.5}
 .divider{height:1px;background:var(--br);margin:12px 0}
 
 /* Inspect sections */
-.inspect-pass{background:var(--gl);border-radius:var(--rd);padding:12px;margin-bottom:10px}
+.inspect-pass{background:var(--greenl);border-radius:var(--rd);padding:12px;margin-bottom:10px}
 .inspect-fail{background:var(--rl);border-radius:var(--rd);padding:12px;margin-bottom:10px}
-.inspect-pass label{color:var(--gd)}
+.inspect-pass label{color:var(--green)}
 .inspect-fail label{color:var(--r)}
+
+/* Calendar */
+.cal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.cal-month-lbl{font-size:15px;font-weight:700}
+.cal-nav-btn{width:32px;height:32px;border:1.5px solid var(--br);border-radius:50%;background:var(--wh);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Sarabun',sans-serif;color:var(--tx)}
+.cal-nav-btn:disabled{opacity:.3;cursor:default}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-dh{text-align:center;font-size:10px;font-weight:700;color:var(--mu);padding:5px 0}
+.cal-d{text-align:center;padding:8px 2px;font-size:13px;border-radius:8px;cursor:pointer;transition:background .12s}
+.cal-d.today{font-weight:700;color:var(--g)}
+.cal-d.sel{background:var(--g);color:#fff;font-weight:700}
+.cal-d.future{color:#D1D5DB;cursor:default}
+.cal-d.empty{cursor:default}
+.cal-d:not(.future):not(.empty):not(.sel):hover{background:var(--gl)}
+
+/* Performance */
+.perf-avg{font-size:19px;font-weight:700;color:var(--g);line-height:1}
+.perf-sub{font-size:10px;color:var(--mu)}
+.perf-room-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:5px 0;border-top:1px solid var(--br)}
 
 /* Toast */
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--tx);color:#fff;padding:9px 18px;border-radius:20px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;z-index:200;white-space:nowrap;pointer-events:none}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
-.toast.ok{background:var(--g)}
+.toast.ok{background:var(--green)}
 .toast.err{background:var(--r)}
 
-/* Refresh indicator */
+/* Refresh dot */
 .refresh-dot{width:6px;height:6px;border-radius:50%;background:var(--g);display:inline-block;margin-left:4px;animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 </style>
@@ -187,7 +207,7 @@ textarea{height:74px;resize:none;line-height:1.5}
 
 <!-- LOGIN -->
 <div id="login-screen">
-  <div class="login-logo">🏨</div>
+  <div class="login-logo">D</div>
   <div class="login-brand">Dusit Connect</div>
   <div class="login-sub">Dusit Central Park · Housekeeping System</div>
   <div class="login-box">
@@ -209,7 +229,7 @@ textarea{height:74px;resize:none;line-height:1.5}
 <div id="main-app">
   <div class="hdr">
     <div class="hdr-top">
-      <div class="hdr-title">🏨 Dusit Connect</div>
+      <div class="hdr-title">Dusit Connect</div>
       <div class="hdr-right">
         <span class="badge" id="role-badge"></span>
         <button class="logout-btn" onclick="doLogout()">ออก</button>
@@ -230,7 +250,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbx6R2fDH0w0Pt1fYNFZykjD
 
 // ─── SESSION & STATE ──────────────────────────────────
 let USER = JSON.parse(sessionStorage.getItem("dc_user") || "null");
-const ST = { tabIdx:0, filter:"all", rooms:[], staff:[], date: todayISO(), report:[] };
+const ST = { tabIdx:0, filter:"all", rooms:[], staff:[], date:todayISO(), report:[], perf:[] };
 
 // ─── DATE HELPERS ────────────────────────────────────
 function todayISO() {
@@ -242,6 +262,10 @@ function fmtDateTH(s) {
   const [y,m,d] = s.split("-");
   return `${+d} ${mo[+m]} ${+y+543}`;
 }
+function fmtMonthTH(y, m) {
+  const mo = ["","มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
+  return `${mo[m]} ${y+543}`;
+}
 function isToday() { return ST.date === todayISO(); }
 function isPast()  { return ST.date < todayISO(); }
 
@@ -249,9 +273,14 @@ function isPast()  { return ST.date < todayISO(); }
 const SL = { pending:"รอทำ", cleaning:"กำลังทำ", done:"รอตรวจ", passed:"ผ่านตรวจ", ack:"รับทราบ" };
 function sb(s){ return `<span class="s s-${s}">${SL[s]||s}</span>`; }
 function elapsed(ms){
-  if(!ms) return "";
+  if(!ms) return "—";
   const m = Math.floor((Date.now()-ms)/60000);
-  return m<60 ? `${m} นาที` : `${Math.floor(m/60)} ชม. ${m%60} นาที`;
+  return m < 60 ? `${m} นาที` : `${Math.floor(m/60)} ชม. ${m%60} นาที`;
+}
+function duration(startMs, endMs){
+  if(!startMs||!endMs) return "—";
+  const m = Math.floor((endMs-startMs)/60000);
+  return m < 60 ? `${m} นาที` : `${Math.floor(m/60)} ชม. ${m%60} นาที`;
 }
 
 // ─── GAS CALLS ───────────────────────────────────────
@@ -277,11 +306,28 @@ function startAutoRefresh(){
   stopAutoRefresh();
   _refreshTimer = setInterval(async () => {
     if(!USER) return;
+    const v = getView();
+    if(v==="mgr_report"||v==="mgr_perf") return;
     const res = await gasGet({ action:"getRooms", role:USER.role, staffId:USER.staffId, date:ST.date });
     if(res.success){ ST.rooms = res.rooms||[]; renderContent(); }
   }, 30000);
 }
 function stopAutoRefresh(){ if(_refreshTimer){ clearInterval(_refreshTimer); _refreshTimer=null; } }
+
+// ─── LIVE TIMER (elapsed display) ────────────────────
+let _liveTimer = null;
+function startLiveTimer(){
+  stopLiveTimer();
+  _updateElapsed();
+  _liveTimer = setInterval(_updateElapsed, 30000);
+}
+function stopLiveTimer(){ if(_liveTimer){ clearInterval(_liveTimer); _liveTimer=null; } }
+function _updateElapsed(){
+  document.querySelectorAll("[data-elapsed]").forEach(el=>{
+    const ms = parseInt(el.dataset.elapsed);
+    if(ms) el.textContent = elapsed(ms);
+  });
+}
 
 // ─── LOGIN ───────────────────────────────────────────
 async function doLogin(){
@@ -305,8 +351,8 @@ async function doLogin(){
 function doLogout(){
   USER=null;
   sessionStorage.removeItem("dc_user");
-  ST.rooms=[]; ST.staff=[]; ST.tabIdx=0; ST.filter="all"; ST.date=todayISO(); ST.report=[];
-  stopAutoRefresh();
+  ST.rooms=[]; ST.staff=[]; ST.tabIdx=0; ST.filter="all"; ST.date=todayISO(); ST.report=[]; ST.perf=[];
+  stopAutoRefresh(); stopLiveTimer();
   document.getElementById("main-app").style.display="none";
   document.getElementById("login-screen").style.display="flex";
   document.getElementById("inp-user").value="";
@@ -320,8 +366,8 @@ function showApp(){
   const ma = document.getElementById("main-app");
   ma.style.display="flex";
 
-  const roleLabel = {supervisor:"👑 หัวหน้า",housekeeper:"🧹 แม่บ้าน",frontdesk:"🛎 Front Desk",manager:"📊 ผู้จัดการ"};
-  const roleClass = {supervisor:"b-supervisor",housekeeper:"b-housekeeper",frontdesk:"b-frontdesk",manager:"b-manager"};
+  const roleLabel = { supervisor:"หัวหน้า", housekeeper:"แม่บ้าน", frontdesk:"Front Desk", manager:"ผู้จัดการ" };
+  const roleClass = { supervisor:"b-supervisor", housekeeper:"b-housekeeper", frontdesk:"b-frontdesk", manager:"b-manager" };
   const b = document.getElementById("role-badge");
   b.textContent = roleLabel[USER.role]||USER.role;
   b.className   = "badge "+(roleClass[USER.role]||"");
@@ -333,62 +379,117 @@ function showApp(){
   startAutoRefresh();
 }
 
-function renderTabs(){
-  const tabCfg = {
-    supervisor:  [{lbl:"ห้องทั้งหมด",v:"sup_rooms"},{lbl:"Assign",v:"sup_assign"}],
+// ─── TABS ────────────────────────────────────────────
+function tabCfg(){
+  return {
+    supervisor:  [{lbl:"ห้องทั้งหมด",v:"sup_rooms"},{lbl:"Assign",v:"sup_assign"},{lbl:"เวลาทำงาน",v:"sup_perf"}],
     housekeeper: [{lbl:"ห้องของฉัน",v:"hk_rooms"}],
-    frontdesk:   [{lbl:"รอลูกค้าเข้าพัก",v:"fd_ack"}],
-    manager:     [{lbl:"Dashboard",v:"mgr_dash"},{lbl:"ห้องทั้งหมด",v:"mgr_all"},{lbl:"รายงาน",v:"mgr_report"}],
+    frontdesk:   [{lbl:"พร้อมรับลูกค้า",v:"fd_ack"}],
+    manager:     [{lbl:"Dashboard",v:"mgr_dash"},{lbl:"ห้องทั้งหมด",v:"mgr_all"},{lbl:"เวลาทำงาน",v:"mgr_perf"},{lbl:"รายงาน",v:"mgr_report"}],
   };
-  const tbs = tabCfg[USER.role]||[];
+}
+function renderTabs(){
+  const tbs = (tabCfg()[USER.role]||[]);
   document.getElementById("tabs").innerHTML = tbs.map((t,i)=>
     `<button class="tab ${i===ST.tabIdx?"on":""}" onclick="goTab(${i})">${t.lbl}</button>`
   ).join("");
 }
+function getView(){
+  return ((tabCfg()[USER.role]||[])[ST.tabIdx]||{}).v;
+}
+function goTab(i){
+  ST.tabIdx=i; ST.filter="all";
+  renderTabs();
+  loadAndRender();
+}
+function setF(f){ ST.filter=f; renderContent(); }
 
+// ─── DATE NAV ────────────────────────────────────────
 function updateDateNav(){
   const nav = document.getElementById("date-nav");
   if(!nav) return;
   const today = isToday();
   nav.innerHTML = `
     <button class="date-btn" onclick="changeDate(-1)">‹</button>
-    <div class="date-lbl">${fmtDateTH(ST.date)}${today?` <span class="date-today">วันนี้</span>`:""}</div>
+    <div class="date-lbl" onclick="openCalendar()">${fmtDateTH(ST.date)}${today?` <span class="date-today">วันนี้</span>`:""}</div>
     <button class="date-btn" onclick="changeDate(1)" ${today?"disabled":""}>›</button>
   `;
 }
-
 function changeDate(delta){
   const [y,m,d] = ST.date.split("-").map(Number);
   const dt = new Date(y, m-1, d);
   dt.setDate(dt.getDate()+delta);
   const nd = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`;
   if(nd > todayISO()) return;
-  ST.date=nd; ST.filter="all"; ST.report=[];
+  ST.date=nd; ST.filter="all"; ST.report=[]; ST.perf=[];
   updateDateNav();
   loadAndRender();
 }
 
-// ─── TABS ────────────────────────────────────────────
-function goTab(i){
-  ST.tabIdx=i; ST.filter="all";
-  renderTabs();
-  // report tab loads separately
-  if(getView()==="mgr_report"){ loadReport(); return; }
-  loadAndRender();
-}
-function setF(f){ ST.filter=f; renderContent(); }
-function getView(){
-  const tabCfg = {
-    supervisor:  [{v:"sup_rooms"},{v:"sup_assign"}],
-    housekeeper: [{v:"hk_rooms"}],
-    frontdesk:   [{v:"fd_ack"}],
-    manager:     [{v:"mgr_dash"},{v:"mgr_all"},{v:"mgr_report"}],
+// ─── CALENDAR ────────────────────────────────────────
+function openCalendar(){
+  const [cy,cm] = ST.date.split("-").map(Number);
+  let vy=cy, vm=cm;
+  const today = todayISO();
+  const [ty,tm] = today.split("-").map(Number);
+  const dayHdr = ["จ","อ","พ","พฤ","ศ","ส","อา"];
+
+  function buildCal(){
+    const daysInMonth = new Date(vy, vm, 0).getDate();
+    const firstDay = new Date(vy, vm-1, 1).getDay();
+    const offset = (firstDay+6)%7; // Mon-start
+    const canNext = vy<ty || (vy===ty && vm<tm);
+    let cells = "";
+    for(let i=0;i<offset;i++) cells += `<div class="cal-d empty"></div>`;
+    for(let d=1;d<=daysInMonth;d++){
+      const ds = `${vy}-${String(vm).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+      const isSel = ds===ST.date;
+      const isTod = ds===today;
+      const isFut = ds>today;
+      const cls = `cal-d${isSel?" sel":""}${isTod&&!isSel?" today":""}${isFut?" future":""}`;
+      cells += `<div class="${cls}" ${!isFut?`onclick="calSelect('${ds}')"`:""}>${d}</div>`;
+    }
+    document.querySelector("#cal-modal").innerHTML = `
+      <div class="modal-hd"></div>
+      <div class="cal-hd">
+        <button class="cal-nav-btn" onclick="calNav(-1)">‹</button>
+        <div class="cal-month-lbl">${fmtMonthTH(vy,vm)}</div>
+        <button class="cal-nav-btn" ${!canNext?"disabled":""} onclick="calNav(1)">›</button>
+      </div>
+      <div class="cal-grid">
+        ${dayHdr.map(d=>`<div class="cal-dh">${d}</div>`).join("")}
+        ${cells}
+      </div>
+      <button class="btn bw btn-full" style="margin-top:12px" onclick="closeModal()">ยกเลิก</button>
+    `;
+  }
+
+  window.calNav = function(delta){
+    vm += delta;
+    if(vm>12){vm=1;vy++;}
+    if(vm<1){vm=12;vy--;}
+    buildCal();
   };
-  return (tabCfg[USER.role]||[])[ST.tabIdx]?.v;
+  window.calSelect = function(ds){
+    ST.date=ds; ST.filter="all"; ST.report=[]; ST.perf=[];
+    closeModal();
+    updateDateNav();
+    loadAndRender();
+  };
+
+  const ov = document.createElement("div");
+  ov.className="overlay"; ov.id="ov";
+  ov.innerHTML=`<div class="modal" id="cal-modal"></div>`;
+  ov.addEventListener("click", e=>{ if(e.target===ov) closeModal(); });
+  document.body.appendChild(ov);
+  buildCal();
 }
 
 // ─── LOAD DATA ───────────────────────────────────────
 async function loadAndRender(){
+  const v = getView();
+  if(v==="mgr_report"){ await loadReport(); return; }
+  if(v==="mgr_perf"){   await loadPerformance(); return; }
   showLoader();
   const res = await gasGet({ action:"getRooms", role:USER.role, staffId:USER.staffId, date:ST.date });
   if(res.success) ST.rooms = res.rooms||[];
@@ -410,6 +511,17 @@ async function loadReport(){
   renderContent();
 }
 
+async function loadPerformance(){
+  showLoader();
+  const end = ST.date;
+  const dt = new Date(ST.date);
+  dt.setDate(dt.getDate()-29);
+  const start = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`;
+  const res = await gasGet({ action:"getPerformance", startDate:start, endDate:end });
+  if(res.success) ST.perf = res.byStaff||[];
+  renderContent();
+}
+
 function showLoader(){
   document.getElementById("content").innerHTML =
     `<div class="loader"><div class="spinner"></div><span style="font-size:13px;color:var(--mu)">กำลังโหลด...</span></div>`;
@@ -419,24 +531,29 @@ function showLoader(){
 function renderContent(){
   renderTabs();
   document.getElementById("content").innerHTML = renderView(getView());
+  const v = getView();
+  if(["sup_perf","hk_rooms"].includes(v)) startLiveTimer();
+  else stopLiveTimer();
 }
 function renderView(v){
   switch(v){
     case "sup_rooms":  return vSupRooms();
     case "sup_assign": return vSupAssign();
+    case "sup_perf":   return vSupPerf();
     case "hk_rooms":   return vHkRooms();
     case "fd_ack":     return vFdAck();
     case "mgr_dash":   return vMgrDash();
     case "mgr_all":    return vMgrAll();
+    case "mgr_perf":   return vMgrPerf();
     case "mgr_report": return vMgrReport();
-    default: return `<div class="empty"><div class="empty-ic">🚧</div>กำลังพัฒนา</div>`;
+    default: return `<div class="empty"><div class="empty-ic">···</div>กำลังพัฒนา</div>`;
   }
 }
 
 // ─── SUPERVISOR: ห้องทั้งหมด ─────────────────────────
 function vSupRooms(){
   if(ST.rooms.length===0 && isToday())
-    return `<div class="empty"><div class="empty-ic">🌅</div><div style="margin-bottom:12px">ยังไม่มีงานวันนี้</div>
+    return `<div class="empty"><div class="empty-ic">···</div><div style="margin-bottom:12px">ยังไม่มีงานวันนี้</div>
       <button class="btn bg" onclick="doInitDaily()">+ สร้างงานวันนี้ (${fmtDateTH(ST.date)})</button></div>`;
   const all   = ST.rooms;
   const flist = ["all","done","cleaning","pending","passed","ack"];
@@ -446,20 +563,23 @@ function vSupRooms(){
     <div class="chips">
       ${flist.map(f=>`<div class="chip ${ST.filter===f?"on":""}" onclick="setF('${f}')">${flbl[f]} (${f==="all"?all.length:all.filter(r=>r.status===f).length})</div>`).join("")}
     </div>
-    ${shown.length===0?`<div class="empty"><div class="empty-ic">✅</div>ไม่มีห้องในสถานะนี้</div>`:""}
+    ${shown.length===0?`<div class="empty"><div class="empty-ic">···</div>ไม่มีห้องในสถานะนี้</div>`:""}
     ${shown.map(r=>`
       <div class="card">
         <div class="card-hd">
           <div><div class="rnum">${r.id}</div><div class="rfloor">ชั้น ${r.floor}</div></div>
           ${sb(r.status)}
         </div>
-        ${r.note?`<div class="${r.status==="pending"?"rnote":"rnote-green"}">📋 ${r.note}</div>`:""}
-        <div class="rinfo">แม่บ้าน: <b>${r.assignedName||"—"}</b>${r.startTime?` · <b>${elapsed(r.startTime)}</b>`:""}</div>
+        ${r.note?`<div class="${r.status==="pending"?"rnote":"rnote-ok"}">${r.note}</div>`:""}
+        <div class="rinfo">แม่บ้าน: <b>${r.assignedName||"—"}</b>
+          ${r.status==="cleaning"&&r.startTime?` · <span data-elapsed="${r.startTime}">—</span>`:""}
+          ${r.status==="done"&&r.startTime&&r.endTime?` · ใช้เวลา <b>${duration(r.startTime,r.endTime)}</b>`:""}
+        </div>
         <div class="acts">
-          ${r.status==="done"&&isToday()?`<button class="btn bg" onclick="openInspect('${r.id}')">🔍 ตรวจห้อง</button>`:""}
-          ${["pending","cleaning","done"].includes(r.status)&&isToday()?`<button class="btn bw" onclick="openAssign('${r.id}')">🔄 Re-assign</button>`:""}
-          ${r.status==="passed"?`<span style="font-size:12px;color:var(--gd)">✅ รอ Front Desk</span>`:""}
-          ${r.status==="ack"?`<span style="font-size:12px;color:#166534">✅ เสร็จสมบูรณ์</span>`:""}
+          ${r.status==="done"&&isToday()?`<button class="btn bg" onclick="openInspect('${r.id}')">ตรวจห้อง</button>`:""}
+          ${["pending","cleaning","done"].includes(r.status)&&isToday()?`<button class="btn bw" onclick="openAssign('${r.id}')">Re-assign</button>`:""}
+          ${r.status==="passed"?`<span style="font-size:12px;color:var(--green)">รอ Front Desk</span>`:""}
+          ${r.status==="ack"?`<span style="font-size:12px;color:#166534">เสร็จสมบูรณ์</span>`:""}
         </div>
       </div>
     `).join("")}
@@ -469,14 +589,14 @@ function vSupRooms(){
 // ─── SUPERVISOR: Assign ──────────────────────────────
 function vSupAssign(){
   if(ST.rooms.length===0 && isToday())
-    return `<div class="empty"><div class="empty-ic">🌅</div><div style="margin-bottom:12px">ยังไม่มีงานวันนี้</div>
+    return `<div class="empty"><div class="empty-ic">···</div><div style="margin-bottom:12px">ยังไม่มีงานวันนี้</div>
       <button class="btn bg" onclick="doInitDaily()">+ สร้างงานวันนี้</button></div>`;
   if(isPast())
-    return `<div class="empty"><div class="empty-ic">📅</div>ดูได้เฉพาะวันปัจจุบัน</div>`;
+    return `<div class="empty"><div class="empty-ic">···</div>ดูได้เฉพาะวันปัจจุบัน</div>`;
   const unassigned = ST.rooms.filter(r=>!r.assignedTo||r.status==="pending");
   return `
     <div class="sec">ห้องที่รอ Assign (${unassigned.length})</div>
-    ${unassigned.length===0?`<div class="empty"><div class="empty-ic">🎉</div>Assign ครบแล้ว</div>`:""}
+    ${unassigned.length===0?`<div class="empty"><div class="empty-ic">···</div>Assign ครบแล้ว</div>`:""}
     ${unassigned.map(r=>`
       <div class="card">
         <div class="card-hd">
@@ -484,9 +604,66 @@ function vSupAssign(){
           ${sb(r.status)}
         </div>
         <div class="rinfo">แม่บ้านปัจจุบัน: <b>${r.assignedName||"—"}</b></div>
-        <div class="acts"><button class="btn bg" onclick="openAssign('${r.id}')">+ Assign แม่บ้าน</button></div>
+        <div class="acts"><button class="btn bg" onclick="openAssign('${r.id}')">Assign แม่บ้าน</button></div>
       </div>
     `).join("")}
+  `;
+}
+
+// ─── SUPERVISOR: เวลาทำงาน ───────────────────────────
+function vSupPerf(){
+  const rooms = ST.rooms;
+  if(rooms.length===0)
+    return `<div class="empty"><div class="empty-ic">···</div>ไม่มีข้อมูล${isPast()?" วันที่เลือก":""}</div>`;
+
+  const cleaning  = rooms.filter(r=>r.status==="cleaning"&&r.startTime);
+  const completed = rooms.filter(r=>["done","passed","ack"].includes(r.status)&&r.startTime&&r.endTime);
+
+  const byStaff = {};
+  completed.forEach(r=>{
+    const n = r.assignedName||"—";
+    if(!byStaff[n]) byStaff[n]={ name:n, rooms:[], totalMs:0 };
+    byStaff[n].rooms.push(r);
+    byStaff[n].totalMs += (r.endTime - r.startTime);
+  });
+  const staffArr = Object.values(byStaff).sort((a,b)=>(a.totalMs/a.rooms.length)-(b.totalMs/b.rooms.length));
+
+  return `
+    <div class="sec">กำลังทำ — Real-time (${cleaning.length} ห้อง)</div>
+    ${cleaning.length===0?`<div style="font-size:13px;color:var(--mu);padding:4px 0 10px">ไม่มีห้องที่กำลังทำ</div>`:""}
+    ${cleaning.map(r=>`
+      <div class="card">
+        <div class="card-hd">
+          <div><div class="rnum">${r.id}</div><div class="rfloor">ชั้น ${r.floor}</div></div>
+          ${sb(r.status)}
+        </div>
+        <div class="rinfo">${r.assignedName||"—"} · เริ่มมาแล้ว <b data-elapsed="${r.startTime}">—</b></div>
+      </div>
+    `).join("")}
+
+    <div class="sec" style="margin-top:6px">เสร็จแล้ว — สรุปผลงาน (${completed.length} ห้อง)</div>
+    ${staffArr.length===0?`<div style="font-size:13px;color:var(--mu);padding:4px 0 10px">ยังไม่มีห้องเสร็จ</div>`:""}
+    ${staffArr.map(s=>{
+      const avgMin = Math.round(s.totalMs/s.rooms.length/60000);
+      return `<div class="card">
+        <div class="card-hd" style="margin-bottom:10px">
+          <div>
+            <div style="font-size:15px;font-weight:700">${s.name}</div>
+            <div class="rfloor">${s.rooms.length} ห้องวันนี้</div>
+          </div>
+          <div style="text-align:right">
+            <div class="perf-avg">${avgMin}</div>
+            <div class="perf-sub">นาที/ห้อง (เฉลี่ย)</div>
+          </div>
+        </div>
+        ${s.rooms.map(r=>`
+          <div class="perf-room-row">
+            <span style="font-weight:600">ห้อง ${r.id}</span>
+            <span style="color:var(--mu)">${duration(r.startTime,r.endTime)}</span>
+          </div>
+        `).join("")}
+      </div>`;
+    }).join("")}
   `;
 }
 
@@ -497,7 +674,7 @@ function vHkRooms(){
   const pct   = rooms.length ? Math.round(done/rooms.length*100) : 0;
   return `
     <div class="stats">
-      <div class="stat"><div class="stat-n" style="color:var(--g)">${done}</div><div class="stat-l">เสร็จแล้ว</div></div>
+      <div class="stat"><div class="stat-n" style="color:var(--green)">${done}</div><div class="stat-l">เสร็จแล้ว</div></div>
       <div class="stat"><div class="stat-n" style="color:var(--o)">${rooms.filter(r=>r.status==="cleaning").length}</div><div class="stat-l">กำลังทำ</div></div>
       <div class="stat"><div class="stat-n" style="color:var(--mu)">${rooms.filter(r=>r.status==="pending").length}</div><div class="stat-l">รอทำ</div></div>
     </div>
@@ -505,21 +682,22 @@ function vHkRooms(){
       <div class="prog-hd"><span>ความคืบหน้าวันนี้</span><span>${done}/${rooms.length} (${pct}%)</span></div>
       <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
     </div>
-    ${rooms.length===0?`<div class="empty"><div class="empty-ic">📋</div>ยังไม่มีห้องที่ได้รับมอบหมาย</div>`:""}
+    ${rooms.length===0?`<div class="empty"><div class="empty-ic">···</div>ยังไม่มีห้องที่ได้รับมอบหมาย</div>`:""}
     ${rooms.map(r=>`
       <div class="card">
         <div class="card-hd">
           <div><div class="rnum">${r.id}</div><div class="rfloor">ชั้น ${r.floor}</div></div>
           ${sb(r.status)}
         </div>
-        ${r.note?`<div class="rnote">📋 ${r.note}</div>`:""}
-        ${r.status==="cleaning"&&r.startTime?`<div class="rinfo">เริ่มมาแล้ว <b>${elapsed(r.startTime)}</b></div>`:""}
+        ${r.note?`<div class="rnote">${r.note}</div>`:""}
+        ${r.status==="cleaning"&&r.startTime?`<div class="rinfo">เริ่มมาแล้ว <b data-elapsed="${r.startTime}">—</b></div>`:""}
+        ${r.status==="done"&&r.startTime&&r.endTime?`<div class="rinfo">ใช้เวลา <b>${duration(r.startTime,r.endTime)}</b></div>`:""}
         <div class="acts">
-          ${r.status==="pending"  &&isToday()?`<button class="btn bg"  onclick="doStatus('${r.id}','cleaning')">▶ เริ่มทำ</button>`:""}
-          ${r.status==="cleaning" &&isToday()?`<button class="btn bb"  onclick="doStatus('${r.id}','done')">✓ เสร็จแล้ว</button>`:""}
-          ${r.status==="done"    ?`<span style="font-size:12px;color:var(--y)">⏳ รอหัวหน้าตรวจ</span>`:""}
-          ${r.status==="passed"  ?`<span style="font-size:12px;color:var(--gd)">✅ ผ่านการตรวจ</span>`:""}
-          ${r.status==="ack"     ?`<span style="font-size:12px;color:#166534">✅ Front Desk รับทราบ</span>`:""}
+          ${r.status==="pending"  &&isToday()?`<button class="btn bg"  onclick="doStatus('${r.id}','cleaning')">เริ่มทำ</button>`:""}
+          ${r.status==="cleaning" &&isToday()?`<button class="btn bb"  onclick="doStatus('${r.id}','done')">เสร็จแล้ว</button>`:""}
+          ${r.status==="done"    ?`<span style="font-size:12px;color:var(--y)">รอหัวหน้าตรวจ</span>`:""}
+          ${r.status==="passed"  ?`<span style="font-size:12px;color:var(--green)">ผ่านการตรวจ</span>`:""}
+          ${r.status==="ack"     ?`<span style="font-size:12px;color:#166534">Front Desk รับทราบ</span>`:""}
         </div>
       </div>
     `).join("")}
@@ -530,18 +708,18 @@ function vHkRooms(){
 function vFdAck(){
   const rooms = ST.rooms;
   return `
-    <div class="sec">ทำความสะอาดเรียบร้อยแล้ว — รอลูกค้าเข้าพัก (${rooms.length})</div>
-    ${rooms.length===0?`<div class="empty"><div class="empty-ic">⏳</div>ยังไม่มีห้องพร้อม</div>`:""}
+    <div class="sec">ทำความสะอาดเรียบร้อย — รอลูกค้าเข้าพัก (${rooms.length})</div>
+    ${rooms.length===0?`<div class="empty"><div class="empty-ic">···</div>ยังไม่มีห้องพร้อม</div>`:""}
     ${rooms.map(r=>`
       <div class="card">
         <div class="card-hd">
           <div><div class="rnum">${r.id}</div><div class="rfloor">ชั้น ${r.floor}</div></div>
-          <span class="s s-passed">ทำความสะอาดแล้ว ✨</span>
+          <span class="s s-passed">พร้อมแล้ว</span>
         </div>
-        <div class="rinfo">ทำความสะอาดโดย: <b>${r.assignedName}</b>${r.startTime?` · ใช้เวลา <b>${elapsed(r.startTime)}</b>`:""}</div>
-        ${r.note?`<div class="rnote-green">📋 หมายเหตุ: ${r.note}</div>`:""}
+        <div class="rinfo">ทำโดย: <b>${r.assignedName||"—"}</b>${r.startTime&&r.endTime?` · ใช้เวลา <b>${duration(r.startTime,r.endTime)}</b>`:""}</div>
+        ${r.note?`<div class="rnote-ok">${r.note}</div>`:""}
         <div class="acts">
-          ${isToday()?`<button class="btn bg" onclick="doAck('${r.id}')">✓ ลูกค้าเข้าพักแล้ว</button>`:""}
+          ${isToday()?`<button class="btn bg" onclick="doAck('${r.id}')">ลูกค้าเข้าพักแล้ว</button>`:""}
         </div>
       </div>
     `).join("")}
@@ -555,19 +733,17 @@ function vMgrDash(){
   const cnt = {pending:0,cleaning:0,done:0,passed:0,ack:0};
   rooms.forEach(r=>{ if(cnt[r.status]!==undefined) cnt[r.status]++; });
   const finished = cnt.passed+cnt.ack;
-  const inProgress = cnt.cleaning+cnt.done;
   const pct = total ? Math.round(finished/total*100) : 0;
 
-  // Donut chart segments
   const segs = [
-    {k:"ack",    c:"#166534", label:"รับทราบ"},
-    {k:"passed", c:"var(--g)", label:"ผ่านตรวจ"},
-    {k:"done",   c:"var(--y)", label:"รอตรวจ"},
-    {k:"cleaning",c:"var(--o)",label:"กำลังทำ"},
-    {k:"pending",c:"#d1d5db", label:"รอทำ"},
+    {k:"ack",     c:"#166534", label:"รับทราบ"},
+    {k:"passed",  c:"#15803D", label:"ผ่านตรวจ"},
+    {k:"done",    c:"#1A56DB", label:"รอตรวจ"},
+    {k:"cleaning",c:"#D46B08", label:"กำลังทำ"},
+    {k:"pending", c:"#D1D5DB", label:"รอทำ"},
   ];
   let cumPct = 0;
-  const gradParts = segs.map(s => {
+  const gradParts = segs.map(s=>{
     const p = total ? (cnt[s.k]||0)/total*100 : 0;
     const from = cumPct; cumPct += p;
     return `${s.c} ${from.toFixed(1)}% ${cumPct.toFixed(1)}%`;
@@ -592,7 +768,7 @@ function vMgrDash(){
   const farr = Object.values(byF).sort((a,b)=>a.f-b.f);
 
   return `
-    ${total===0?`<div class="empty"><div class="empty-ic">📅</div>ไม่มีข้อมูลวันนี้</div>`:`
+    ${total===0?`<div class="empty"><div class="empty-ic">···</div>ไม่มีข้อมูลวันที่เลือก</div>`:`
     <div class="donut-wrap">
       <div class="donut" style="background:conic-gradient(${gradParts})">
         <div class="donut-hole">
@@ -612,7 +788,7 @@ function vMgrDash(){
     </div>
 
     <div class="stats" style="grid-template-columns:repeat(2,1fr)">
-      <div class="stat"><div class="stat-n" style="color:var(--o)">${inProgress}</div><div class="stat-l">กำลังดำเนินการ</div></div>
+      <div class="stat"><div class="stat-n" style="color:var(--o)">${cnt.cleaning+cnt.done}</div><div class="stat-l">กำลังดำเนินการ</div></div>
       <div class="stat"><div class="stat-n" style="color:var(--mu)">${cnt.pending}</div><div class="stat-l">ยังไม่ได้ทำ</div></div>
     </div>
 
@@ -622,13 +798,11 @@ function vMgrDash(){
     </div>
 
     <div class="sec">ผลงานรายคน</div>
-    ${sarr.length===0?`<div style="font-size:13px;color:var(--mu);text-align:center;padding:12px">ยังไม่มีการ Assign</div>`:""}
+    ${sarr.length===0?`<div style="font-size:13px;color:var(--mu);padding:8px 0">ยังไม่มีการ Assign</div>`:""}
     ${sarr.map(s=>`
       <div class="bar-row">
         <div class="bar-lbl">${s.name}</div>
-        <div class="bar-track">
-          <div class="bar-fill" style="width:${Math.round(s.done/maxT*100)}%"></div>
-        </div>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.round(s.done/maxT*100)}%"></div></div>
         <div class="bar-val">${s.done}/${s.total}</div>
       </div>
     `).join("")}
@@ -637,8 +811,8 @@ function vMgrDash(){
     ${farr.map(f=>{
       const p = Math.round(f.done/f.total*100);
       return `<div class="prog">
-        <div class="prog-hd"><span>ชั้น ${f.f}</span><span style="color:${p===100?"var(--g)":p>50?"var(--y)":"var(--mu)"}">${f.done}/${f.total} (${p}%)</span></div>
-        <div class="prog-bar"><div class="prog-fill" style="width:${p}%;background:${p===100?"var(--g)":p>50?"var(--y)":"var(--o)"}"></div></div>
+        <div class="prog-hd"><span>ชั้น ${f.f}</span><span style="color:${p===100?"var(--green)":p>50?"var(--y)":"var(--mu)"}">${f.done}/${f.total} (${p}%)</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:${p}%;background:${p===100?"var(--green)":p>50?"var(--y)":"var(--o)"}"></div></div>
       </div>`;
     }).join("")}
     `}
@@ -654,24 +828,55 @@ function vMgrAll(){
     <div class="chips">
       ${flist.map(f=>`<div class="chip ${ST.filter===f?"on":""}" onclick="setF('${f}')">${f==="all"?"ทั้งหมด":SL[f]} (${f==="all"?all.length:all.filter(r=>r.status===f).length})</div>`).join("")}
     </div>
-    ${shown.length===0?`<div class="empty"><div class="empty-ic">📋</div>ไม่มีข้อมูล</div>`:""}
+    ${shown.length===0?`<div class="empty"><div class="empty-ic">···</div>ไม่มีข้อมูล</div>`:""}
     ${shown.map(r=>`
       <div class="card">
         <div class="card-hd">
           <div><div class="rnum">${r.id}</div><div class="rfloor">ชั้น ${r.floor}</div></div>
           ${sb(r.status)}
         </div>
-        <div class="rinfo">แม่บ้าน: <b>${r.assignedName||"—"}</b>${r.startTime?` · <b>${elapsed(r.startTime)}</b>`:""}</div>
-        ${r.note?`<div class="rnote-green">📋 ${r.note}</div>`:""}
+        <div class="rinfo">แม่บ้าน: <b>${r.assignedName||"—"}</b>
+          ${r.status==="cleaning"&&r.startTime?` · <span data-elapsed="${r.startTime}">—</span>`:""}
+          ${r.startTime&&r.endTime?` · ${duration(r.startTime,r.endTime)}`:""}
+        </div>
+        ${r.note?`<div class="rnote-ok">${r.note}</div>`:""}
       </div>
     `).join("")}
+  `;
+}
+
+// ─── MANAGER: Performance ────────────────────────────
+function vMgrPerf(){
+  const data = ST.perf;
+  if(data.length===0)
+    return `<div class="empty"><div class="empty-ic">···</div>ไม่มีข้อมูลเวลาทำงาน<br><span style="font-size:12px">30 วันล่าสุด</span></div>`;
+  const maxAvg = Math.max(...data.map(s=>s.avgDuration),1);
+  return `
+    <div class="sec">เวลาเฉลี่ยต่อห้อง — 30 วันล่าสุด (เรียงเร็ว → ช้า)</div>
+    ${data.map(s=>{
+      const avgMin = Math.round(s.avgDuration/60000);
+      const barPct = Math.round(s.avgDuration/maxAvg*100);
+      return `<div class="card">
+        <div class="card-hd" style="margin-bottom:8px">
+          <div>
+            <div style="font-size:15px;font-weight:700">${s.name}</div>
+            <div class="rfloor">${s.count} ห้อง</div>
+          </div>
+          <div style="text-align:right">
+            <div class="perf-avg">${avgMin}</div>
+            <div class="perf-sub">นาที/ห้อง</div>
+          </div>
+        </div>
+        <div class="bar-track"><div class="bar-fill" style="width:${barPct}%;height:8px"></div></div>
+      </div>`;
+    }).join("")}
   `;
 }
 
 // ─── MANAGER: Report ─────────────────────────────────
 function vMgrReport(){
   const data = ST.report;
-  if(data.length===0) return `<div class="empty"><div class="empty-ic">📊</div>ไม่มีข้อมูลย้อนหลัง</div>`;
+  if(data.length===0) return `<div class="empty"><div class="empty-ic">···</div>ไม่มีข้อมูลย้อนหลัง</div>`;
   return `
     <div class="sec">สรุปรายวัน (30 วันล่าสุด)</div>
     ${data.map(d=>{
@@ -681,17 +886,17 @@ function vMgrReport(){
       return `<div class="card" style="padding:10px 13px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
           <span style="font-size:13px;font-weight:700">${fmtDateTH(d.date)}</span>
-          <span style="font-size:12px;color:${pct===100?"var(--g)":pct>50?"var(--y)":"var(--mu)"};font-weight:700">${fin}/${t} (${pct}%)</span>
+          <span style="font-size:12px;color:${pct===100?"var(--green)":pct>50?"var(--y)":"var(--mu)"};font-weight:700">${fin}/${t} (${pct}%)</span>
         </div>
         <div class="rpt-bars">
-          ${(d.ack   ||0)?`<div class="rpt-seg" style="width:${(d.ack   /t*100).toFixed(1)}%;background:#166534" title="รับทราบ ${d.ack}"></div>`:""}
-          ${(d.passed||0)?`<div class="rpt-seg" style="width:${(d.passed/t*100).toFixed(1)}%;background:var(--g)" title="ผ่านตรวจ ${d.passed}"></div>`:""}
-          ${(d.done  ||0)?`<div class="rpt-seg" style="width:${(d.done  /t*100).toFixed(1)}%;background:var(--y)" title="รอตรวจ ${d.done}"></div>`:""}
-          ${(d.cleaning||0)?`<div class="rpt-seg" style="width:${(d.cleaning/t*100).toFixed(1)}%;background:var(--o)" title="กำลังทำ ${d.cleaning}"></div>`:""}
-          ${(d.pending||0)?`<div class="rpt-seg" style="width:${(d.pending/t*100).toFixed(1)}%;background:#d1d5db" title="รอทำ ${d.pending}"></div>`:""}
+          ${(d.ack   ||0)?`<div class="rpt-seg" style="width:${(d.ack/t*100).toFixed(1)}%;background:#166534"></div>`:""}
+          ${(d.passed||0)?`<div class="rpt-seg" style="width:${(d.passed/t*100).toFixed(1)}%;background:#15803D"></div>`:""}
+          ${(d.done  ||0)?`<div class="rpt-seg" style="width:${(d.done/t*100).toFixed(1)}%;background:#1A56DB"></div>`:""}
+          ${(d.cleaning||0)?`<div class="rpt-seg" style="width:${(d.cleaning/t*100).toFixed(1)}%;background:#D46B08"></div>`:""}
+          ${(d.pending||0)?`<div class="rpt-seg" style="width:${(d.pending/t*100).toFixed(1)}%;background:#D1D5DB"></div>`:""}
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:5px">
-          ${[["#166534","รับทราบ",d.ack],["var(--g)","ผ่านตรวจ",d.passed],["var(--y)","รอตรวจ",d.done],["var(--o)","กำลังทำ",d.cleaning],["#d1d5db","รอทำ",d.pending]]
+          ${[["#166534","รับทราบ",d.ack],["#15803D","ผ่านตรวจ",d.passed],["#1A56DB","รอตรวจ",d.done],["#D46B08","กำลังทำ",d.cleaning],["#9CA3AF","รอทำ",d.pending]]
             .filter(x=>x[2]).map(x=>`<span style="font-size:10px;color:${x[0]};font-weight:700">${x[1]} ${x[2]}</span>`).join("")}
         </div>
       </div>`;
@@ -709,7 +914,7 @@ async function doStatus(roomId, newStatus){
   if(newStatus==="done")     r.endTime=Date.now();
   renderContent();
   await gasCall({ action:"updateStatus", roomId, status:newStatus, staffId:USER.staffId, staffName:USER.name, date:ST.date });
-  toast(newStatus==="cleaning"?"▶ เริ่มทำความสะอาด":"✓ ส่งให้หัวหน้าตรวจแล้ว","ok");
+  toast(newStatus==="cleaning"?"เริ่มทำความสะอาดแล้ว":"ส่งให้หัวหน้าตรวจแล้ว","ok");
 }
 
 async function doAck(roomId){
@@ -717,7 +922,7 @@ async function doAck(roomId){
   ST.rooms = ST.rooms.filter(x=>x.id!==roomId);
   renderContent();
   await gasCall({ action:"ackRoom", roomId, staffId:USER.staffId, staffName:USER.name, date:ST.date });
-  toast("✅ บันทึก ลูกค้าเข้าพักแล้ว","ok");
+  toast("บันทึกเรียบร้อยแล้ว","ok");
 }
 
 async function doInitDaily(){
@@ -749,7 +954,7 @@ function openAssign(roomId){
       <label>หมายเหตุสำหรับแม่บ้าน (ถ้ามี)</label>
       <textarea id="m-anote" placeholder="เช่น แขก VIP ต้องการผ้าเช็ดตัวพิเศษ...">${r.note||""}</textarea>
     </div>
-    <button class="btn bg btn-full" onclick="confirmAssign('${roomId}')">✓ Assign</button>
+    <button class="btn bg btn-full" onclick="confirmAssign('${roomId}')">Assign</button>
     <button class="btn bw btn-full" onclick="closeModal()">ยกเลิก</button>
   `);
 }
@@ -772,29 +977,30 @@ function openInspect(roomId){
   const opts = ST.staff.length
     ? ST.staff.map(s=>`<option value="${s.id}" data-name="${s.name}" data-nick="${s.nickname}" ${r.assignedTo===s.id?"selected":""}>${s.name} (${s.nickname})</option>`).join("")
     : `<option value="${r.assignedTo}" selected>${r.assignedName}</option>`;
+  const durTxt = r.startTime&&r.endTime ? ` · ใช้เวลา ${duration(r.startTime,r.endTime)}` : "";
   showModal(`
     <div class="modal-hd"></div>
     <div class="modal-room">${roomId}</div>
-    <div class="modal-fl">ชั้น ${r.floor} · ทำโดย <b>${r.assignedName}</b>${r.startTime?` · ใช้เวลา <b>${elapsed(r.startTime)}</b>`:""}</div>
+    <div class="modal-fl">ชั้น ${r.floor} · ทำโดย ${r.assignedName}${durTxt}</div>
 
     <div class="inspect-pass">
       <div class="field">
-        <label>📋 หมายเหตุถึง Front Desk (ถ้ามี)</label>
+        <label>หมายเหตุถึง Front Desk (ถ้ามี)</label>
         <textarea id="m-note-pass" placeholder="เช่น เพิ่มผ้าเช็ดตัว, ห้องพิเศษ VIP..."></textarea>
       </div>
-      <button class="btn bg btn-full" style="margin-top:4px" onclick="confirmInspect('${roomId}','passed')">✅ ผ่าน — ส่ง Front Desk</button>
+      <button class="btn bg btn-full" style="margin-top:4px" onclick="confirmInspect('${roomId}','passed')">ผ่าน — ส่ง Front Desk</button>
     </div>
 
     <div class="inspect-fail">
       <div class="field">
-        <label>⚠️ แจ้งเหตุผลกลับแม่บ้าน (ที่ไม่ผ่าน)</label>
-        <textarea id="m-note-fail" placeholder="เช่น มุมห้องน้ำยังไม่สะอาด, เปลีนผ้าปูที่นอนด้วย..."></textarea>
+        <label>เหตุผลที่ไม่ผ่าน</label>
+        <textarea id="m-note-fail" placeholder="เช่น มุมห้องน้ำยังไม่สะอาด, ต้องเปลี่ยนผ้าปูที่นอน..."></textarea>
       </div>
       <div class="field">
         <label>Assign ให้ใคร</label>
         <div class="sw"><select id="m-restaff">${opts}</select></div>
       </div>
-      <button class="btn br2 btn-full" onclick="confirmInspect('${roomId}','failed')">❌ ไม่ผ่าน — ให้ทำใหม่</button>
+      <button class="btn br2 btn-full" onclick="confirmInspect('${roomId}','failed')">ไม่ผ่าน — ให้ทำใหม่</button>
     </div>
 
     <button class="btn bw btn-full" onclick="closeModal()">ยกเลิก</button>
@@ -821,7 +1027,7 @@ async function confirmInspect(roomId, result){
   }
   closeModal(); renderContent();
   await gasCall({ action:"inspect", roomId, result, note, newStaffId:nsid, newStaffName:nsname, supervisorId:USER.staffId, supervisorName:USER.name, date:ST.date });
-  toast(result==="passed"?"✅ ห้องผ่านการตรวจ":"❌ ส่งกลับให้ทำใหม่", result==="passed"?"ok":"err");
+  toast(result==="passed"?"ห้องผ่านการตรวจแล้ว":"ส่งกลับให้ทำใหม่", result==="passed"?"ok":"err");
 }
 
 // ─── MODAL HELPERS ───────────────────────────────────

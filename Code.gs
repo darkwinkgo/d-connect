@@ -36,7 +36,8 @@ function doPost(e) {
       case "assignRoom":   res = assignRoom(req); break;
       case "inspect":      res = inspect(req); break;
       case "ackRoom":      res = ackRoom(req); break;
-      case "getReport":    res = getReport(req.startDate, req.endDate); break;
+      case "getReport":       res = getReport(req.startDate, req.endDate); break;
+      case "getPerformance":  res = getPerformance(req.startDate, req.endDate); break;
       case "initDaily":    res = initDaily(req.date); break;
       case "initSheets":   res = initSheets(); break;
       default: res = { success: false, message: "Unknown action" };
@@ -220,6 +221,34 @@ function initDaily(date) {
   if (rows.length > 0)
     sheet.getRange(sheet.getLastRow() + 1, 1, rows.length, 9).setValues(rows);
   return { success: true, count: rows.length };
+}
+
+function getPerformance(startDate, endDate) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SH_ROOMS);
+  if (!sheet) return { success: true, byStaff: [] };
+  const data = sheet.getDataRange().getValues();
+  const byStaff = {};
+  for (let i = 1; i < data.length; i++) {
+    if (!data[i][0]) continue;
+    const rowDate = data[i][2] ? fmtDate(data[i][2]) : "";
+    if (startDate && rowDate < startDate) continue;
+    if (endDate   && rowDate > endDate)   continue;
+    const status = String(data[i][3]);
+    if (!["done","passed","ack"].includes(status)) continue;
+    const startMs = data[i][6] ? new Date(data[i][6]).getTime() : null;
+    const endMs   = data[i][7] ? new Date(data[i][7]).getTime() : null;
+    if (!startMs || !endMs || endMs <= startMs) continue;
+    const dur = endMs - startMs;
+    const name = String(data[i][5] || "");
+    if (!name) continue;
+    if (!byStaff[name]) byStaff[name] = { name, count: 0, totalMs: 0 };
+    byStaff[name].count++;
+    byStaff[name].totalMs += dur;
+  }
+  const result = Object.values(byStaff)
+    .map(s => ({ name: s.name, count: s.count, avgDuration: Math.round(s.totalMs / s.count) }))
+    .sort((a, b) => a.avgDuration - b.avgDuration);
+  return { success: true, byStaff: result };
 }
 
 function log(roomId, userId, userName, action, note) {
