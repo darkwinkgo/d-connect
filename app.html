@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<title>Dusit Connect</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<style>
+:root{
+  --g:#06C755;--gd:#05a847;--gl:#e8f9ed;
+  --r:#ef4444;--rl:#fef2f2;
+  --o:#f97316;--ol:#fff7ed;
+  --b:#3b82f6;--bl:#eff6ff;
+  --y:#d97706;--yl:#fffbeb;
+  --p:#7c3aed;--pl:#f5f3ff;
+  --tx:#111827;--mu:#6b7280;--br:#e5e7eb;--bg:#f9fafb;--wh:#fff;
+  --rd:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh}
+.app{max-width:390px;margin:0 auto;min-height:100vh;background:var(--wh);display:flex;flex-direction:column}
+
+/* ── Login Screen ── */
+#login-screen{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:32px 24px;
+}
+.login-logo{font-size:40px;margin-bottom:8px}
+.login-brand{font-size:22px;font-weight:700;margin-bottom:4px}
+.login-sub{font-size:13px;color:var(--mu);margin-bottom:32px}
+.login-box{width:100%;background:var(--wh);border:1.5px solid var(--br);border-radius:var(--rd);padding:20px}
+.login-box .field{margin-bottom:14px}
+.login-box label{font-size:13px;font-weight:600;display:block;margin-bottom:6px}
+.login-box input{
+  width:100%;height:48px;padding:0 14px;
+  border:1.5px solid var(--br);border-radius:9px;
+  font-family:'Sarabun',sans-serif;font-size:16px;
+  color:var(--tx);background:var(--wh);outline:none;
+  transition:border-color .2s;-webkit-appearance:none;
+}
+.login-box input:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(6,199,85,.1)}
+.login-err{font-size:13px;color:var(--r);text-align:center;margin-top:8px;min-height:20px}
+
+/* ── Main App ── */
+#main-app{flex:1;display:none;flex-direction:column}
+
+/* Header */
+.hdr{background:var(--wh);border-bottom:1px solid var(--br);padding:12px 16px 0;position:sticky;top:0;z-index:40}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.hdr-title{font-size:16px;font-weight:700}
+.hdr-right{display:flex;align-items:center;gap:8px}
+.badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px}
+.b-supervisor{background:#fef3c7;color:#92400e}
+.b-housekeeper{background:var(--gl);color:var(--gd)}
+.b-frontdesk{background:var(--bl);color:#1e40af}
+.b-manager{background:var(--pl);color:var(--p)}
+.hdr-name{font-size:12px;color:var(--mu);margin-bottom:8px}
+.logout-btn{font-size:11px;color:var(--mu);background:none;border:1px solid var(--br);border-radius:20px;padding:3px 9px;cursor:pointer;font-family:'Sarabun',sans-serif}
+
+/* Tabs */
+.tabs{display:flex;border-top:1px solid var(--br)}
+.tab{flex:1;padding:10px 4px;font-family:'Sarabun',sans-serif;font-size:12px;font-weight:600;color:var(--mu);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:all .15s}
+.tab.on{color:var(--g);border-bottom-color:var(--g)}
+
+/* Content */
+.content{flex:1;padding:12px;overflow-y:auto}
+
+/* Loader */
+.loader{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px;gap:12px}
+.spinner{width:32px;height:32px;border:3px solid var(--gl);border-top-color:var(--g);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Cards */
+.card{background:var(--wh);border:1.5px solid var(--br);border-radius:var(--rd);padding:13px;margin-bottom:10px}
+.card-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.rnum{font-size:22px;font-weight:700;line-height:1}
+.rfloor{font-size:11px;color:var(--mu);margin-top:2px}
+.rinfo{font-size:13px;color:var(--mu);margin-bottom:8px}
+.rinfo b{color:var(--tx)}
+.rnote{font-size:12px;color:var(--r);background:var(--rl);padding:6px 10px;border-radius:8px;margin-bottom:8px}
+
+/* Status */
+.s{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.s-pending{background:#f3f4f6;color:#374151}
+.s-cleaning{background:var(--ol);color:#c2410c}
+.s-done{background:var(--yl);color:var(--y)}
+.s-passed{background:var(--gl);color:var(--gd)}
+.s-ack{background:#f0fdf4;color:#166534}
+
+/* Buttons */
+.btn{height:38px;padding:0 14px;border:none;border-radius:9px;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.btn:active{opacity:.75;transform:scale(.97)}
+.btn:disabled{opacity:.4;pointer-events:none}
+.bg{background:var(--g);color:#fff}
+.br2{background:var(--r);color:#fff}
+.bb{background:var(--b);color:#fff}
+.bw{background:#f3f4f6;color:var(--tx)}
+.btn-lg{height:48px;font-size:15px;width:100%;justify-content:center;border-radius:var(--rd)}
+.btn-full{height:44px;font-size:14px;width:100%;justify-content:center;margin-top:8px}
+.acts{display:flex;gap:6px;flex-wrap:wrap}
+
+/* Chips */
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{padding:5px 13px;border:1.5px solid var(--br);border-radius:20px;font-size:12px;font-weight:600;color:var(--mu);background:var(--wh);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s}
+.chip.on{border-color:var(--g);background:var(--gl);color:var(--gd)}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.stat{background:var(--wh);border:1.5px solid var(--br);border-radius:var(--rd);padding:10px 6px;text-align:center}
+.stat-n{font-size:22px;font-weight:700}
+.stat-l{font-size:11px;color:var(--mu);margin-top:2px}
+
+/* Progress */
+.prog{margin-bottom:10px}
+.prog-hd{display:flex;justify-content:space-between;font-size:12px;color:var(--mu);margin-bottom:4px}
+.prog-bar{height:6px;background:#f3f4f6;border-radius:20px;overflow:hidden}
+.prog-fill{height:100%;background:var(--g);border-radius:20px;transition:width .4s}
+
+/* Chart bars */
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.bar-lbl{font-size:11px;width:52px;flex-shrink:0;text-align:right;color:var(--mu);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-fill{height:18px;background:var(--g);border-radius:4px;min-width:3px;transition:width .4s}
+.bar-val{font-size:11px;font-weight:700;white-space:nowrap}
+
+/* Section label */
+.sec{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mu);margin:14px 0 8px}
+
+/* Empty */
+.empty{text-align:center;padding:44px 16px;color:var(--mu)}
+.empty-ic{font-size:36px;margin-bottom:10px}
+
+/* Modal */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:flex;align-items:flex-end;justify-content:center}
+.modal{background:var(--wh);border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:390px;max-height:85vh;overflow-y:auto}
+.modal-hd{width:32px;height:4px;background:var(--br);border-radius:20px;margin:0 auto 14px}
+.modal-room{font-size:30px;font-weight:700;text-align:center;color:var(--g)}
+.modal-fl{font-size:12px;color:var(--mu);text-align:center;margin-bottom:14px}
+
+/* Form elements */
+.field{margin-bottom:12px}
+.field label{font-size:13px;font-weight:600;display:block;margin-bottom:5px}
+select,textarea{width:100%;padding:10px 12px;border:1.5px solid var(--br);border-radius:9px;font-family:'Sarabun',sans-serif;font-size:15px;color:var(--tx);background:var(--wh);outline:none;-webkit-appearance:none;transition:border-color .2s}
+select:focus,textarea:focus{border-color:var(--g)}
+textarea{height:74px;resize:none;line-height:1.5}
+.sw{position:relative}
+.sw::after{content:"▾";position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--mu);pointer-events:none}
+.divider{height:1px;background:var(--br);margin:12px 0}
+
+/* Toast */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--tx);color:#fff;padding:9px 18px;border-radius:20px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;z-index:200;white-space:nowrap;pointer-events:none}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{background:var(--g)}
+.toast.err{background:var(--r)}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ── LOGIN SCREEN ── -->
+<div id="login-screen">
+  <div class="login-logo">🏨</div>
+  <div class="login-brand">Dusit Connect</div>
+  <div class="login-sub">Dusit Central Park · Housekeeping System</div>
+  <div class="login-box">
+    <div class="field">
+      <label>Username</label>
+      <input type="text" id="inp-user" placeholder="เช่น sup001" autocomplete="username" autocapitalize="none"/>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="inp-pass" placeholder="••••" autocomplete="current-password"
+             onkeydown="if(event.key==='Enter') doLogin()"/>
+    </div>
+    <button class="btn bg btn-lg" onclick="doLogin()" id="btn-login">เข้าสู่ระบบ</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- ── MAIN APP ── -->
+<div id="main-app">
+  <div class="hdr">
+    <div class="hdr-top">
+      <div class="hdr-title">🏨 Dusit Connect</div>
+      <div class="hdr-right">
+        <span class="badge" id="role-badge"></span>
+        <button class="logout-btn" onclick="doLogout()">ออก</button>
+      </div>
+    </div>
+    <div class="hdr-name" id="hdr-name"></div>
+    <div class="tabs" id="tabs"></div>
+  </div>
+  <div class="content" id="content"></div>
+</div>
+
+</div><!-- /app -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── CONFIG ─────────────────────────────────────────
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyBSlxsIqNsxW7fO0vhsbgvJeKC783a0lQXvkChO-Sm_UofN9pZ0Xu3ceLxEF9M0s_vNg/exec";
+
+// ─── SESSION ────────────────────────────────────────
+let USER = JSON.parse(sessionStorage.getItem("dc_user") || "null");
+
+// ─── APP STATE ──────────────────────────────────────
+const ST = { tabIdx:0, filter:"all", rooms:[], staff:[] };
+
+// ─── STATUS HELPERS ─────────────────────────────────
+const SL = { pending:"รอทำ", cleaning:"กำลังทำ", done:"รอตรวจ", passed:"ผ่านตรวจ", ack:"รับทราบ" };
+function sb(s){ return `<span class="s s-${s}">${SL[s]||s}</span>`; }
+function elapsed(ms){
+  if(!ms) return "";
+  const m = Math.floor((Date.now()-ms)/60000);
+  return m<60 ? `${m} นาที` : `${Math.floor(m/60)} ชม. ${m%60} นาที`;
+}
+
+// ─── GAS CALL ────────────────────────────────────────
+async function gasCall(payload){
+  try {
+    const r = await fetch(GAS_URL, {
+      method:"POST", mode:"no-cors",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify(payload)
+    });
+    return { success:true };
+  } catch(e){ return { success:false, message:e.message }; }
+}
+
+// สำหรับ GET data ต้องใช้ JSONP หรือ script trick เพราะ no-cors อ่าน response ไม่ได้
+// ใช้ iframe/fetch แบบ same-origin redirect ไม่ได้บน GitHub Pages
+// → ใช้ fetch แบบ cors-anywhere หรือ script tag
+async function gasGet(payload){
+  try {
+    // ใช้ script tag trick สำหรับ GET (jsonp-style via URL params)
+    return new Promise((resolve) => {
+      const cbName = "cb_" + Date.now();
+      window[cbName] = (data) => {
+        resolve(data);
+        delete window[cbName];
+        document.getElementById("gas-script")?.remove();
+      };
+      const s = document.createElement("script");
+      s.id = "gas-script";
+      // GAS ต้องรองรับ JSONP — ใช้ POST แบบ form แทน
+      // fallback: ใช้ fetch แบบธรรมดา (จะ CORS error แต่ GAS redirect ให้)
+      fetch(GAS_URL, {
+        method: "POST",
+        headers: {"Content-Type":"text/plain"},  // text/plain ไม่ trigger preflight
+        body: JSON.stringify(payload),
+        redirect: "follow"
+      })
+      .then(r => r.json())
+      .then(d => resolve(d))
+      .catch(() => resolve({ success:false, message:"network error" }));
+    });
+  } catch(e){ return { success:false, message:e.message }; }
+}
+
+// ─── LOGIN ───────────────────────────────────────────
+async function doLogin(){
+  const user = document.getElementById("inp-user").value.trim();
+  const pass = document.getElementById("inp-pass").value;
+  const err  = document.getElementById("login-err");
+  const btn  = document.getElementById("btn-login");
+
+  if(!user || !pass){ err.textContent = "กรุณากรอก Username และ Password"; return; }
+
+  btn.disabled = true;
+  btn.textContent = "กำลังเข้าสู่ระบบ...";
+  err.textContent = "";
+
+  const res = await gasGet({ action:"login", username:user, password:pass });
+
+  if(res.success){
+    USER = res;
+    sessionStorage.setItem("dc_user", JSON.stringify(USER));
+    showApp();
+  } else {
+    err.textContent = res.message || "เกิดข้อผิดพลาด";
+    btn.disabled = false;
+    btn.textContent = "เข้าสู่ระบบ";
+  }
+}
+
+function doLogout(){
+  USER = null;
+  sessionStorage.removeItem("dc_user");
+  ST.rooms = []; ST.staff = [];
+  document.getElementById("main-app").style.display = "none";
+  document.getElementById("login-screen").style.display = "flex";
+  document.getElementById("inp-user").value = "";
+  document.getElementById("inp-pass").value = "";
+  document.getElementById("login-err").textContent = "";
+}
+
+// ─── SHOW APP ────────────────────────────────────────
+function showApp(){
+  document.getElementById("login-screen").style.display = "none";
+  const ma = document.getElementById("main-app");
+  ma.style.display = "flex";
+
+  // badge
+  const roleLabel = {supervisor:"👑 หัวหน้า",housekeeper:"🧹 แม่บ้าน",frontdesk:"🛎 Front Desk",manager:"📊 ผู้จัดการ"};
+  const roleClass = {supervisor:"b-supervisor",housekeeper:"b-housekeeper",frontdesk:"b-frontdesk",manager:"b-manager"};
+  const b = document.getElementById("role-badge");
+  b.textContent = roleLabel[USER.role] || USER.role;
+  b.className   = "badge " + (roleClass[USER.role]||"");
+  document.getElementById("hdr-name").textContent = USER.name;
+
+  // tabs
+  const tabCfg = {
+    supervisor:  [{lbl:"ห้องทั้งหมด",v:"sup_rooms"},{lbl:"Assign",v:"sup_assign"}],
+    housekeeper: [{lbl:"ห้องของฉัน",v:"hk_rooms"}],
+    frontdesk:   [{lbl:"รอรับทราบ",v:"fd_ack"}],
+    manager:     [{lbl:"Dashboard",v:"mgr_dash"},{lbl:"ห้องทั้งหมด",v:"mgr_all"}],
+  };
+  const tbs = tabCfg[USER.role] || [];
+  document.getElementById("tabs").innerHTML = tbs.map((t,i)=>
+    `<button class="tab ${i===ST.tabIdx?"on":""}" onclick="goTab(${i})">${t.lbl}</button>`
+  ).join("");
+
+  loadAndRender();
+}
+
+// ─── TABS ────────────────────────────────────────────
+function goTab(i){ ST.tabIdx=i; ST.filter="all"; loadAndRender(); }
+function setF(f){ ST.filter=f; renderContent(); }
+
+// ─── LOAD DATA ──────────────────────────────────────
+async function loadAndRender(){
+  showLoader();
+  // โหลด rooms
+  const res = await gasGet({ action:"getRooms", role:USER.role, staffId:USER.staffId });
+  if(res.success) ST.rooms = res.rooms || [];
+
+  // โหลด staff ถ้าเป็น supervisor
+  if(USER.role === "supervisor" && ST.staff.length === 0){
+    const sr = await gasGet({ action:"getStaff" });
+    if(sr.success) ST.staff = sr.staff || [];
+  }
+
+  renderContent();
+}
+
+function showLoader(){
+  document.getElementById("content").innerHTML =
+    `<div class="loader"><div class="spinner"></div><span style="font-size:13px;color:var(--mu)">กำลังโหลด...</span></div>`;
+}
+
+// ─── RENDER ──────────────────────────────────────────
+function renderContent(){
+  const tabCfg = {
+    supervisor:  [{lbl:"ห้องทั้งหมด",v:"sup_rooms"},{lbl:"Assign",v:"sup_assign"}],
+    housekeeper: [{lbl:"ห้องของฉัน",v:"hk_rooms"}],
+    frontdesk:   [{lbl:"รอรับทราบ",v:"fd_ack"}],
+    manager:     [{lbl:"Dashboard",v:"mgr_dash"},{lbl:"ห้องทั้งหมด",v:"mgr_all"}],
+  };
+  const view = (tabCfg[USER.role]||[])[ST.tabIdx]?.v;
+  document.getElementById("content").innerHTML = renderView(view);
+}
+
+function renderView(v){
+  switch(v){
+    case "sup_rooms":  return vSupRooms();
+    case "sup_assign": return vSupAssign();
+    case "hk_rooms":   return vHkRooms();
+    case "fd_ack":     return vFdAck();
+    case "mgr_dash":   return vMgrDash();
+    case "mgr_all":    return vMgrAll();
+    default: return `<div class="empty"><div class="empty-ic">🚧</div>กำลังพัฒนา</div>`;
+  }
+}
+
+// ─── SUPERVISOR: ห้องทั้งหมด ─────────────────────────
+function vSupRooms(){
+  const all    = ST.rooms;
+  const flist  = ["all","done","cleaning","pending","passed","ack"];
+  const flbl   = {all:"ทั้งหมด",done:"รอตรวจ",cleaning:"กำลังทำ",pending:"รอทำ",passed:"ผ่านตรวจ",ack:"รับทราบ"};
+  const shown  = ST.filter==="all" ? all : all.filter(r=>r.status===ST.filter);
+
+  return `
+    <div class="chips">
+      ${flist.map(f=>`<div class="chip ${ST.filter===f?"on":""}" onclick="setF('${f}')">${flbl[f]} (${f==="all"?all.length:all.filter(r=>r.status===f).length})</div>`).join("")}
+    </div>
+    ${shown.length===0?`<div class="empty"><div class="empty-ic">✅</div>ไม่มีห้องในสถานะนี้</div>`:""}
+    ${shown.map(r=>`
+      <div class="card">
+        <div class="card-hd">
+          <div><div class="rnum">${r.id}</div><div class="rfloor">ชั้น ${r.floor}</div></div>
+          ${sb(r.status)}
+        </div>
+        ${r.note?`<div class="rnote">📋 ${r.note}</div>`:""}
+        <div class="rinfo">แม่บ้าน: <b>${r.assignedName||"—"}</b>${r.startTime?` · <b>${elapsed(r.startTime)}</b>`:""}</div>
+        <div class="acts">
+          ${r.status==="done"?`<button class="btn bg" onclick="openInspect('${r.id}')">🔍 ตรวจห้อง</button>`:""}
+          ${["pending","cleaning","done"].includes(r.status)?`<button class="btn bw" onclick="openAssign('${r.id}')">🔄 Re-assign</button>`:""}
+          ${r.status==="passed"?`<span style="font-size:12px;color:var(--gd)">✅ รอ Front Desk</span>`:""}
+          ${r.status==="ack"?`<span style="font-size:12px;color:#166534">✅ เสร็จสมบูรณ์</span>`:""}
+        </div>
+      </div>
+    `).join("")}
+  `;
+}
+
+// ─── SUPERVISOR: Assign ──────────────────────────────
+function vSupAssign(){
+  const unassigned = ST.rooms.filter(r=>r.status==="pending"||!r.assignedTo);
+  return `
+    <div class="sec">ห้องที่รอ Assign (${unassigned.length})</div>
+    ${unassigned.length===0?`<div class="empty"><div class="empty-ic">🎉</div>Assign ครบแล้ว</div>`:""}
+    ${unassigned.map(r=>`
+      <div class="card">
+        <div class="card-hd">
+          <div><div class="rnum">${r.id}</div><div class="rfloor">ชั้น ${r.floor}</div></div>
+          ${sb(r.status)}
+        </div>
+        ${r.note?`<div class="rnote">📋 ${r.note}</div>`:""}
+        <div class="rinfo">แม่บ้านปัจจุบัน: <b>${r.assignedName||"—"}</b></div>
+        <div class="acts">
+          <button class="btn bg" onclick="openAssign('${r.id}')">+ Assign แม่บ้าน</button>
+        </div>
+      </div>
+    `).join("")}
+  `;
+}
+
+// ─── HOUSEKEEPER ─────────────────────────────────────
+function vHkRooms(){
+  const rooms = ST.rooms;
+  const done  = rooms.filter(r=>["done","passed","ack"].includes(r.status)).length;
+  const pct   = rooms.length ? Math.round(done/rooms.length*100) : 0;
+  return `
+    <div class="stats">
+      <div class="stat"><div class="stat-n" style="color:var(--g)">${done}</div><div class="stat-l">เสร็จแล้ว</div></div>
+      <div class="stat"><div class="stat-n" style="color:var(--o)">${rooms.filter(r=>r.status==="cleaning").length}</div><div class="stat-l">กำลังทำ</div></div>
+      <div class="stat"><div class="stat-n" style="color:var(--mu)">${rooms.filter(r=>r.status==="pending").length}</div><div class="stat-l">รอทำ</div></div>
+    </div>
+    <div class="prog">
+      <div class="prog-hd"><span>ความคืบหน้าวันนี้</span><span>${done}/${rooms.length} (${pct}%)</span></div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
+    </div>
+    ${rooms.length===0?`<div class="empty"><div class="empty-ic">📋</div>ยังไม่มีห้องที่ได้รับมอบหมาย</div>`:""}
+    ${rooms.map(r=>`
+      <div class="card">
+        <div class="card-hd">
+          <div><div class="rnum">${r.id}</div><div class="rfloor">ชั้น ${r.floor}</div></div>
+          ${sb(r.status)}
+        </div>
+        ${r.note?`<div class="rnote">📋 ${r.note}</div>`:""}
+        ${r.status==="cleaning"&&r.startTime?`<div class="rinfo">เริ่มมาแล้ว <b>${elapsed(r.startTime)}</b></div>`:""}
+        <div class="acts">
+          ${r.status==="pending"  ?`<button class="btn bg"  onclick="doStatus('${r.id}','cleaning')">▶ เริ่มทำ</button>`:""}
+          ${r.status==="cleaning" ?`<button class="btn bb"  onclick="doStatus('${r.id}','done')">✓ เสร็จแล้ว</button>`:""}
+          ${r.status==="done"     ?`<span style="font-size:12px;color:var(--y)">⏳ รอหัวหน้าตรวจ</span>`:""}
+          ${r.status==="passed"   ?`<span style="font-size:12px;color:var(--gd)">✅ ผ่านการตรวจ</span>`:""}
+          ${r.status==="ack"      ?`<span style="font-size:12px;color:#166534">✅ Front Desk รับทราบ</span>`:""}
+        </div>
+      </div>
+    `).join("")}
+  `;
+}
+
+// ─── FRONT DESK ──────────────────────────────────────
+function vFdAck(){
+  const rooms = ST.rooms;
+  return `
+    <div class="sec">ห้องพร้อม Check-in (${rooms.length})</div>
+    ${rooms.length===0?`<div class="empty"><div class="empty-ic">⏳</div>ยังไม่มีห้องพร้อม</div>`:""}
+    ${rooms.map(r=>`
+      <div class="card">
+        <div class="card-hd">
+          <div><div class="rnum">${r.id}</div><div class="rfloor">ชั้น ${r.floor}</div></div>
+          ${sb(r.status)}
+        </div>
+        <div class="rinfo">ทำความสะอาดโดย: <b>${r.assignedName}</b>${r.startTime?` · ใช้เวลา <b>${elapsed(r.startTime)}</b>`:""}</div>
+        <div class="acts">
+          <button class="btn bg" onclick="doAck('${r.id}')">✓ รับทราบ — ห้องพร้อม</button>
+        </div>
+      </div>
+    `).join("")}
+  `;
+}
+
+// ─── MANAGER: Dashboard ──────────────────────────────
+function vMgrDash(){
+  const rooms = ST.rooms;
+  const total = rooms.length;
+  const cnt   = {pending:0,cleaning:0,done:0,passed:0,ack:0};
+  rooms.forEach(r=>{ if(cnt[r.status]!==undefined) cnt[r.status]++; });
+  const done = cnt.passed+cnt.ack;
+  const pct  = total ? Math.round(done/total*100) : 0;
+
+  const byS = {};
+  rooms.forEach(r=>{
+    if(!r.assignedName) return;
+    byS[r.assignedName] = byS[r.assignedName]||{name:r.assignedName,done:0,total:0};
+    byS[r.assignedName].total++;
+    if(["done","passed","ack"].includes(r.status)) byS[r.assignedName].done++;
+  });
+  const sarr = Object.values(byS).sort((a,b)=>b.done-a.done);
+  const maxT = Math.max(...sarr.map(s=>s.total),1);
+
+  const byF = {};
+  rooms.forEach(r=>{
+    byF[r.floor] = byF[r.floor]||{f:r.floor,done:0,total:0};
+    byF[r.floor].total++;
+    if(["done","passed","ack"].includes(r.status)) byF[r.floor].done++;
+  });
+  const farr = Object.values(byF).sort((a,b)=>a.f-b.f);
+
+  return `
+    <div class="stats">
+      <div class="stat"><div class="stat-n" style="color:var(--g)">${pct}%</div><div class="stat-l">เสร็จแล้ว</div></div>
+      <div class="stat"><div class="stat-n" style="color:var(--o)">${cnt.cleaning}</div><div class="stat-l">กำลังทำ</div></div>
+      <div class="stat"><div class="stat-n" style="color:var(--y)">${cnt.done}</div><div class="stat-l">รอตรวจ</div></div>
+    </div>
+    <div class="prog">
+      <div class="prog-hd"><span>ภาพรวม ${total} ห้อง</span><span>${done} ห้องเสร็จ</span></div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+      ${[{k:"pending",l:"รอทำ",c:"var(--mu)"},{k:"cleaning",l:"กำลังทำ",c:"var(--o)"},{k:"done",l:"รอตรวจ",c:"var(--y)"},{k:"passed",l:"ผ่านตรวจ",c:"var(--g)"},{k:"ack",l:"รับทราบ",c:"#166534"}]
+        .map(s=>`<div class="stat"><div class="stat-n" style="color:${s.c}">${cnt[s.k]||0}</div><div class="stat-l">${s.l}</div></div>`).join("")}
+    </div>
+    <div class="sec">ผลงานรายคน</div>
+    ${sarr.map(s=>`
+      <div class="bar-row">
+        <div class="bar-lbl">${s.name}</div>
+        <div style="flex:1"><div class="bar-fill" style="width:${Math.round(s.done/maxT*100)}%"></div></div>
+        <div class="bar-val">${s.done}/${s.total}</div>
+      </div>
+    `).join("")}
+    <div class="sec" style="margin-top:14px">ความคืบหน้าตามชั้น</div>
+    ${farr.map(f=>`
+      <div class="prog">
+        <div class="prog-hd"><span>ชั้น ${f.f}</span><span>${f.done}/${f.total}</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:${Math.round(f.done/f.total*100)}%"></div></div>
+      </div>
+    `).join("")}
+  `;
+}
+
+// ─── MANAGER: All Rooms ───────────────────────────────
+function vMgrAll(){
+  const all   = ST.rooms;
+  const flist = ["all","pending","cleaning","done","passed","ack"];
+  const shown = ST.filter==="all" ? all : all.filter(r=>r.status===ST.filter);
+  return `
+    <div class="chips">
+      ${flist.map(f=>`<div class="chip ${ST.filter===f?"on":""}" onclick="setF('${f}')">${f==="all"?"ทั้งหมด":SL[f]} (${f==="all"?all.length:all.filter(r=>r.status===f).length})</div>`).join("")}
+    </div>
+    ${shown.map(r=>`
+      <div class="card">
+        <div class="card-hd">
+          <div><div class="rnum">${r.id}</div><div class="rfloor">ชั้น ${r.floor}</div></div>
+          ${sb(r.status)}
+        </div>
+        <div class="rinfo">แม่บ้าน: <b>${r.assignedName||"—"}</b>${r.startTime?` · <b>${elapsed(r.startTime)}</b>`:""}</div>
+      </div>
+    `).join("")}
+  `;
+}
+
+// ─── ACTIONS ─────────────────────────────────────────
+async function doStatus(roomId, newStatus){
+  const r = ST.rooms.find(x=>x.id===roomId);
+  if(!r) return;
+  r.status = newStatus;
+  if(newStatus==="cleaning") r.startTime = Date.now();
+  if(newStatus==="done")     r.endTime   = Date.now();
+  renderContent();
+  await gasCall({ action:"updateStatus", roomId, status:newStatus, staffId:USER.staffId, staffName:USER.name });
+  toast(newStatus==="cleaning"?"▶ เริ่มทำความสะอาด":"✓ ส่งให้หัวหน้าตรวจแล้ว","ok");
+}
+
+async function doAck(roomId){
+  const r = ST.rooms.find(x=>x.id===roomId);
+  if(r){ r.status="ack"; }
+  ST.rooms = ST.rooms.filter(x=>x.id!==roomId);
+  renderContent();
+  await gasCall({ action:"ackRoom", roomId, staffId:USER.staffId, staffName:USER.name });
+  toast("✅ รับทราบแล้ว","ok");
+}
+
+// ─── MODALS ──────────────────────────────────────────
+function openAssign(roomId){
+  const r    = ST.rooms.find(x=>x.id===roomId);
+  const opts = ST.staff.length
+    ? ST.staff.map(s=>`<option value="${s.id}" data-name="${s.name}" data-nick="${s.nickname}" ${r.assignedTo===s.id?"selected":""}>${s.name} (${s.nickname})</option>`).join("")
+    : `<option value="${r.assignedTo}" selected>${r.assignedName}</option>`;
+  showModal(`
+    <div class="modal-hd"></div>
+    <div class="modal-room">${roomId}</div>
+    <div class="modal-fl">ชั้น ${r.floor} · Assign ห้อง</div>
+    <div class="field">
+      <label>เลือกแม่บ้าน</label>
+      <div class="sw"><select id="m-staff">${opts}</select></div>
+    </div>
+    <div class="field">
+      <label>หมายเหตุ (ถ้ามี)</label>
+      <textarea id="m-anote" placeholder="เช่น แขก VIP ต้องการผ้าเช็ดตัวพิเศษ...">${r.note||""}</textarea>
+    </div>
+    <button class="btn bg btn-full" onclick="confirmAssign('${roomId}')">✓ Assign</button>
+    <button class="btn bw btn-full" onclick="closeModal()">ยกเลิก</button>
+  `);
+}
+
+async function confirmAssign(roomId){
+  const sel   = document.getElementById("m-staff");
+  const sid   = sel.value;
+  const sname = sel.options[sel.selectedIndex].dataset.name;
+  const snick = sel.options[sel.selectedIndex].dataset.nick || sname;
+  const note  = document.getElementById("m-anote")?.value || "";
+  const r     = ST.rooms.find(x=>x.id===roomId);
+  if(r){ r.assignedTo=sid; r.assignedName=snick; r.status="pending"; r.note=note; }
+  closeModal();
+  renderContent();
+  await gasCall({ action:"assignRoom", roomId, staffId:sid, staffName:sname, note, supervisorId:USER.staffId, supervisorName:USER.name });
+  toast(`Assign ให้ ${sname} แล้ว`,"ok");
+}
+
+function openInspect(roomId){
+  const r    = ST.rooms.find(x=>x.id===roomId);
+  const opts = ST.staff.length
+    ? ST.staff.map(s=>`<option value="${s.id}" data-name="${s.name}" data-nick="${s.nickname}" ${r.assignedTo===s.id?"selected":""}>${s.name} (${s.nickname})</option>`).join("")
+    : `<option value="${r.assignedTo}" selected>${r.assignedName}</option>`;
+  showModal(`
+    <div class="modal-hd"></div>
+    <div class="modal-room">${roomId}</div>
+    <div class="modal-fl">ชั้น ${r.floor} · ตรวจสอบห้อง · ทำโดย <b>${r.assignedName}</b></div>
+    ${r.startTime?`<div style="text-align:center;font-size:12px;color:var(--mu);margin-bottom:12px">ใช้เวลา <b>${elapsed(r.startTime)}</b></div>`:""}
+    <div class="field">
+      <label>หมายเหตุ (ถ้ามี)</label>
+      <textarea id="m-note" placeholder="เช่น มุมห้องน้ำยังไม่สะอาด..."></textarea>
+    </div>
+    <div class="field">
+      <label>กรณีไม่ผ่าน — Assign ให้ใคร</label>
+      <div class="sw"><select id="m-restaff">${opts}</select></div>
+    </div>
+    <button class="btn bg btn-full" onclick="confirmInspect('${roomId}','passed')">✅ ผ่าน — ส่ง Front Desk</button>
+    <button class="btn br2 btn-full" onclick="confirmInspect('${roomId}','failed')">❌ ไม่ผ่าน — ให้ทำใหม่</button>
+    <button class="btn bw btn-full" onclick="closeModal()">ยกเลิก</button>
+  `);
+}
+
+async function confirmInspect(roomId, result){
+  const note   = document.getElementById("m-note")?.value || "";
+  const sel    = document.getElementById("m-restaff");
+  const nsid   = sel?.value || "";
+  const nsname = sel?.options[sel.selectedIndex]?.dataset.name || "";
+  const nsnick = sel?.options[sel.selectedIndex]?.dataset.nick || nsname;
+  const r = ST.rooms.find(x=>x.id===roomId);
+  if(r){
+    if(result==="passed"){
+      r.status = "passed"; r.note = note;
+    } else {
+      r.status = "pending"; r.note = note||"ตรวจไม่ผ่าน กรุณาทำใหม่";
+      r.assignedTo = nsid; r.assignedName = nsnick;
+      r.startTime = null; r.endTime = null;
+    }
+  }
+  closeModal();
+  renderContent();
+  await gasCall({ action:"inspect", roomId, result, note, newStaffId:nsid, newStaffName:nsname, supervisorId:USER.staffId, supervisorName:USER.name });
+  toast(result==="passed"?"✅ ห้องผ่านการตรวจ":"❌ ส่งกลับให้ทำใหม่", result==="passed"?"ok":"err");
+}
+
+// ─── MODAL HELPERS ───────────────────────────────────
+function showModal(html){
+  const ov = document.createElement("div");
+  ov.className = "overlay"; ov.id = "ov";
+  ov.innerHTML = `<div class="modal">${html}</div>`;
+  ov.addEventListener("click", e=>{ if(e.target===ov) closeModal(); });
+  document.body.appendChild(ov);
+}
+function closeModal(){ document.getElementById("ov")?.remove(); }
+
+// ─── TOAST ────────────────────────────────────────────
+let _tt;
+function toast(msg, type=""){
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.className = "toast on "+type;
+  clearTimeout(_tt);
+  _tt = setTimeout(()=>t.className="toast", 2400);
+}
+
+// ─── BOOT ─────────────────────────────────────────────
+const LIFF_ID = "2009946209-cFt4JqH1";
+
+async function initLiff(){
+  try {
+    await liff.init({ liffId: LIFF_ID });
+  } catch(e) {
+    // ทำงานนอก LINE ได้ปกติ (ทดสอบบน browser)
+  }
+}
+
+initLiff().then(() => {
+  if(USER){ showApp(); }
+});
+</script>
+</body>
+</html>
