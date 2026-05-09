@@ -8,14 +8,21 @@
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <style>
 :root{
-  --g:#C49A3C;--gd:#9B7B2A;--gl:#FDF6E7;
-  --green:#15803D;--greenl:#DCFCE7;
-  --r:#DC2626;--rl:#FEF2F2;
-  --o:#D46B08;--ol:#FFF7ED;
+  /* D-Connect Brand Palette */
+  --g:#C89A5B;       /* Gold */
+  --gd:#A57B3A;      /* Gold Dark */
+  --gl:#F7EDD8;      /* Gold Light */
+  --navy:#1F2433;    /* Deep Navy */
+  --sage:#A8B59A;    /* Soft Sage */
+  --saged:#4E6642;   /* Sage Dark (text) */
+  --sagel:#EEF1EB;   /* Sage Light (bg) */
+  --warm:#ECE9E3;    /* Warm Gray */
+  /* Functional */
+  --r:#C0392B;--rl:#FEF2F2;
+  --o:#C45C10;--ol:#FFF3E4;
   --b:#1A56DB;--bl:#EFF6FF;
-  --y:#B45309;--yl:#FFFBEB;
-  --p:#7C3AED;--pl:#F5F3FF;
-  --tx:#1C1C1C;--mu:#737373;--br:#E8E0D0;--bg:#FAFAF8;--wh:#FFFFFF;
+  --y:#A06010;--yl:#FFF8EC;
+  --tx:#1F2433;--mu:#737373;--br:#ECE9E3;--bg:#FAF8F3;--wh:#FFFFFF;
   --rd:12px;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -23,15 +30,20 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--tx);min-h
 .app{max-width:390px;margin:0 auto;min-height:100vh;background:var(--wh);display:flex;flex-direction:column}
 
 /* Login */
-#login-screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px}
-.login-logo{font-size:52px;font-weight:700;color:var(--g);letter-spacing:-2px;margin-bottom:4px;font-family:'Sarabun',sans-serif}
-.login-brand{font-size:22px;font-weight:700;margin-bottom:4px}
-.login-sub{font-size:13px;color:var(--mu);margin-bottom:32px}
-.login-box{width:100%;background:var(--wh);border:1.5px solid var(--br);border-radius:var(--rd);padding:20px}
+#login-screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;background:var(--bg)}
+.logo-wrap{text-align:center;margin-bottom:32px}
+.logo-mark{position:relative;display:inline-block;margin-bottom:8px}
+.logo-d{font-family:Georgia,'Times New Roman',serif;font-size:74px;font-weight:700;font-style:italic;color:var(--navy);line-height:1;display:block}
+.logo-spark{position:absolute;top:4px;right:-22px;font-size:22px;color:var(--g);line-height:1}
+.logo-swoosh{display:block;width:90px;margin:-4px auto 0}
+.logo-wordmark{font-size:18px;font-weight:700;letter-spacing:4.5px;color:var(--navy);margin-top:10px}
+.logo-divider{width:36px;height:2px;background:var(--g);margin:7px auto 6px;border-radius:1px}
+.logo-tagline{font-size:9px;letter-spacing:2.5px;color:var(--mu);text-transform:uppercase}
+.login-box{width:100%;background:var(--wh);border:1.5px solid var(--br);border-radius:var(--rd);padding:24px}
 .login-box .field{margin-bottom:14px}
-.login-box label{font-size:13px;font-weight:600;display:block;margin-bottom:6px}
+.login-box label{font-size:13px;font-weight:600;display:block;margin-bottom:6px;color:var(--navy)}
 .login-box input{width:100%;height:48px;padding:0 14px;border:1.5px solid var(--br);border-radius:9px;font-family:'Sarabun',sans-serif;font-size:16px;color:var(--tx);background:var(--wh);outline:none;transition:border-color .2s;-webkit-appearance:none}
-.login-box input:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(196,154,60,.15)}
+.login-box input:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(200,154,91,.15)}
 .login-err{font-size:13px;color:var(--r);text-align:center;margin-top:8px;min-height:20px}
 
 /* Main App */
@@ -40,13 +52,17 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--tx);min-h
 /* Header */
 .hdr{background:var(--wh);border-bottom:1px solid var(--br);padding:12px 16px 0;position:sticky;top:0;z-index:40}
 .hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
-.hdr-title{font-size:15px;font-weight:700;letter-spacing:.3px}
+.hdr-title{display:flex;align-items:center;gap:8px}
+.app-icon{width:28px;height:28px;background:var(--navy);border-radius:7px;display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0}
+.app-icon-d{font-family:Georgia,serif;font-size:17px;font-weight:700;font-style:italic;color:#fff;line-height:1}
+.app-icon-spark{position:absolute;top:1px;right:1px;font-size:7px;color:var(--g);line-height:1}
+.hdr-brand{font-size:13px;font-weight:700;letter-spacing:2px;color:var(--navy)}
 .hdr-right{display:flex;align-items:center;gap:8px}
 .badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px}
-.b-supervisor{background:#FEF3C7;color:#92400E}
-.b-housekeeper{background:var(--greenl);color:var(--green)}
-.b-frontdesk{background:var(--bl);color:#1E40AF}
-.b-manager{background:var(--gl);color:var(--gd)}
+.b-supervisor{background:#F5ECD8;color:#8A6020}
+.b-housekeeper{background:var(--sagel);color:var(--saged)}
+.b-frontdesk{background:#E8EBF2;color:var(--navy)}
+.b-manager{background:var(--warm);color:var(--navy)}
 .hdr-name{font-size:12px;color:var(--mu);margin-bottom:6px}
 .logout-btn{font-size:11px;color:var(--mu);background:none;border:1px solid var(--br);border-radius:20px;padding:3px 9px;cursor:pointer;font-family:'Sarabun',sans-serif}
 
@@ -79,15 +95,15 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--tx);min-h
 .rinfo{font-size:13px;color:var(--mu);margin-bottom:8px}
 .rinfo b{color:var(--tx)}
 .rnote{font-size:12px;color:var(--r);background:var(--rl);padding:6px 10px;border-radius:8px;margin-bottom:8px}
-.rnote-ok{font-size:12px;color:var(--green);background:var(--greenl);padding:6px 10px;border-radius:8px;margin-bottom:8px}
+.rnote-ok{font-size:12px;color:var(--saged);background:var(--sagel);padding:6px 10px;border-radius:8px;margin-bottom:8px}
 
 /* Status */
 .s{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap}
-.s-pending{background:#F3F4F6;color:#374151}
-.s-cleaning{background:var(--ol);color:#C2410C}
+.s-pending{background:var(--warm);color:#555555}
+.s-cleaning{background:var(--ol);color:#9A3E00}
 .s-done{background:var(--bl);color:#1E40AF}
-.s-passed{background:var(--greenl);color:var(--green)}
-.s-ack{background:#F0FDF4;color:#166534}
+.s-passed{background:var(--sagel);color:var(--saged)}
+.s-ack{background:#DCE4D6;color:#2D4A25}
 
 /* Buttons */
 .btn{height:38px;padding:0 16px;border:none;border-radius:9px;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
@@ -96,8 +112,8 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--tx);min-h
 .bg{background:var(--g);color:#fff}
 .bg:hover{background:var(--gd)}
 .br2{background:var(--r);color:#fff}
-.bb{background:var(--green);color:#fff}
-.bw{background:#F3F4F6;color:var(--tx)}
+.bb{background:var(--saged);color:#fff}
+.bw{background:var(--warm);color:var(--tx)}
 .btn-lg{height:48px;font-size:15px;width:100%;justify-content:center;border-radius:var(--rd)}
 .btn-full{height:44px;font-size:14px;width:100%;justify-content:center;margin-top:8px}
 .acts{display:flex;gap:6px;flex-wrap:wrap}
@@ -117,7 +133,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--tx);min-h
 /* Progress */
 .prog{margin-bottom:10px}
 .prog-hd{display:flex;justify-content:space-between;font-size:12px;color:var(--mu);margin-bottom:4px}
-.prog-bar{height:6px;background:#F3F4F6;border-radius:20px;overflow:hidden}
+.prog-bar{height:6px;background:var(--warm);border-radius:20px;overflow:hidden}
 .prog-fill{height:100%;background:var(--g);border-radius:20px;transition:width .4s}
 
 /* Donut chart */
@@ -134,7 +150,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--tx);min-h
 /* Bar chart */
 .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
 .bar-lbl{font-size:11px;width:52px;flex-shrink:0;text-align:right;color:var(--mu);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.bar-track{flex:1;background:#F3F4F6;border-radius:4px;overflow:hidden}
+.bar-track{flex:1;background:var(--warm);border-radius:4px;overflow:hidden}
 .bar-fill{height:18px;background:var(--g);border-radius:4px;min-width:3px;transition:width .4s}
 .bar-val{font-size:11px;font-weight:700;white-space:nowrap;width:32px;text-align:right}
 
@@ -167,9 +183,9 @@ textarea{height:74px;resize:none;line-height:1.5}
 .divider{height:1px;background:var(--br);margin:12px 0}
 
 /* Inspect sections */
-.inspect-pass{background:var(--greenl);border-radius:var(--rd);padding:12px;margin-bottom:10px}
+.inspect-pass{background:var(--sagel);border-radius:var(--rd);padding:12px;margin-bottom:10px}
 .inspect-fail{background:var(--rl);border-radius:var(--rd);padding:12px;margin-bottom:10px}
-.inspect-pass label{color:var(--green)}
+.inspect-pass label{color:var(--saged)}
 .inspect-fail label{color:var(--r)}
 
 /* Calendar */
@@ -181,10 +197,10 @@ textarea{height:74px;resize:none;line-height:1.5}
 .cal-dh{text-align:center;font-size:10px;font-weight:700;color:var(--mu);padding:5px 0}
 .cal-d{text-align:center;padding:8px 2px;font-size:13px;border-radius:8px;cursor:pointer;transition:background .12s}
 .cal-d.today{font-weight:700;color:var(--g)}
-.cal-d.sel{background:var(--g);color:#fff;font-weight:700}
-.cal-d.future{color:#D1D5DB;cursor:default}
+.cal-d.sel{background:var(--navy);color:#fff;font-weight:700}
+.cal-d.future{color:#C8C4BC;cursor:default}
 .cal-d.empty{cursor:default}
-.cal-d:not(.future):not(.empty):not(.sel):hover{background:var(--gl)}
+.cal-d:not(.future):not(.empty):not(.sel):hover{background:var(--warm)}
 
 /* Performance */
 .perf-avg{font-size:19px;font-weight:700;color:var(--g);line-height:1}
@@ -194,7 +210,7 @@ textarea{height:74px;resize:none;line-height:1.5}
 /* Toast */
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--tx);color:#fff;padding:9px 18px;border-radius:20px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;z-index:200;white-space:nowrap;pointer-events:none}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
-.toast.ok{background:var(--green)}
+.toast.ok{background:var(--saged)}
 .toast.err{background:var(--r)}
 
 /* Refresh dot */
@@ -207,9 +223,18 @@ textarea{height:74px;resize:none;line-height:1.5}
 
 <!-- LOGIN -->
 <div id="login-screen">
-  <div class="login-logo">D</div>
-  <div class="login-brand">Dusit Connect</div>
-  <div class="login-sub">Dusit Central Park · Housekeeping System</div>
+  <div class="logo-wrap">
+    <div class="logo-mark">
+      <span class="logo-d">D</span>
+      <span class="logo-spark">✦</span>
+      <svg class="logo-swoosh" viewBox="0 0 90 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 12 Q38 2 86 10" stroke="#C89A5B" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="logo-wordmark">D-CONNECT</div>
+    <div class="logo-divider"></div>
+    <div class="logo-tagline">Housekeeping &amp; Operations</div>
+  </div>
   <div class="login-box">
     <div class="field">
       <label>Username</label>
@@ -229,7 +254,13 @@ textarea{height:74px;resize:none;line-height:1.5}
 <div id="main-app">
   <div class="hdr">
     <div class="hdr-top">
-      <div class="hdr-title">Dusit Connect</div>
+      <div class="hdr-title">
+        <div class="app-icon">
+          <span class="app-icon-d">D</span>
+          <span class="app-icon-spark">✦</span>
+        </div>
+        <span class="hdr-brand">D-CONNECT</span>
+      </div>
       <div class="hdr-right">
         <span class="badge" id="role-badge"></span>
         <button class="logout-btn" onclick="doLogout()">ออก</button>
@@ -578,8 +609,8 @@ function vSupRooms(){
         <div class="acts">
           ${r.status==="done"&&isToday()?`<button class="btn bg" onclick="openInspect('${r.id}')">ตรวจห้อง</button>`:""}
           ${["pending","cleaning","done"].includes(r.status)&&isToday()?`<button class="btn bw" onclick="openAssign('${r.id}')">Re-assign</button>`:""}
-          ${r.status==="passed"?`<span style="font-size:12px;color:var(--green)">รอ Front Desk</span>`:""}
-          ${r.status==="ack"?`<span style="font-size:12px;color:#166534">เสร็จสมบูรณ์</span>`:""}
+          ${r.status==="passed"?`<span style="font-size:12px;color:var(--saged)">รอ Front Desk</span>`:""}
+          ${r.status==="ack"?`<span style="font-size:12px;color:#2D4A25">เสร็จสมบูรณ์</span>`:""}
         </div>
       </div>
     `).join("")}
@@ -674,7 +705,7 @@ function vHkRooms(){
   const pct   = rooms.length ? Math.round(done/rooms.length*100) : 0;
   return `
     <div class="stats">
-      <div class="stat"><div class="stat-n" style="color:var(--green)">${done}</div><div class="stat-l">เสร็จแล้ว</div></div>
+      <div class="stat"><div class="stat-n" style="color:var(--saged)">${done}</div><div class="stat-l">เสร็จแล้ว</div></div>
       <div class="stat"><div class="stat-n" style="color:var(--o)">${rooms.filter(r=>r.status==="cleaning").length}</div><div class="stat-l">กำลังทำ</div></div>
       <div class="stat"><div class="stat-n" style="color:var(--mu)">${rooms.filter(r=>r.status==="pending").length}</div><div class="stat-l">รอทำ</div></div>
     </div>
@@ -696,8 +727,8 @@ function vHkRooms(){
           ${r.status==="pending"  &&isToday()?`<button class="btn bg"  onclick="doStatus('${r.id}','cleaning')">เริ่มทำ</button>`:""}
           ${r.status==="cleaning" &&isToday()?`<button class="btn bb"  onclick="doStatus('${r.id}','done')">เสร็จแล้ว</button>`:""}
           ${r.status==="done"    ?`<span style="font-size:12px;color:var(--y)">รอหัวหน้าตรวจ</span>`:""}
-          ${r.status==="passed"  ?`<span style="font-size:12px;color:var(--green)">ผ่านการตรวจ</span>`:""}
-          ${r.status==="ack"     ?`<span style="font-size:12px;color:#166534">Front Desk รับทราบ</span>`:""}
+          ${r.status==="passed"  ?`<span style="font-size:12px;color:var(--saged)">ผ่านการตรวจ</span>`:""}
+          ${r.status==="ack"     ?`<span style="font-size:12px;color:#2D4A25">Front Desk รับทราบ</span>`:""}
         </div>
       </div>
     `).join("")}
@@ -736,11 +767,11 @@ function vMgrDash(){
   const pct = total ? Math.round(finished/total*100) : 0;
 
   const segs = [
-    {k:"ack",     c:"#166534", label:"รับทราบ"},
-    {k:"passed",  c:"#15803D", label:"ผ่านตรวจ"},
+    {k:"ack",     c:"#2D4A25", label:"รับทราบ"},
+    {k:"passed",  c:"#A8B59A", label:"ผ่านตรวจ"},
     {k:"done",    c:"#1A56DB", label:"รอตรวจ"},
-    {k:"cleaning",c:"#D46B08", label:"กำลังทำ"},
-    {k:"pending", c:"#D1D5DB", label:"รอทำ"},
+    {k:"cleaning",c:"#C45C10", label:"กำลังทำ"},
+    {k:"pending", c:"#D8D4CD", label:"รอทำ"},
   ];
   let cumPct = 0;
   const gradParts = segs.map(s=>{
@@ -811,8 +842,8 @@ function vMgrDash(){
     ${farr.map(f=>{
       const p = Math.round(f.done/f.total*100);
       return `<div class="prog">
-        <div class="prog-hd"><span>ชั้น ${f.f}</span><span style="color:${p===100?"var(--green)":p>50?"var(--y)":"var(--mu)"}">${f.done}/${f.total} (${p}%)</span></div>
-        <div class="prog-bar"><div class="prog-fill" style="width:${p}%;background:${p===100?"var(--green)":p>50?"var(--y)":"var(--o)"}"></div></div>
+        <div class="prog-hd"><span>ชั้น ${f.f}</span><span style="color:${p===100?"var(--saged)":p>50?"var(--g)":"var(--mu)"}">${f.done}/${f.total} (${p}%)</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:${p}%;background:${p===100?"var(--saged)":p>50?"var(--g)":"var(--o)"}"></div></div>
       </div>`;
     }).join("")}
     `}
@@ -886,17 +917,17 @@ function vMgrReport(){
       return `<div class="card" style="padding:10px 13px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
           <span style="font-size:13px;font-weight:700">${fmtDateTH(d.date)}</span>
-          <span style="font-size:12px;color:${pct===100?"var(--green)":pct>50?"var(--y)":"var(--mu)"};font-weight:700">${fin}/${t} (${pct}%)</span>
+          <span style="font-size:12px;color:${pct===100?"var(--saged)":pct>50?"var(--g)":"var(--mu)"};font-weight:700">${fin}/${t} (${pct}%)</span>
         </div>
         <div class="rpt-bars">
-          ${(d.ack   ||0)?`<div class="rpt-seg" style="width:${(d.ack/t*100).toFixed(1)}%;background:#166534"></div>`:""}
-          ${(d.passed||0)?`<div class="rpt-seg" style="width:${(d.passed/t*100).toFixed(1)}%;background:#15803D"></div>`:""}
+          ${(d.ack   ||0)?`<div class="rpt-seg" style="width:${(d.ack/t*100).toFixed(1)}%;background:#2D4A25"></div>`:""}
+          ${(d.passed||0)?`<div class="rpt-seg" style="width:${(d.passed/t*100).toFixed(1)}%;background:#A8B59A"></div>`:""}
           ${(d.done  ||0)?`<div class="rpt-seg" style="width:${(d.done/t*100).toFixed(1)}%;background:#1A56DB"></div>`:""}
-          ${(d.cleaning||0)?`<div class="rpt-seg" style="width:${(d.cleaning/t*100).toFixed(1)}%;background:#D46B08"></div>`:""}
-          ${(d.pending||0)?`<div class="rpt-seg" style="width:${(d.pending/t*100).toFixed(1)}%;background:#D1D5DB"></div>`:""}
+          ${(d.cleaning||0)?`<div class="rpt-seg" style="width:${(d.cleaning/t*100).toFixed(1)}%;background:#C45C10"></div>`:""}
+          ${(d.pending||0)?`<div class="rpt-seg" style="width:${(d.pending/t*100).toFixed(1)}%;background:#D8D4CD"></div>`:""}
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:5px">
-          ${[["#166534","รับทราบ",d.ack],["#15803D","ผ่านตรวจ",d.passed],["#1A56DB","รอตรวจ",d.done],["#D46B08","กำลังทำ",d.cleaning],["#9CA3AF","รอทำ",d.pending]]
+          ${[["#2D4A25","รับทราบ",d.ack],["#4E6642","ผ่านตรวจ",d.passed],["#1A56DB","รอตรวจ",d.done],["#C45C10","กำลังทำ",d.cleaning],["#8A857D","รอทำ",d.pending]]
             .filter(x=>x[2]).map(x=>`<span style="font-size:10px;color:${x[0]};font-weight:700">${x[1]} ${x[2]}</span>`).join("")}
         </div>
       </div>`;
