@@ -21,28 +21,19 @@
 body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh}
 .app{max-width:390px;margin:0 auto;min-height:100vh;background:var(--wh);display:flex;flex-direction:column}
 
-/* ── Login Screen ── */
-#login-screen{
-  flex:1;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;padding:32px 24px;
-}
+/* Login */
+#login-screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px}
 .login-logo{font-size:40px;margin-bottom:8px}
 .login-brand{font-size:22px;font-weight:700;margin-bottom:4px}
 .login-sub{font-size:13px;color:var(--mu);margin-bottom:32px}
 .login-box{width:100%;background:var(--wh);border:1.5px solid var(--br);border-radius:var(--rd);padding:20px}
 .login-box .field{margin-bottom:14px}
 .login-box label{font-size:13px;font-weight:600;display:block;margin-bottom:6px}
-.login-box input{
-  width:100%;height:48px;padding:0 14px;
-  border:1.5px solid var(--br);border-radius:9px;
-  font-family:'Sarabun',sans-serif;font-size:16px;
-  color:var(--tx);background:var(--wh);outline:none;
-  transition:border-color .2s;-webkit-appearance:none;
-}
+.login-box input{width:100%;height:48px;padding:0 14px;border:1.5px solid var(--br);border-radius:9px;font-family:'Sarabun',sans-serif;font-size:16px;color:var(--tx);background:var(--wh);outline:none;transition:border-color .2s;-webkit-appearance:none}
 .login-box input:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(6,199,85,.1)}
 .login-err{font-size:13px;color:var(--r);text-align:center;margin-top:8px;min-height:20px}
 
-/* ── Main App ── */
+/* Main App */
 #main-app{flex:1;display:none;flex-direction:column}
 
 /* Header */
@@ -55,8 +46,15 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--tx);min-h
 .b-housekeeper{background:var(--gl);color:var(--gd)}
 .b-frontdesk{background:var(--bl);color:#1e40af}
 .b-manager{background:var(--pl);color:var(--p)}
-.hdr-name{font-size:12px;color:var(--mu);margin-bottom:8px}
+.hdr-name{font-size:12px;color:var(--mu);margin-bottom:6px}
 .logout-btn{font-size:11px;color:var(--mu);background:none;border:1px solid var(--br);border-radius:20px;padding:3px 9px;cursor:pointer;font-family:'Sarabun',sans-serif}
+
+/* Date nav */
+.date-nav{display:flex;align-items:center;justify-content:center;gap:10px;padding:6px 16px;border-top:1px solid var(--br)}
+.date-btn{width:26px;height:26px;border:1.5px solid var(--br);border-radius:50%;background:var(--wh);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Sarabun',sans-serif;line-height:1}
+.date-btn:disabled{opacity:.3;cursor:default}
+.date-lbl{font-size:13px;font-weight:600;color:var(--tx);flex:1;text-align:center}
+.date-today{font-size:10px;font-weight:700;color:var(--g);background:var(--gl);padding:2px 7px;border-radius:20px}
 
 /* Tabs */
 .tabs{display:flex;border-top:1px solid var(--br)}
@@ -79,6 +77,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--tx);min-h
 .rinfo{font-size:13px;color:var(--mu);margin-bottom:8px}
 .rinfo b{color:var(--tx)}
 .rnote{font-size:12px;color:var(--r);background:var(--rl);padding:6px 10px;border-radius:8px;margin-bottom:8px}
+.rnote-green{font-size:12px;color:var(--gd);background:var(--gl);padding:6px 10px;border-radius:8px;margin-bottom:8px}
 
 /* Status */
 .s{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap}
@@ -118,11 +117,29 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--tx);min-h
 .prog-bar{height:6px;background:#f3f4f6;border-radius:20px;overflow:hidden}
 .prog-fill{height:100%;background:var(--g);border-radius:20px;transition:width .4s}
 
-/* Chart bars */
+/* Donut chart */
+.donut-wrap{display:flex;align-items:center;gap:16px;margin-bottom:14px;padding:14px;background:var(--wh);border:1.5px solid var(--br);border-radius:var(--rd)}
+.donut{width:90px;height:90px;border-radius:50%;position:relative;flex-shrink:0}
+.donut-hole{position:absolute;inset:14px;background:var(--wh);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.donut-pct{font-size:18px;font-weight:700;color:var(--g);line-height:1}
+.donut-sub{font-size:9px;color:var(--mu)}
+.legend{display:flex;flex-direction:column;gap:5px;flex:1}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:12px}
+.leg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.leg-val{margin-left:auto;font-weight:700;font-size:12px}
+
+/* Bar chart */
 .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
 .bar-lbl{font-size:11px;width:52px;flex-shrink:0;text-align:right;color:var(--mu);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-track{flex:1;background:#f3f4f6;border-radius:4px;overflow:hidden}
 .bar-fill{height:18px;background:var(--g);border-radius:4px;min-width:3px;transition:width .4s}
-.bar-val{font-size:11px;font-weight:700;white-space:nowrap}
+.bar-val{font-size:11px;font-weight:700;white-space:nowrap;width:32px;text-align:right}
+
+/* Report table */
+.rpt-row{display:flex;align-items:center;gap:6px;padding:8px 0;border-bottom:1px solid var(--br);font-size:12px}
+.rpt-date{font-weight:700;width:80px;flex-shrink:0}
+.rpt-bars{flex:1;display:flex;gap:2px;height:16px;border-radius:4px;overflow:hidden}
+.rpt-seg{height:100%;transition:width .3s;min-width:0}
 
 /* Section label */
 .sec{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mu);margin:14px 0 8px}
@@ -138,7 +155,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--tx);min-h
 .modal-room{font-size:30px;font-weight:700;text-align:center;color:var(--g)}
 .modal-fl{font-size:12px;color:var(--mu);text-align:center;margin-bottom:14px}
 
-/* Form elements */
+/* Form */
 .field{margin-bottom:12px}
 .field label{font-size:13px;font-weight:600;display:block;margin-bottom:5px}
 select,textarea{width:100%;padding:10px 12px;border:1.5px solid var(--br);border-radius:9px;font-family:'Sarabun',sans-serif;font-size:15px;color:var(--tx);background:var(--wh);outline:none;-webkit-appearance:none;transition:border-color .2s}
@@ -148,17 +165,27 @@ textarea{height:74px;resize:none;line-height:1.5}
 .sw::after{content:"▾";position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--mu);pointer-events:none}
 .divider{height:1px;background:var(--br);margin:12px 0}
 
+/* Inspect sections */
+.inspect-pass{background:var(--gl);border-radius:var(--rd);padding:12px;margin-bottom:10px}
+.inspect-fail{background:var(--rl);border-radius:var(--rd);padding:12px;margin-bottom:10px}
+.inspect-pass label{color:var(--gd)}
+.inspect-fail label{color:var(--r)}
+
 /* Toast */
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--tx);color:#fff;padding:9px 18px;border-radius:20px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;z-index:200;white-space:nowrap;pointer-events:none}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.ok{background:var(--g)}
 .toast.err{background:var(--r)}
+
+/* Refresh indicator */
+.refresh-dot{width:6px;height:6px;border-radius:50%;background:var(--g);display:inline-block;margin-left:4px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 </style>
 </head>
 <body>
 <div class="app">
 
-<!-- ── LOGIN SCREEN ── -->
+<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-logo">🏨</div>
   <div class="login-brand">Dusit Connect</div>
@@ -178,7 +205,7 @@ textarea{height:74px;resize:none;line-height:1.5}
   </div>
 </div>
 
-<!-- ── MAIN APP ── -->
+<!-- MAIN APP -->
 <div id="main-app">
   <div class="hdr">
     <div class="hdr-top">
@@ -189,25 +216,36 @@ textarea{height:74px;resize:none;line-height:1.5}
       </div>
     </div>
     <div class="hdr-name" id="hdr-name"></div>
+    <div class="date-nav" id="date-nav"></div>
     <div class="tabs" id="tabs"></div>
   </div>
   <div class="content" id="content"></div>
 </div>
 
-</div><!-- /app -->
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
-// ─── CONFIG ─────────────────────────────────────────
 const GAS_URL = "https://script.google.com/macros/s/AKfycbyUcD46TCOJmAscshNDwrUoihsfG0FB39XShNnyLCsrsFAzS77czv2mYWJesCB-Hbhe/exec";
 
-// ─── SESSION ────────────────────────────────────────
+// ─── SESSION & STATE ──────────────────────────────────
 let USER = JSON.parse(sessionStorage.getItem("dc_user") || "null");
+const ST = { tabIdx:0, filter:"all", rooms:[], staff:[], date: todayISO(), report:[] };
 
-// ─── APP STATE ──────────────────────────────────────
-const ST = { tabIdx:0, filter:"all", rooms:[], staff:[] };
+// ─── DATE HELPERS ────────────────────────────────────
+function todayISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+function fmtDateTH(s) {
+  const mo = ["","ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+  const [y,m,d] = s.split("-");
+  return `${+d} ${mo[+m]} ${+y+543}`;
+}
+function isToday() { return ST.date === todayISO(); }
+function isPast()  { return ST.date < todayISO(); }
 
-// ─── STATUS HELPERS ─────────────────────────────────
+// ─── STATUS HELPERS ──────────────────────────────────
 const SL = { pending:"รอทำ", cleaning:"กำลังทำ", done:"รอตรวจ", passed:"ผ่านตรวจ", ack:"รับทราบ" };
 function sb(s){ return `<span class="s s-${s}">${SL[s]||s}</span>`; }
 function elapsed(ms){
@@ -216,47 +254,34 @@ function elapsed(ms){
   return m<60 ? `${m} นาที` : `${Math.floor(m/60)} ชม. ${m%60} นาที`;
 }
 
-// ─── GAS CALL ────────────────────────────────────────
+// ─── GAS CALLS ───────────────────────────────────────
 async function gasCall(payload){
   try {
-    const r = await fetch(GAS_URL, {
-      method:"POST", mode:"no-cors",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify(payload)
-    });
+    await fetch(GAS_URL, { method:"POST", mode:"no-cors",
+      headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload) });
     return { success:true };
   } catch(e){ return { success:false, message:e.message }; }
 }
-
-// สำหรับ GET data ต้องใช้ JSONP หรือ script trick เพราะ no-cors อ่าน response ไม่ได้
-// ใช้ iframe/fetch แบบ same-origin redirect ไม่ได้บน GitHub Pages
-// → ใช้ fetch แบบ cors-anywhere หรือ script tag
 async function gasGet(payload){
   try {
-    // ใช้ script tag trick สำหรับ GET (jsonp-style via URL params)
-    return new Promise((resolve) => {
-      const cbName = "cb_" + Date.now();
-      window[cbName] = (data) => {
-        resolve(data);
-        delete window[cbName];
-        document.getElementById("gas-script")?.remove();
-      };
-      const s = document.createElement("script");
-      s.id = "gas-script";
-      // GAS ต้องรองรับ JSONP — ใช้ POST แบบ form แทน
-      // fallback: ใช้ fetch แบบธรรมดา (จะ CORS error แต่ GAS redirect ให้)
-      fetch(GAS_URL, {
-        method: "POST",
-        headers: {"Content-Type":"text/plain"},  // text/plain ไม่ trigger preflight
-        body: JSON.stringify(payload),
-        redirect: "follow"
-      })
-      .then(r => r.json())
-      .then(d => resolve(d))
-      .catch(() => resolve({ success:false, message:"network error" }));
-    });
+    const r = await fetch(GAS_URL, { method:"POST",
+      headers:{"Content-Type":"text/plain"},
+      body:JSON.stringify(payload), redirect:"follow" });
+    return await r.json();
   } catch(e){ return { success:false, message:e.message }; }
 }
+
+// ─── AUTO-REFRESH ────────────────────────────────────
+let _refreshTimer = null;
+function startAutoRefresh(){
+  stopAutoRefresh();
+  _refreshTimer = setInterval(async () => {
+    if(!USER) return;
+    const res = await gasGet({ action:"getRooms", role:USER.role, staffId:USER.staffId, date:ST.date });
+    if(res.success){ ST.rooms = res.rooms||[]; renderContent(); }
+  }, 30000);
+}
+function stopAutoRefresh(){ if(_refreshTimer){ clearInterval(_refreshTimer); _refreshTimer=null; } }
 
 // ─── LOGIN ───────────────────────────────────────────
 async function doLogin(){
@@ -264,83 +289,124 @@ async function doLogin(){
   const pass = document.getElementById("inp-pass").value;
   const err  = document.getElementById("login-err");
   const btn  = document.getElementById("btn-login");
-
-  if(!user || !pass){ err.textContent = "กรุณากรอก Username และ Password"; return; }
-
-  btn.disabled = true;
-  btn.textContent = "กำลังเข้าสู่ระบบ...";
-  err.textContent = "";
-
+  if(!user||!pass){ err.textContent="กรุณากรอก Username และ Password"; return; }
+  btn.disabled=true; btn.textContent="กำลังเข้าสู่ระบบ..."; err.textContent="";
   const res = await gasGet({ action:"login", username:user, password:pass });
-
   if(res.success){
     USER = res;
     sessionStorage.setItem("dc_user", JSON.stringify(USER));
     showApp();
   } else {
-    err.textContent = res.message || "เกิดข้อผิดพลาด";
-    btn.disabled = false;
-    btn.textContent = "เข้าสู่ระบบ";
+    err.textContent = res.message||"เกิดข้อผิดพลาด";
+    btn.disabled=false; btn.textContent="เข้าสู่ระบบ";
   }
 }
 
 function doLogout(){
-  USER = null;
+  USER=null;
   sessionStorage.removeItem("dc_user");
-  ST.rooms = []; ST.staff = [];
-  document.getElementById("main-app").style.display = "none";
-  document.getElementById("login-screen").style.display = "flex";
-  document.getElementById("inp-user").value = "";
-  document.getElementById("inp-pass").value = "";
-  document.getElementById("login-err").textContent = "";
+  ST.rooms=[]; ST.staff=[]; ST.tabIdx=0; ST.filter="all"; ST.date=todayISO(); ST.report=[];
+  stopAutoRefresh();
+  document.getElementById("main-app").style.display="none";
+  document.getElementById("login-screen").style.display="flex";
+  document.getElementById("inp-user").value="";
+  document.getElementById("inp-pass").value="";
+  document.getElementById("login-err").textContent="";
 }
 
 // ─── SHOW APP ────────────────────────────────────────
 function showApp(){
-  document.getElementById("login-screen").style.display = "none";
+  document.getElementById("login-screen").style.display="none";
   const ma = document.getElementById("main-app");
-  ma.style.display = "flex";
+  ma.style.display="flex";
 
-  // badge
   const roleLabel = {supervisor:"👑 หัวหน้า",housekeeper:"🧹 แม่บ้าน",frontdesk:"🛎 Front Desk",manager:"📊 ผู้จัดการ"};
   const roleClass = {supervisor:"b-supervisor",housekeeper:"b-housekeeper",frontdesk:"b-frontdesk",manager:"b-manager"};
   const b = document.getElementById("role-badge");
-  b.textContent = roleLabel[USER.role] || USER.role;
-  b.className   = "badge " + (roleClass[USER.role]||"");
+  b.textContent = roleLabel[USER.role]||USER.role;
+  b.className   = "badge "+(roleClass[USER.role]||"");
   document.getElementById("hdr-name").textContent = USER.name;
 
-  // tabs
+  renderTabs();
+  updateDateNav();
+  loadAndRender();
+  startAutoRefresh();
+}
+
+function renderTabs(){
   const tabCfg = {
     supervisor:  [{lbl:"ห้องทั้งหมด",v:"sup_rooms"},{lbl:"Assign",v:"sup_assign"}],
     housekeeper: [{lbl:"ห้องของฉัน",v:"hk_rooms"}],
-    frontdesk:   [{lbl:"รอรับทราบ",v:"fd_ack"}],
-    manager:     [{lbl:"Dashboard",v:"mgr_dash"},{lbl:"ห้องทั้งหมด",v:"mgr_all"}],
+    frontdesk:   [{lbl:"รอลูกค้าเข้าพัก",v:"fd_ack"}],
+    manager:     [{lbl:"Dashboard",v:"mgr_dash"},{lbl:"ห้องทั้งหมด",v:"mgr_all"},{lbl:"รายงาน",v:"mgr_report"}],
   };
-  const tbs = tabCfg[USER.role] || [];
+  const tbs = tabCfg[USER.role]||[];
   document.getElementById("tabs").innerHTML = tbs.map((t,i)=>
     `<button class="tab ${i===ST.tabIdx?"on":""}" onclick="goTab(${i})">${t.lbl}</button>`
   ).join("");
+}
 
+function updateDateNav(){
+  const nav = document.getElementById("date-nav");
+  if(!nav) return;
+  const today = isToday();
+  nav.innerHTML = `
+    <button class="date-btn" onclick="changeDate(-1)">‹</button>
+    <div class="date-lbl">${fmtDateTH(ST.date)}${today?` <span class="date-today">วันนี้</span>`:""}</div>
+    <button class="date-btn" onclick="changeDate(1)" ${today?"disabled":""}>›</button>
+  `;
+}
+
+function changeDate(delta){
+  const [y,m,d] = ST.date.split("-").map(Number);
+  const dt = new Date(y, m-1, d);
+  dt.setDate(dt.getDate()+delta);
+  const nd = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`;
+  if(nd > todayISO()) return;
+  ST.date=nd; ST.filter="all"; ST.report=[];
+  updateDateNav();
   loadAndRender();
 }
 
 // ─── TABS ────────────────────────────────────────────
-function goTab(i){ ST.tabIdx=i; ST.filter="all"; loadAndRender(); }
+function goTab(i){
+  ST.tabIdx=i; ST.filter="all";
+  renderTabs();
+  // report tab loads separately
+  if(getView()==="mgr_report"){ loadReport(); return; }
+  loadAndRender();
+}
 function setF(f){ ST.filter=f; renderContent(); }
+function getView(){
+  const tabCfg = {
+    supervisor:  [{v:"sup_rooms"},{v:"sup_assign"}],
+    housekeeper: [{v:"hk_rooms"}],
+    frontdesk:   [{v:"fd_ack"}],
+    manager:     [{v:"mgr_dash"},{v:"mgr_all"},{v:"mgr_report"}],
+  };
+  return (tabCfg[USER.role]||[])[ST.tabIdx]?.v;
+}
 
-// ─── LOAD DATA ──────────────────────────────────────
+// ─── LOAD DATA ───────────────────────────────────────
 async function loadAndRender(){
   showLoader();
-  // โหลด rooms
-  const res = await gasGet({ action:"getRooms", role:USER.role, staffId:USER.staffId });
-  if(res.success) ST.rooms = res.rooms || [];
-
-  // โหลด staff ถ้าเป็น supervisor
-  if(USER.role === "supervisor" && ST.staff.length === 0){
+  const res = await gasGet({ action:"getRooms", role:USER.role, staffId:USER.staffId, date:ST.date });
+  if(res.success) ST.rooms = res.rooms||[];
+  if(USER.role==="supervisor" && ST.staff.length===0){
     const sr = await gasGet({ action:"getStaff" });
-    if(sr.success) ST.staff = sr.staff || [];
+    if(sr.success) ST.staff = sr.staff||[];
   }
+  renderContent();
+}
 
+async function loadReport(){
+  showLoader();
+  const end = ST.date;
+  const dt = new Date(ST.date);
+  dt.setDate(dt.getDate()-29);
+  const start = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`;
+  const res = await gasGet({ action:"getReport", startDate:start, endDate:end });
+  if(res.success) ST.report = res.byDate||[];
   renderContent();
 }
 
@@ -351,16 +417,9 @@ function showLoader(){
 
 // ─── RENDER ──────────────────────────────────────────
 function renderContent(){
-  const tabCfg = {
-    supervisor:  [{lbl:"ห้องทั้งหมด",v:"sup_rooms"},{lbl:"Assign",v:"sup_assign"}],
-    housekeeper: [{lbl:"ห้องของฉัน",v:"hk_rooms"}],
-    frontdesk:   [{lbl:"รอรับทราบ",v:"fd_ack"}],
-    manager:     [{lbl:"Dashboard",v:"mgr_dash"},{lbl:"ห้องทั้งหมด",v:"mgr_all"}],
-  };
-  const view = (tabCfg[USER.role]||[])[ST.tabIdx]?.v;
-  document.getElementById("content").innerHTML = renderView(view);
+  renderTabs();
+  document.getElementById("content").innerHTML = renderView(getView());
 }
-
 function renderView(v){
   switch(v){
     case "sup_rooms":  return vSupRooms();
@@ -369,17 +428,20 @@ function renderView(v){
     case "fd_ack":     return vFdAck();
     case "mgr_dash":   return vMgrDash();
     case "mgr_all":    return vMgrAll();
+    case "mgr_report": return vMgrReport();
     default: return `<div class="empty"><div class="empty-ic">🚧</div>กำลังพัฒนา</div>`;
   }
 }
 
 // ─── SUPERVISOR: ห้องทั้งหมด ─────────────────────────
 function vSupRooms(){
-  const all    = ST.rooms;
-  const flist  = ["all","done","cleaning","pending","passed","ack"];
-  const flbl   = {all:"ทั้งหมด",done:"รอตรวจ",cleaning:"กำลังทำ",pending:"รอทำ",passed:"ผ่านตรวจ",ack:"รับทราบ"};
-  const shown  = ST.filter==="all" ? all : all.filter(r=>r.status===ST.filter);
-
+  if(ST.rooms.length===0 && isToday())
+    return `<div class="empty"><div class="empty-ic">🌅</div><div style="margin-bottom:12px">ยังไม่มีงานวันนี้</div>
+      <button class="btn bg" onclick="doInitDaily()">+ สร้างงานวันนี้ (${fmtDateTH(ST.date)})</button></div>`;
+  const all   = ST.rooms;
+  const flist = ["all","done","cleaning","pending","passed","ack"];
+  const flbl  = {all:"ทั้งหมด",done:"รอตรวจ",cleaning:"กำลังทำ",pending:"รอทำ",passed:"ผ่านตรวจ",ack:"รับทราบ"};
+  const shown = ST.filter==="all" ? all : all.filter(r=>r.status===ST.filter);
   return `
     <div class="chips">
       ${flist.map(f=>`<div class="chip ${ST.filter===f?"on":""}" onclick="setF('${f}')">${flbl[f]} (${f==="all"?all.length:all.filter(r=>r.status===f).length})</div>`).join("")}
@@ -391,11 +453,11 @@ function vSupRooms(){
           <div><div class="rnum">${r.id}</div><div class="rfloor">ชั้น ${r.floor}</div></div>
           ${sb(r.status)}
         </div>
-        ${r.note?`<div class="rnote">📋 ${r.note}</div>`:""}
+        ${r.note?`<div class="${r.status==="pending"?"rnote":"rnote-green"}">📋 ${r.note}</div>`:""}
         <div class="rinfo">แม่บ้าน: <b>${r.assignedName||"—"}</b>${r.startTime?` · <b>${elapsed(r.startTime)}</b>`:""}</div>
         <div class="acts">
-          ${r.status==="done"?`<button class="btn bg" onclick="openInspect('${r.id}')">🔍 ตรวจห้อง</button>`:""}
-          ${["pending","cleaning","done"].includes(r.status)?`<button class="btn bw" onclick="openAssign('${r.id}')">🔄 Re-assign</button>`:""}
+          ${r.status==="done"&&isToday()?`<button class="btn bg" onclick="openInspect('${r.id}')">🔍 ตรวจห้อง</button>`:""}
+          ${["pending","cleaning","done"].includes(r.status)&&isToday()?`<button class="btn bw" onclick="openAssign('${r.id}')">🔄 Re-assign</button>`:""}
           ${r.status==="passed"?`<span style="font-size:12px;color:var(--gd)">✅ รอ Front Desk</span>`:""}
           ${r.status==="ack"?`<span style="font-size:12px;color:#166534">✅ เสร็จสมบูรณ์</span>`:""}
         </div>
@@ -406,7 +468,12 @@ function vSupRooms(){
 
 // ─── SUPERVISOR: Assign ──────────────────────────────
 function vSupAssign(){
-  const unassigned = ST.rooms.filter(r=>r.status==="pending"||!r.assignedTo);
+  if(ST.rooms.length===0 && isToday())
+    return `<div class="empty"><div class="empty-ic">🌅</div><div style="margin-bottom:12px">ยังไม่มีงานวันนี้</div>
+      <button class="btn bg" onclick="doInitDaily()">+ สร้างงานวันนี้</button></div>`;
+  if(isPast())
+    return `<div class="empty"><div class="empty-ic">📅</div>ดูได้เฉพาะวันปัจจุบัน</div>`;
+  const unassigned = ST.rooms.filter(r=>!r.assignedTo||r.status==="pending");
   return `
     <div class="sec">ห้องที่รอ Assign (${unassigned.length})</div>
     ${unassigned.length===0?`<div class="empty"><div class="empty-ic">🎉</div>Assign ครบแล้ว</div>`:""}
@@ -416,11 +483,8 @@ function vSupAssign(){
           <div><div class="rnum">${r.id}</div><div class="rfloor">ชั้น ${r.floor}</div></div>
           ${sb(r.status)}
         </div>
-        ${r.note?`<div class="rnote">📋 ${r.note}</div>`:""}
         <div class="rinfo">แม่บ้านปัจจุบัน: <b>${r.assignedName||"—"}</b></div>
-        <div class="acts">
-          <button class="btn bg" onclick="openAssign('${r.id}')">+ Assign แม่บ้าน</button>
-        </div>
+        <div class="acts"><button class="btn bg" onclick="openAssign('${r.id}')">+ Assign แม่บ้าน</button></div>
       </div>
     `).join("")}
   `;
@@ -451,11 +515,11 @@ function vHkRooms(){
         ${r.note?`<div class="rnote">📋 ${r.note}</div>`:""}
         ${r.status==="cleaning"&&r.startTime?`<div class="rinfo">เริ่มมาแล้ว <b>${elapsed(r.startTime)}</b></div>`:""}
         <div class="acts">
-          ${r.status==="pending"  ?`<button class="btn bg"  onclick="doStatus('${r.id}','cleaning')">▶ เริ่มทำ</button>`:""}
-          ${r.status==="cleaning" ?`<button class="btn bb"  onclick="doStatus('${r.id}','done')">✓ เสร็จแล้ว</button>`:""}
-          ${r.status==="done"     ?`<span style="font-size:12px;color:var(--y)">⏳ รอหัวหน้าตรวจ</span>`:""}
-          ${r.status==="passed"   ?`<span style="font-size:12px;color:var(--gd)">✅ ผ่านการตรวจ</span>`:""}
-          ${r.status==="ack"      ?`<span style="font-size:12px;color:#166534">✅ Front Desk รับทราบ</span>`:""}
+          ${r.status==="pending"  &&isToday()?`<button class="btn bg"  onclick="doStatus('${r.id}','cleaning')">▶ เริ่มทำ</button>`:""}
+          ${r.status==="cleaning" &&isToday()?`<button class="btn bb"  onclick="doStatus('${r.id}','done')">✓ เสร็จแล้ว</button>`:""}
+          ${r.status==="done"    ?`<span style="font-size:12px;color:var(--y)">⏳ รอหัวหน้าตรวจ</span>`:""}
+          ${r.status==="passed"  ?`<span style="font-size:12px;color:var(--gd)">✅ ผ่านการตรวจ</span>`:""}
+          ${r.status==="ack"     ?`<span style="font-size:12px;color:#166534">✅ Front Desk รับทราบ</span>`:""}
         </div>
       </div>
     `).join("")}
@@ -466,17 +530,18 @@ function vHkRooms(){
 function vFdAck(){
   const rooms = ST.rooms;
   return `
-    <div class="sec">ห้องพร้อม Check-in (${rooms.length})</div>
+    <div class="sec">ทำความสะอาดเรียบร้อยแล้ว — รอลูกค้าเข้าพัก (${rooms.length})</div>
     ${rooms.length===0?`<div class="empty"><div class="empty-ic">⏳</div>ยังไม่มีห้องพร้อม</div>`:""}
     ${rooms.map(r=>`
       <div class="card">
         <div class="card-hd">
           <div><div class="rnum">${r.id}</div><div class="rfloor">ชั้น ${r.floor}</div></div>
-          ${sb(r.status)}
+          <span class="s s-passed">ทำความสะอาดแล้ว ✨</span>
         </div>
         <div class="rinfo">ทำความสะอาดโดย: <b>${r.assignedName}</b>${r.startTime?` · ใช้เวลา <b>${elapsed(r.startTime)}</b>`:""}</div>
+        ${r.note?`<div class="rnote-green">📋 หมายเหตุ: ${r.note}</div>`:""}
         <div class="acts">
-          <button class="btn bg" onclick="doAck('${r.id}')">✓ รับทราบ — ห้องพร้อม</button>
+          ${isToday()?`<button class="btn bg" onclick="doAck('${r.id}')">✓ ลูกค้าเข้าพักแล้ว</button>`:""}
         </div>
       </div>
     `).join("")}
@@ -487,10 +552,26 @@ function vFdAck(){
 function vMgrDash(){
   const rooms = ST.rooms;
   const total = rooms.length;
-  const cnt   = {pending:0,cleaning:0,done:0,passed:0,ack:0};
+  const cnt = {pending:0,cleaning:0,done:0,passed:0,ack:0};
   rooms.forEach(r=>{ if(cnt[r.status]!==undefined) cnt[r.status]++; });
-  const done = cnt.passed+cnt.ack;
-  const pct  = total ? Math.round(done/total*100) : 0;
+  const finished = cnt.passed+cnt.ack;
+  const inProgress = cnt.cleaning+cnt.done;
+  const pct = total ? Math.round(finished/total*100) : 0;
+
+  // Donut chart segments
+  const segs = [
+    {k:"ack",    c:"#166534", label:"รับทราบ"},
+    {k:"passed", c:"var(--g)", label:"ผ่านตรวจ"},
+    {k:"done",   c:"var(--y)", label:"รอตรวจ"},
+    {k:"cleaning",c:"var(--o)",label:"กำลังทำ"},
+    {k:"pending",c:"#d1d5db", label:"รอทำ"},
+  ];
+  let cumPct = 0;
+  const gradParts = segs.map(s => {
+    const p = total ? (cnt[s.k]||0)/total*100 : 0;
+    const from = cumPct; cumPct += p;
+    return `${s.c} ${from.toFixed(1)}% ${cumPct.toFixed(1)}%`;
+  }).join(", ");
 
   const byS = {};
   rooms.forEach(r=>{
@@ -511,38 +592,60 @@ function vMgrDash(){
   const farr = Object.values(byF).sort((a,b)=>a.f-b.f);
 
   return `
-    <div class="stats">
-      <div class="stat"><div class="stat-n" style="color:var(--g)">${pct}%</div><div class="stat-l">เสร็จแล้ว</div></div>
-      <div class="stat"><div class="stat-n" style="color:var(--o)">${cnt.cleaning}</div><div class="stat-l">กำลังทำ</div></div>
-      <div class="stat"><div class="stat-n" style="color:var(--y)">${cnt.done}</div><div class="stat-l">รอตรวจ</div></div>
+    ${total===0?`<div class="empty"><div class="empty-ic">📅</div>ไม่มีข้อมูลวันนี้</div>`:`
+    <div class="donut-wrap">
+      <div class="donut" style="background:conic-gradient(${gradParts})">
+        <div class="donut-hole">
+          <div class="donut-pct">${pct}%</div>
+          <div class="donut-sub">เสร็จแล้ว</div>
+        </div>
+      </div>
+      <div class="legend">
+        ${segs.map(s=>`
+          <div class="leg-item">
+            <div class="leg-dot" style="background:${s.c}"></div>
+            <span>${s.label}</span>
+            <span class="leg-val">${cnt[s.k]||0}</span>
+          </div>
+        `).join("")}
+      </div>
     </div>
+
+    <div class="stats" style="grid-template-columns:repeat(2,1fr)">
+      <div class="stat"><div class="stat-n" style="color:var(--o)">${inProgress}</div><div class="stat-l">กำลังดำเนินการ</div></div>
+      <div class="stat"><div class="stat-n" style="color:var(--mu)">${cnt.pending}</div><div class="stat-l">ยังไม่ได้ทำ</div></div>
+    </div>
+
     <div class="prog">
-      <div class="prog-hd"><span>ภาพรวม ${total} ห้อง</span><span>${done} ห้องเสร็จ</span></div>
+      <div class="prog-hd"><span>ภาพรวม ${total} ห้อง</span><span>${finished} ห้องเสร็จ</span></div>
       <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
-      ${[{k:"pending",l:"รอทำ",c:"var(--mu)"},{k:"cleaning",l:"กำลังทำ",c:"var(--o)"},{k:"done",l:"รอตรวจ",c:"var(--y)"},{k:"passed",l:"ผ่านตรวจ",c:"var(--g)"},{k:"ack",l:"รับทราบ",c:"#166534"}]
-        .map(s=>`<div class="stat"><div class="stat-n" style="color:${s.c}">${cnt[s.k]||0}</div><div class="stat-l">${s.l}</div></div>`).join("")}
-    </div>
+
     <div class="sec">ผลงานรายคน</div>
+    ${sarr.length===0?`<div style="font-size:13px;color:var(--mu);text-align:center;padding:12px">ยังไม่มีการ Assign</div>`:""}
     ${sarr.map(s=>`
       <div class="bar-row">
         <div class="bar-lbl">${s.name}</div>
-        <div style="flex:1"><div class="bar-fill" style="width:${Math.round(s.done/maxT*100)}%"></div></div>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:${Math.round(s.done/maxT*100)}%"></div>
+        </div>
         <div class="bar-val">${s.done}/${s.total}</div>
       </div>
     `).join("")}
+
     <div class="sec" style="margin-top:14px">ความคืบหน้าตามชั้น</div>
-    ${farr.map(f=>`
-      <div class="prog">
-        <div class="prog-hd"><span>ชั้น ${f.f}</span><span>${f.done}/${f.total}</span></div>
-        <div class="prog-bar"><div class="prog-fill" style="width:${Math.round(f.done/f.total*100)}%"></div></div>
-      </div>
-    `).join("")}
+    ${farr.map(f=>{
+      const p = Math.round(f.done/f.total*100);
+      return `<div class="prog">
+        <div class="prog-hd"><span>ชั้น ${f.f}</span><span style="color:${p===100?"var(--g)":p>50?"var(--y)":"var(--mu)"}">${f.done}/${f.total} (${p}%)</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:${p}%;background:${p===100?"var(--g)":p>50?"var(--y)":"var(--o)"}"></div></div>
+      </div>`;
+    }).join("")}
+    `}
   `;
 }
 
-// ─── MANAGER: All Rooms ───────────────────────────────
+// ─── MANAGER: All Rooms ──────────────────────────────
 function vMgrAll(){
   const all   = ST.rooms;
   const flist = ["all","pending","cleaning","done","passed","ack"];
@@ -551,6 +654,7 @@ function vMgrAll(){
     <div class="chips">
       ${flist.map(f=>`<div class="chip ${ST.filter===f?"on":""}" onclick="setF('${f}')">${f==="all"?"ทั้งหมด":SL[f]} (${f==="all"?all.length:all.filter(r=>r.status===f).length})</div>`).join("")}
     </div>
+    ${shown.length===0?`<div class="empty"><div class="empty-ic">📋</div>ไม่มีข้อมูล</div>`:""}
     ${shown.map(r=>`
       <div class="card">
         <div class="card-hd">
@@ -558,30 +662,73 @@ function vMgrAll(){
           ${sb(r.status)}
         </div>
         <div class="rinfo">แม่บ้าน: <b>${r.assignedName||"—"}</b>${r.startTime?` · <b>${elapsed(r.startTime)}</b>`:""}</div>
+        ${r.note?`<div class="rnote-green">📋 ${r.note}</div>`:""}
       </div>
     `).join("")}
   `;
 }
 
+// ─── MANAGER: Report ─────────────────────────────────
+function vMgrReport(){
+  const data = ST.report;
+  if(data.length===0) return `<div class="empty"><div class="empty-ic">📊</div>ไม่มีข้อมูลย้อนหลัง</div>`;
+  return `
+    <div class="sec">สรุปรายวัน (30 วันล่าสุด)</div>
+    ${data.map(d=>{
+      const t = d.total||1;
+      const fin = (d.ack||0)+(d.passed||0);
+      const pct = Math.round(fin/t*100);
+      return `<div class="card" style="padding:10px 13px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-size:13px;font-weight:700">${fmtDateTH(d.date)}</span>
+          <span style="font-size:12px;color:${pct===100?"var(--g)":pct>50?"var(--y)":"var(--mu)"};font-weight:700">${fin}/${t} (${pct}%)</span>
+        </div>
+        <div class="rpt-bars">
+          ${(d.ack   ||0)?`<div class="rpt-seg" style="width:${(d.ack   /t*100).toFixed(1)}%;background:#166534" title="รับทราบ ${d.ack}"></div>`:""}
+          ${(d.passed||0)?`<div class="rpt-seg" style="width:${(d.passed/t*100).toFixed(1)}%;background:var(--g)" title="ผ่านตรวจ ${d.passed}"></div>`:""}
+          ${(d.done  ||0)?`<div class="rpt-seg" style="width:${(d.done  /t*100).toFixed(1)}%;background:var(--y)" title="รอตรวจ ${d.done}"></div>`:""}
+          ${(d.cleaning||0)?`<div class="rpt-seg" style="width:${(d.cleaning/t*100).toFixed(1)}%;background:var(--o)" title="กำลังทำ ${d.cleaning}"></div>`:""}
+          ${(d.pending||0)?`<div class="rpt-seg" style="width:${(d.pending/t*100).toFixed(1)}%;background:#d1d5db" title="รอทำ ${d.pending}"></div>`:""}
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:5px">
+          ${[["#166534","รับทราบ",d.ack],["var(--g)","ผ่านตรวจ",d.passed],["var(--y)","รอตรวจ",d.done],["var(--o)","กำลังทำ",d.cleaning],["#d1d5db","รอทำ",d.pending]]
+            .filter(x=>x[2]).map(x=>`<span style="font-size:10px;color:${x[0]};font-weight:700">${x[1]} ${x[2]}</span>`).join("")}
+        </div>
+      </div>`;
+    }).join("")}
+  `;
+}
+
 // ─── ACTIONS ─────────────────────────────────────────
 async function doStatus(roomId, newStatus){
+  if(!isToday()){ toast("ไม่สามารถแก้ไขข้อมูลย้อนหลัง","err"); return; }
   const r = ST.rooms.find(x=>x.id===roomId);
   if(!r) return;
-  r.status = newStatus;
-  if(newStatus==="cleaning") r.startTime = Date.now();
-  if(newStatus==="done")     r.endTime   = Date.now();
+  r.status=newStatus;
+  if(newStatus==="cleaning") r.startTime=Date.now();
+  if(newStatus==="done")     r.endTime=Date.now();
   renderContent();
-  await gasCall({ action:"updateStatus", roomId, status:newStatus, staffId:USER.staffId, staffName:USER.name });
+  await gasCall({ action:"updateStatus", roomId, status:newStatus, staffId:USER.staffId, staffName:USER.name, date:ST.date });
   toast(newStatus==="cleaning"?"▶ เริ่มทำความสะอาด":"✓ ส่งให้หัวหน้าตรวจแล้ว","ok");
 }
 
 async function doAck(roomId){
-  const r = ST.rooms.find(x=>x.id===roomId);
-  if(r){ r.status="ack"; }
+  if(!isToday()){ toast("ไม่สามารถแก้ไขข้อมูลย้อนหลัง","err"); return; }
   ST.rooms = ST.rooms.filter(x=>x.id!==roomId);
   renderContent();
-  await gasCall({ action:"ackRoom", roomId, staffId:USER.staffId, staffName:USER.name });
-  toast("✅ รับทราบแล้ว","ok");
+  await gasCall({ action:"ackRoom", roomId, staffId:USER.staffId, staffName:USER.name, date:ST.date });
+  toast("✅ บันทึก ลูกค้าเข้าพักแล้ว","ok");
+}
+
+async function doInitDaily(){
+  const res = await gasGet({ action:"initDaily", date:ST.date });
+  if(res.success){
+    toast(`สร้าง ${res.count} ห้องแล้ว`,"ok");
+    ST.staff=[];
+    await loadAndRender();
+  } else {
+    toast(res.message||"เกิดข้อผิดพลาด","err");
+  }
 }
 
 // ─── MODALS ──────────────────────────────────────────
@@ -589,7 +736,7 @@ function openAssign(roomId){
   const r    = ST.rooms.find(x=>x.id===roomId);
   const opts = ST.staff.length
     ? ST.staff.map(s=>`<option value="${s.id}" data-name="${s.name}" data-nick="${s.nickname}" ${r.assignedTo===s.id?"selected":""}>${s.name} (${s.nickname})</option>`).join("")
-    : `<option value="${r.assignedTo}" selected>${r.assignedName}</option>`;
+    : `<option value="${r.assignedTo}" selected>${r.assignedName||"—"}</option>`;
   showModal(`
     <div class="modal-hd"></div>
     <div class="modal-room">${roomId}</div>
@@ -599,7 +746,7 @@ function openAssign(roomId){
       <div class="sw"><select id="m-staff">${opts}</select></div>
     </div>
     <div class="field">
-      <label>หมายเหตุ (ถ้ามี)</label>
+      <label>หมายเหตุสำหรับแม่บ้าน (ถ้ามี)</label>
       <textarea id="m-anote" placeholder="เช่น แขก VIP ต้องการผ้าเช็ดตัวพิเศษ...">${r.note||""}</textarea>
     </div>
     <button class="btn bg btn-full" onclick="confirmAssign('${roomId}')">✓ Assign</button>
@@ -611,13 +758,12 @@ async function confirmAssign(roomId){
   const sel   = document.getElementById("m-staff");
   const sid   = sel.value;
   const sname = sel.options[sel.selectedIndex].dataset.name;
-  const snick = sel.options[sel.selectedIndex].dataset.nick || sname;
-  const note  = document.getElementById("m-anote")?.value || "";
-  const r     = ST.rooms.find(x=>x.id===roomId);
+  const snick = sel.options[sel.selectedIndex].dataset.nick||sname;
+  const note  = document.getElementById("m-anote")?.value||"";
+  const r = ST.rooms.find(x=>x.id===roomId);
   if(r){ r.assignedTo=sid; r.assignedName=snick; r.status="pending"; r.note=note; }
-  closeModal();
-  renderContent();
-  await gasCall({ action:"assignRoom", roomId, staffId:sid, staffName:sname, note, supervisorId:USER.staffId, supervisorName:USER.name });
+  closeModal(); renderContent();
+  await gasCall({ action:"assignRoom", roomId, staffId:sid, staffName:sname, note, supervisorId:USER.staffId, supervisorName:USER.name, date:ST.date });
   toast(`Assign ให้ ${sname} แล้ว`,"ok");
 }
 
@@ -629,74 +775,79 @@ function openInspect(roomId){
   showModal(`
     <div class="modal-hd"></div>
     <div class="modal-room">${roomId}</div>
-    <div class="modal-fl">ชั้น ${r.floor} · ตรวจสอบห้อง · ทำโดย <b>${r.assignedName}</b></div>
-    ${r.startTime?`<div style="text-align:center;font-size:12px;color:var(--mu);margin-bottom:12px">ใช้เวลา <b>${elapsed(r.startTime)}</b></div>`:""}
-    <div class="field">
-      <label>หมายเหตุ (ถ้ามี)</label>
-      <textarea id="m-note" placeholder="เช่น มุมห้องน้ำยังไม่สะอาด..."></textarea>
+    <div class="modal-fl">ชั้น ${r.floor} · ทำโดย <b>${r.assignedName}</b>${r.startTime?` · ใช้เวลา <b>${elapsed(r.startTime)}</b>`:""}</div>
+
+    <div class="inspect-pass">
+      <div class="field">
+        <label>📋 หมายเหตุถึง Front Desk (ถ้ามี)</label>
+        <textarea id="m-note-pass" placeholder="เช่น เพิ่มผ้าเช็ดตัว, ห้องพิเศษ VIP..."></textarea>
+      </div>
+      <button class="btn bg btn-full" style="margin-top:4px" onclick="confirmInspect('${roomId}','passed')">✅ ผ่าน — ส่ง Front Desk</button>
     </div>
-    <div class="field">
-      <label>กรณีไม่ผ่าน — Assign ให้ใคร</label>
-      <div class="sw"><select id="m-restaff">${opts}</select></div>
+
+    <div class="inspect-fail">
+      <div class="field">
+        <label>⚠️ แจ้งเหตุผลกลับแม่บ้าน (ที่ไม่ผ่าน)</label>
+        <textarea id="m-note-fail" placeholder="เช่น มุมห้องน้ำยังไม่สะอาด, เปลีนผ้าปูที่นอนด้วย..."></textarea>
+      </div>
+      <div class="field">
+        <label>Assign ให้ใคร</label>
+        <div class="sw"><select id="m-restaff">${opts}</select></div>
+      </div>
+      <button class="btn br2 btn-full" onclick="confirmInspect('${roomId}','failed')">❌ ไม่ผ่าน — ให้ทำใหม่</button>
     </div>
-    <button class="btn bg btn-full" onclick="confirmInspect('${roomId}','passed')">✅ ผ่าน — ส่ง Front Desk</button>
-    <button class="btn br2 btn-full" onclick="confirmInspect('${roomId}','failed')">❌ ไม่ผ่าน — ให้ทำใหม่</button>
+
     <button class="btn bw btn-full" onclick="closeModal()">ยกเลิก</button>
   `);
 }
 
 async function confirmInspect(roomId, result){
-  const note   = document.getElementById("m-note")?.value || "";
+  const note   = result==="passed"
+    ? (document.getElementById("m-note-pass")?.value||"")
+    : (document.getElementById("m-note-fail")?.value||"");
   const sel    = document.getElementById("m-restaff");
-  const nsid   = sel?.value || "";
-  const nsname = sel?.options[sel.selectedIndex]?.dataset.name || "";
-  const nsnick = sel?.options[sel.selectedIndex]?.dataset.nick || nsname;
+  const nsid   = sel?.value||"";
+  const nsname = sel?.options[sel.selectedIndex]?.dataset.name||"";
+  const nsnick = sel?.options[sel.selectedIndex]?.dataset.nick||nsname;
   const r = ST.rooms.find(x=>x.id===roomId);
   if(r){
     if(result==="passed"){
-      r.status = "passed"; r.note = note;
+      r.status="passed"; r.note=note;
     } else {
-      r.status = "pending"; r.note = note||"ตรวจไม่ผ่าน กรุณาทำใหม่";
-      r.assignedTo = nsid; r.assignedName = nsnick;
-      r.startTime = null; r.endTime = null;
+      r.status="pending"; r.note=note||"ตรวจไม่ผ่าน กรุณาทำใหม่";
+      r.assignedTo=nsid; r.assignedName=nsnick;
+      r.startTime=null; r.endTime=null;
     }
   }
-  closeModal();
-  renderContent();
-  await gasCall({ action:"inspect", roomId, result, note, newStaffId:nsid, newStaffName:nsname, supervisorId:USER.staffId, supervisorName:USER.name });
+  closeModal(); renderContent();
+  await gasCall({ action:"inspect", roomId, result, note, newStaffId:nsid, newStaffName:nsname, supervisorId:USER.staffId, supervisorName:USER.name, date:ST.date });
   toast(result==="passed"?"✅ ห้องผ่านการตรวจ":"❌ ส่งกลับให้ทำใหม่", result==="passed"?"ok":"err");
 }
 
 // ─── MODAL HELPERS ───────────────────────────────────
 function showModal(html){
   const ov = document.createElement("div");
-  ov.className = "overlay"; ov.id = "ov";
-  ov.innerHTML = `<div class="modal">${html}</div>`;
+  ov.className="overlay"; ov.id="ov";
+  ov.innerHTML=`<div class="modal">${html}</div>`;
   ov.addEventListener("click", e=>{ if(e.target===ov) closeModal(); });
   document.body.appendChild(ov);
 }
 function closeModal(){ document.getElementById("ov")?.remove(); }
 
-// ─── TOAST ────────────────────────────────────────────
+// ─── TOAST ───────────────────────────────────────────
 let _tt;
 function toast(msg, type=""){
   const t = document.getElementById("toast");
-  t.textContent = msg; t.className = "toast on "+type;
+  t.textContent=msg; t.className="toast on "+type;
   clearTimeout(_tt);
   _tt = setTimeout(()=>t.className="toast", 2400);
 }
 
 // ─── BOOT ─────────────────────────────────────────────
 const LIFF_ID = "2009946209-cFt4JqH1";
-
 async function initLiff(){
-  try {
-    await liff.init({ liffId: LIFF_ID });
-  } catch(e) {
-    // ทำงานนอก LINE ได้ปกติ (ทดสอบบน browser)
-  }
+  try { await liff.init({ liffId: LIFF_ID }); } catch(e) {}
 }
-
 initLiff().then(() => {
   if(USER){ showApp(); }
 });
