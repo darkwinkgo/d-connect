@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Dusit Connect</title>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
@@ -237,6 +237,32 @@ textarea{height:74px;resize:none;line-height:1.5}
 /* Refresh dot */
 .refresh-dot{width:6px;height:6px;border-radius:50%;background:var(--g);display:inline-block;margin-left:4px;animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ─── DESKTOP RESPONSIVE (≥700px) ──────────────── */
+@media(min-width:700px){
+  body{background:var(--navy)}
+  .app{max-width:900px;border-radius:0;box-shadow:0 0 60px rgba(0,0,0,.3)}
+  .content{padding:20px 28px}
+  .hdr{padding:14px 28px 0}
+  /* Cards: 2-column grid */
+  .card-list{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;align-items:start}
+  .card-list .card{margin-bottom:0}
+  /* Stats: 4-column on wide screen */
+  .stats{grid-template-columns:repeat(4,1fr)}
+  /* Donut bigger */
+  .donut{width:110px;height:110px}
+  /* Modal: centered sheet, not bottom */
+  .overlay{align-items:center;padding:20px}
+  .modal{border-radius:16px;max-width:520px;max-height:80vh}
+  /* Chips and filters: allow wrapping */
+  .chips{flex-wrap:wrap;overflow-x:visible}
+  /* Bar label wider */
+  .bar-lbl{width:80px}
+}
+@media(min-width:1100px){
+  .app{max-width:1200px}
+  .card-list{grid-template-columns:repeat(3,1fr)}
+}
 </style>
 </head>
 <body>
@@ -368,6 +394,7 @@ const LANG_DATA = {
     auto_assign_total:"รวมที่จะมอบหมาย", auto_assign_done:"มอบหมายสำเร็จ",
     auto_assign_rooms:"ห้อง", no_staff_available:"ไม่มีแม่บ้านที่พร้อมทำงาน",
     auto_assign_btn:"⚡ มอบหมายอัตโนมัติ",
+    err_timeout:"หมดเวลาเชื่อมต่อ — กรุณาลองใหม่", err_load:"โหลดข้อมูลไม่สำเร็จ", btn_retry:"ลองใหม่",
   },
   en:{
     signin:"Sign In", signing_in:"Signing in...", username:"Username", password:"Password",
@@ -427,6 +454,7 @@ const LANG_DATA = {
     auto_assign_total:"Total to assign", auto_assign_done:"Assignment complete",
     auto_assign_rooms:"rooms", no_staff_available:"No active housekeepers",
     auto_assign_btn:"⚡ Auto Assign",
+    err_timeout:"Connection timeout — please retry", err_load:"Failed to load data", btn_retry:"Retry",
   },
   my:{
     signin:"ဝင်ရောက်ရန်", signing_in:"ဝင်ရောက်နေသည်...", username:"အသုံးပြုသူ", password:"စကားဝှက်",
@@ -486,6 +514,7 @@ const LANG_DATA = {
     auto_assign_total:"စုစုပေါင်းတာဝန်ပေးမည်", auto_assign_done:"တာဝန်ပေးပြီး",
     auto_assign_rooms:"အခန်း", no_staff_available:"အိမ်ရှင်မမရှိ",
     auto_assign_btn:"⚡ အလိုအလျောက်တာဝန်ပေး",
+    err_timeout:"ချိတ်ဆက်မှုကုန်ဆုံးသည် — ထပ်စမ်းပါ", err_load:"ဒေတာတင်မရပါ", btn_retry:"ထပ်စမ်း",
   }
 };
 function t(k){ return (LANG_DATA[LANG]||LANG_DATA.th)[k]||k; }
@@ -568,12 +597,19 @@ async function gasCall(payload){
   } catch(e){ return { success:false, message:e.message }; }
 }
 async function gasGet(payload){
+  const ctrl = new AbortController();
+  const timer = setTimeout(()=>ctrl.abort(), 13000);
   try {
     const r = await fetch(GAS_URL, { method:"POST",
       headers:{"Content-Type":"text/plain"},
-      body:JSON.stringify(payload), redirect:"follow" });
+      body:JSON.stringify(payload), redirect:"follow", signal:ctrl.signal });
+    clearTimeout(timer);
     return await r.json();
-  } catch(e){ return { success:false, message:e.message }; }
+  } catch(e){
+    clearTimeout(timer);
+    if(e.name==="AbortError") return { success:false, message:t("err_timeout") };
+    return { success:false, message:e.message||t("err_load") };
+  }
 }
 
 // ─── AUTO-REFRESH ────────────────────────────────────
@@ -594,9 +630,26 @@ function startAutoRefresh(){
       const oldJson = JSON.stringify(ST.rooms);
       if(newJson !== oldJson){ ST.rooms = res.rooms||[]; renderContent(); }
     }
-  }, 60000);
+  }, 30000);
 }
 function stopAutoRefresh(){ if(_refreshTimer){ clearInterval(_refreshTimer); _refreshTimer=null; } }
+
+function softRefresh(delayMs=2500){
+  setTimeout(async ()=>{
+    if(!USER) return;
+    const v = getView();
+    if(v==="mgr_staff") return;
+    const isFD  = USER.role==="frontdesk";
+    const isMgr = USER.role==="manager";
+    const role  = (USER.role==="admin") ? "supervisor" : USER.role;
+    const res = await gasGet({ action:"getRooms", role, staffId:USER.staffId, date:ST.date, showAll: (isFD||isMgr) || undefined });
+    if(res.success){
+      const newJson = JSON.stringify(res.rooms||[]);
+      const oldJson = JSON.stringify(ST.rooms);
+      if(newJson !== oldJson){ ST.rooms = res.rooms||[]; renderContent(); }
+    }
+  }, delayMs);
+}
 
 // ─── LIVE TIMER (elapsed display) ────────────────────
 let _liveTimer = null;
@@ -791,12 +844,15 @@ async function loadAndRender(){
   const isFD  = USER.role==="frontdesk";
   const isMgr = USER.role==="manager";
   const role  = (USER.role==="admin") ? "supervisor" : USER.role;
-  const res = await gasGet({ action:"getRooms", role, staffId:USER.staffId, date:ST.date, showAll: (isFD||isMgr) || undefined });
-  if(res.success) ST.rooms = res.rooms||[];
-  if((USER.role==="supervisor"||USER.role==="admin") && ST.staff.length===0){
-    const sr = await gasGet({ action:"getStaff" });
-    if(sr.success) ST.staff = sr.staff||[];
-  }
+  const needStaff = (USER.role==="supervisor"||USER.role==="admin") && ST.staff.length===0;
+  const fetches = [
+    gasGet({ action:"getRooms", role, staffId:USER.staffId, date:ST.date, showAll: (isFD||isMgr) || undefined }),
+    needStaff ? gasGet({ action:"getStaff" }) : Promise.resolve(null)
+  ];
+  const [res, sr] = await Promise.all(fetches);
+  if(!res.success){ showError(res.message); return; }
+  ST.rooms = res.rooms||[];
+  if(sr && sr.success) ST.staff = sr.staff||[];
   renderContent();
 }
 
@@ -836,6 +892,17 @@ async function loadStaffReport(){
 function showLoader(){
   document.getElementById("content").innerHTML =
     `<div class="loader"><div class="spinner"></div><span style="font-size:13px;color:var(--mu)">${t("loading")}</span></div>`;
+}
+
+let _retryFn = null;
+function showError(msg){
+  document.getElementById("content").innerHTML = `
+    <div style="text-align:center;padding:44px 16px">
+      <div style="font-size:32px;margin-bottom:12px">⚠</div>
+      <div style="font-size:14px;color:var(--tx);margin-bottom:16px;line-height:1.5">${msg||t("err_load")}</div>
+      <button class="btn bg" onclick="_retryFn&&_retryFn()">↺ ${t("btn_retry")}</button>
+    </div>`;
+  _retryFn = loadAndRender;
 }
 
 // ─── RENDER ──────────────────────────────────────────
@@ -899,6 +966,7 @@ function vSupRooms(){
     </div>
     <div style="font-size:12px;color:var(--mu);margin-bottom:8px">${shown.length} ${t("rooms_count")}</div>
     ${shown.length===0?`<div class="empty"><div class="empty-ic">···</div>${t("no_rooms_status")}</div>`:""}
+    <div class="card-list">
     ${shown.map(r=>`
       <div class="card">
         <div class="card-hd">
@@ -916,6 +984,7 @@ function vSupRooms(){
         </div>
       </div>
     `).join("")}
+    </div>
   `;
 }
 
@@ -930,6 +999,7 @@ function vSupAssign(){
     ${isToday()?`<button class="btn bg btn-lg" style="margin-bottom:12px" onclick="openAutoAssign()">${t("auto_assign_btn")}</button>`:""}
     <div class="sec">${t("sec_unassigned")} (${unassigned.length})</div>
     ${unassigned.length===0?`<div class="empty"><div class="empty-ic">···</div>${t("all_assigned")}</div>`:""}
+    <div class="card-list">
     ${unassigned.map(r=>`
       <div class="card">
         <div class="card-hd">
@@ -940,6 +1010,7 @@ function vSupAssign(){
         <div class="acts"><button class="btn bg" onclick="openAssign('${r.id}')">${t("btn_assign")}</button></div>
       </div>
     `).join("")}
+    </div>
   `;
 }
 
@@ -1016,6 +1087,7 @@ function vHkRooms(){
       <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
     </div>
     ${rooms.length===0?`<div class="empty"><div class="empty-ic">···</div>${t("no_rooms")}</div>`:""}
+    <div class="card-list">
     ${rooms.map(r=>`
       <div class="card">
         <div class="card-hd">
@@ -1033,6 +1105,7 @@ function vHkRooms(){
         </div>
       </div>
     `).join("")}
+    </div>
   `;
 }
 
@@ -1171,6 +1244,7 @@ function vMgrAll(){
     </div>
     <div style="font-size:12px;color:var(--mu);margin-bottom:8px">${shown.length} ${t("rooms_count")}</div>
     ${shown.length===0?`<div class="empty"><div class="empty-ic">···</div>${t("no_data")}</div>`:""}
+    <div class="card-list">
     ${shown.map(r=>`
       <div class="card">
         <div class="card-hd">
@@ -1184,6 +1258,7 @@ function vMgrAll(){
         ${r.note?`<div class="rnote-ok">${r.note}</div>`:""}
       </div>
     `).join("")}
+    </div>
   `;
 }
 
@@ -1269,6 +1344,7 @@ function vFdStatus(){
     </div>
     <div style="font-size:12px;color:var(--mu);margin-bottom:8px">${shown.length} ${t("rooms_count")}</div>
     ${shown.length===0?`<div class="empty"><div class="empty-ic">···</div>${t("no_data")}</div>`:""}
+    <div class="card-list">
     ${shown.map(r=>`
       <div class="card">
         <div class="card-hd">
@@ -1281,6 +1357,7 @@ function vFdStatus(){
         }</div>
       </div>
     `).join("")}
+    </div>
   `;
 }
 
@@ -1437,6 +1514,7 @@ function vAdmRooms(){
       ${flist.map(f=>`<div class="chip ${ST.filter===f?"on":""}" onclick="setF('${f}')">${f==="all"?t("fd_filter_all"):SL()[f]} (${f==="all"?all.length:all.filter(r=>r.status===f).length})</div>`).join("")}
     </div>
     ${shown.length===0?`<div class="empty"><div class="empty-ic">···</div>${t("no_rooms_status")}</div>`:""}
+    <div class="card-list">
     ${shown.map(r=>`
       <div class="card">
         <div class="card-hd">
@@ -1455,6 +1533,7 @@ function vAdmRooms(){
         </div>
       </div>
     `).join("")}
+    </div>
   `;
 }
 
@@ -1494,6 +1573,7 @@ async function doStatus(roomId, newStatus){
   renderContent();
   await gasCall({ action:"updateStatus", roomId, status:newStatus, staffId:USER.staffId, staffName:USER.name, date:ST.date });
   toast(newStatus==="cleaning"?t("toast_start_clean"):t("toast_sent_inspect"),"ok");
+  softRefresh();
 }
 
 
@@ -1551,6 +1631,7 @@ async function confirmAdminOverride(roomId){
   closeModal(); renderContent();
   await gasCall({ action:"adminSetStatus", roomId, status, assignedTo:sid, assignedName:sname, note, staffId:USER.staffId, staffName:USER.name, date:ST.date });
   toast(`${t("btn_override")} ${t("room_prefix")} ${roomId} → ${SL()[status]||status}`,"ok");
+  softRefresh();
 }
 
 // ─── MODALS ──────────────────────────────────────────
@@ -1587,6 +1668,7 @@ async function confirmAssign(roomId){
   closeModal(); renderContent();
   await gasCall({ action:"assignRoom", roomId, staffId:sid, staffName:sname, note, supervisorId:USER.staffId, supervisorName:USER.name, date:ST.date });
   toast(`${t("btn_assign")}: ${snick}`,"ok");
+  softRefresh();
 }
 
 function openInspect(roomId){
@@ -1645,6 +1727,7 @@ async function confirmInspect(roomId, result){
   closeModal(); renderContent();
   await gasCall({ action:"inspect", roomId, result, note, newStaffId:nsid, newStaffName:nsname, supervisorId:USER.staffId, supervisorName:USER.name, date:ST.date });
   toast(result==="passed"?t("toast_pass_inspect"):t("toast_fail_inspect"), result==="passed"?"ok":"err");
+  softRefresh();
 }
 
 // ─── MODAL HELPERS ───────────────────────────────────
@@ -1778,9 +1861,11 @@ async function doAutoAssign(){
   if(res.success){
     toast(`${t("auto_assign_done")} — ${res.count} ${t("auto_assign_rooms")} ✓`,"ok");
     await loadAndRender();
+    softRefresh();
   } else {
     toast(res.message||t("err_generic"),"err");
     await loadAndRender();
+    softRefresh();
   }
 }
 
