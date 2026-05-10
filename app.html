@@ -326,11 +326,11 @@ const LANG_DATA = {
     signin:"เข้าสู่ระบบ", signing_in:"กำลังเข้าสู่ระบบ...", username:"Username", password:"Password",
     logout:"ออก",
     role_supervisor:"หัวหน้า", role_housekeeper:"แม่บ้าน", role_frontdesk:"Front Desk", role_manager:"ผู้จัดการ", role_admin:"Admin",
-    s_pending:"รอทำ", s_cleaning:"กำลังทำ", s_done:"รอตรวจ", s_passed:"ผ่านตรวจ", s_ack:"รับทราบ",
-    tab_all_rooms:"ห้องทั้งหมด", tab_assign:"Assign", tab_perf:"เวลาทำงาน", tab_my_rooms:"ห้องของฉัน",
+    s_pending:"รอทำ", s_cleaning:"กำลังทำ", s_done:"รอตรวจ", s_passed:"เสร็จสมบูรณ์", s_ack:"รับทราบ",
+    tab_all_rooms:"ห้องทั้งหมด", tab_assign:"มอบหมาย", tab_perf:"เวลาทำงาน", tab_my_rooms:"ห้องของฉัน",
     tab_dash:"Dashboard", tab_report:"รายงาน", tab_staff:"สถิติพนักงาน", tab_complaints:"ข้อร้องเรียน", tab_inspect:"ตรวจห้อง", tab_status:"สถานะห้อง",
-    btn_start:"เริ่มทำ", btn_done:"เสร็จแล้ว", btn_inspect:"ตรวจห้อง", btn_assign:"Assign แม่บ้าน",
-    btn_reassign:"Re-assign", btn_pass:"ผ่าน — ส่ง Front Desk", btn_fail:"ไม่ผ่าน — ให้ทำใหม่",
+    btn_start:"เริ่มทำ", btn_done:"เสร็จแล้ว", btn_inspect:"ตรวจห้อง", btn_assign:"มอบหมาย",
+    btn_reassign:"มอบหมายใหม่", btn_pass:"ผ่าน — เสร็จสมบูรณ์", btn_fail:"ไม่ผ่าน — ให้ทำใหม่",
     btn_create:"+ สร้างงานวันนี้", btn_override:"Override", btn_cancel:"ยกเลิก", btn_save:"บันทึก",
     btn_complaint:"บันทึกข้อร้องเรียน",
     floor:"ชั้น", housekeeper:"แม่บ้าน", started:"เริ่มมาแล้ว", duration_lbl:"ใช้เวลา",
@@ -339,18 +339,18 @@ const LANG_DATA = {
     fd_waiting:"รอตรวจ", fd_pending:"รอทำ", fd_ack:"รับทราบแล้ว",
     sec_progress:"ความคืบหน้าวันนี้", sec_by_staff:"ผลงานรายคน", sec_by_floor:"ความคืบหน้าตามชั้น",
     sec_realtime:"กำลังทำ — Real-time", sec_completed:"เสร็จแล้ว — สรุปผลงาน",
-    sec_unassigned:"ห้องที่รอ Assign", sec_done_rooms:"รอตรวจ",
+    sec_unassigned:"ห้องที่รอมอบหมาย", sec_done_rooms:"รอตรวจ",
     no_rooms:"ยังไม่มีห้องที่ได้รับมอบหมาย", no_data:"ไม่มีข้อมูล", loading:"กำลังโหลด...",
     today_badge:"วันนี้", min_per_room:"นาที/ห้อง", rooms_count:"ห้อง",
     daily:"รายวัน", monthly:"รายเดือน", yearly:"รายปี",
     complaint_room:"หมายเลขห้อง", complaint_desc:"รายละเอียดปัญหา", complaint_history:"ประวัติข้อร้องเรียนวันนี้",
     perf_30days:"เวลาเฉลี่ยต่อห้อง — 30 วันล่าสุด", staff_90days:"สรุปผลงานพนักงาน — 90 วันล่าสุด",
     report_title:"สรุปรายวัน", past_only:"ดูได้เฉพาะวันปัจจุบัน",
-    assign_done:"Assign ครบแล้ว", no_rooms_status:"ไม่มีห้องในสถานะนี้",
-    waiting_fd:"รอ Front Desk", complete:"เสร็จสมบูรณ์", waiting_inspect:"รอหัวหน้าตรวจ",
+    assign_done:"มอบหมายครบแล้ว", no_rooms_status:"ไม่มีห้องในสถานะนี้",
+    waiting_fd:"เสร็จสมบูรณ์", complete:"เสร็จสมบูรณ์", waiting_inspect:"รอหัวหน้าตรวจ",
     inspection_pass:"ผ่านการตรวจ", fd_checkedin:"Front Desk รับทราบ",
     note_lbl:"หมายเหตุ", select_hk:"เลือกแม่บ้าน", note_for_hk:"หมายเหตุสำหรับแม่บ้าน (ถ้ามี)",
-    reason_fail:"เหตุผลที่ไม่ผ่าน", assign_to:"Assign ให้ใคร", note_to_fd:"หมายเหตุถึง Front Desk (ถ้ามี)",
+    reason_fail:"เหตุผลที่ไม่ผ่าน", assign_to:"มอบหมายให้ใคร", note_to_fd:"หมายเหตุ (ถ้ามี)",
     change_to:"เปลี่ยน Status เป็น", change_hk:"เปลี่ยนแม่บ้าน (ถ้าต้องการ)", override_note:"หมายเหตุ",
     override_submit:"บันทึก Override", no_cleaning:"ไม่มีห้องที่กำลังทำ",
     complaint_submitted:"บันทึกข้อร้องเรียนแล้ว", no_complaint_today:"ยังไม่มีข้อร้องเรียนวันนี้",
@@ -358,14 +358,16 @@ const LANG_DATA = {
     reported_by:"แจ้งโดย:", by_hk:"แม่บ้าน:", seed_btn:"⚙ โหลดข้อมูลทดสอบ 3 เดือน",
     seed_loading:"กำลังโหลดข้อมูล...", seed_done:"โหลดข้อมูลสำเร็จ",
     room_prefix:"ห้อง", in_progress_lbl:"กำลังดำเนินการ", not_started_lbl:"ยังไม่ได้ทำ",
-    no_rooms_done:"ยังไม่มีห้องเสร็จ", no_assign_yet:"ยังไม่มีการ Assign",
-    done_by:"ทำโดย", assign_room_title:"Assign ห้อง", last_30d:"30 วันล่าสุด",
+    no_rooms_done:"ยังไม่มีห้องเสร็จ",
+    done_by:"ทำโดย", last_30d:"30 วันล่าสุด",
     sort_fast_slow:"เรียงเร็ว → ช้า", no_timing:"ไม่มีข้อมูลเวลาทำงาน",
     overview:"ภาพรวม", rooms_done_count:"ห้องเสร็จ", no_work_today:"ยังไม่มีงานวันนี้",
     score_excellent:"ผลงานดีเยี่ยม", score_monitor:"ควรติดตามผลงาน", score_train:"แนะนำการอบรมเพิ่มเติม",
     latest_complaints:"ข้อร้องเรียนล่าสุด", more_cases:"และอีก", cases_unit:"ครั้ง",
     no_data_date:"ไม่มีข้อมูลวันที่เลือก", cur_date_only:"ดูได้เฉพาะวันปัจจุบัน",
-    all_assigned:"Assign ครบแล้ว", cur_hk:"แม่บ้านปัจจุบัน", by_who:"ทำโดย",
+    all_assigned:"มอบหมายครบแล้ว", cur_hk:"แม่บ้านปัจจุบัน", by_who:"ทำโดย",
+    assign_room_title:"มอบหมายห้อง", no_assign_yet:"ยังไม่มีการมอบหมาย",
+    under_dev:"กำลังพัฒนา",
     min_avg_lbl:"นาที/ห้อง (เฉลี่ย)", room_count_today:"ห้องวันนี้",
     fd_all_rooms:"ห้องทั้งหมด", fd_filter_all:"ทั้งหมด",
     score_ok_lbl:"ดี", score_warn_lbl:"พอใช้", score_bad_lbl:"ต้องปรับปรุง",
@@ -386,11 +388,11 @@ const LANG_DATA = {
     signin:"Sign In", signing_in:"Signing in...", username:"Username", password:"Password",
     logout:"Logout",
     role_supervisor:"Supervisor", role_housekeeper:"Housekeeper", role_frontdesk:"Front Desk", role_manager:"Manager", role_admin:"Admin",
-    s_pending:"Pending", s_cleaning:"Cleaning", s_done:"Awaiting", s_passed:"Passed", s_ack:"Checked In",
+    s_pending:"Pending", s_cleaning:"Cleaning", s_done:"Awaiting", s_passed:"Complete", s_ack:"Checked In",
     tab_all_rooms:"All Rooms", tab_assign:"Assign", tab_perf:"Performance", tab_my_rooms:"My Rooms",
     tab_dash:"Dashboard", tab_report:"Report", tab_staff:"Staff Stats", tab_complaints:"Complaints", tab_inspect:"Inspect", tab_status:"Room Status",
     btn_start:"Start", btn_done:"Done", btn_inspect:"Inspect", btn_assign:"Assign",
-    btn_reassign:"Re-assign", btn_pass:"Pass — Send to FD", btn_fail:"Fail — Redo",
+    btn_reassign:"Re-assign", btn_pass:"Pass — Complete", btn_fail:"Fail — Redo",
     btn_create:"+ Create Today", btn_override:"Override", btn_cancel:"Cancel", btn_save:"Save",
     btn_complaint:"Submit Complaint",
     floor:"Floor", housekeeper:"Housekeeper", started:"Started", duration_lbl:"Duration",
@@ -407,7 +409,7 @@ const LANG_DATA = {
     perf_30days:"Avg time per room — last 30 days", staff_90days:"Staff performance — last 90 days",
     report_title:"Daily Summary", past_only:"View current date only",
     assign_done:"All assigned", no_rooms_status:"No rooms in this status",
-    waiting_fd:"Waiting Front Desk", complete:"Complete", waiting_inspect:"Waiting inspection",
+    waiting_fd:"Complete", complete:"Complete", waiting_inspect:"Waiting inspection",
     inspection_pass:"Inspection passed", fd_checkedin:"Checked in by FD",
     note_lbl:"Note", select_hk:"Select Housekeeper", note_for_hk:"Note for housekeeper (optional)",
     reason_fail:"Reason for failure", assign_to:"Assign to", note_to_fd:"Note to Front Desk (optional)",
@@ -426,6 +428,7 @@ const LANG_DATA = {
     latest_complaints:"Recent Complaints", more_cases:"and", cases_unit:"more",
     no_data_date:"No data for selected date", cur_date_only:"Current date only",
     all_assigned:"All assigned", cur_hk:"Current housekeeper", by_who:"Done by",
+    under_dev:"Coming soon",
     min_avg_lbl:"min/room (avg)", room_count_today:"rooms today",
     fd_all_rooms:"All Rooms", fd_filter_all:"All",
     score_ok_lbl:"Good", score_warn_lbl:"Caution", score_bad_lbl:"Needs Work",
@@ -446,11 +449,11 @@ const LANG_DATA = {
     signin:"ဝင်ရောက်ရန်", signing_in:"ဝင်ရောက်နေသည်...", username:"အသုံးပြုသူ", password:"စကားဝှက်",
     logout:"ထွက်မည်",
     role_supervisor:"ကြီးကြပ်", role_housekeeper:"အိမ်ရှင်မ", role_frontdesk:"ဧည့်ကြိုစားပွဲ", role_manager:"မန်နေဂျာ", role_admin:"အက်ဒမင်",
-    s_pending:"စောင့်ဆိုင်း", s_cleaning:"သန့်ရှင်းနေ", s_done:"စစ်ဆေးရန်", s_passed:"စစ်ဆေးပြီး", s_ack:"လက်ခံပြီး",
+    s_pending:"စောင့်ဆိုင်း", s_cleaning:"သန့်ရှင်းနေ", s_done:"စစ်ဆေးရန်", s_passed:"ပြီးဆုံးပြီ", s_ack:"လက်ခံပြီး",
     tab_all_rooms:"အခန်းများ", tab_assign:"တာဝန်ပေး", tab_perf:"အချိန်မှတ်တမ်း", tab_my_rooms:"ကျွန်မ၏အခန်း",
     tab_dash:"ဒက်ရှ်ဘုတ်", tab_report:"အစီရင်ခံ", tab_staff:"ဝန်ထမ်းစာရင်း", tab_complaints:"တိုင်ကြားချက်", tab_inspect:"စစ်ဆေး", tab_status:"အခန်းအခြေအနေ",
     btn_start:"စတင်မည်", btn_done:"ပြီးပြီ", btn_inspect:"စစ်ဆေးမည်", btn_assign:"တာဝန်ပေးမည်",
-    btn_reassign:"ပြန်တာဝန်ပေး", btn_pass:"အောင်မြင် — FD သို့", btn_fail:"မအောင်မြင် — ပြန်လုပ်",
+    btn_reassign:"ပြန်တာဝန်ပေး", btn_pass:"အောင်မြင် — ပြီးဆုံး", btn_fail:"မအောင်မြင် — ပြန်လုပ်",
     btn_create:"+ ယနေ့အလုပ်ဖန်တီး", btn_override:"ကျော်လွန်", btn_cancel:"ပယ်ဖျက်", btn_save:"သိမ်းဆည်း",
     btn_complaint:"တိုင်ကြားချက်တင်",
     floor:"ထပ်", housekeeper:"အိမ်ရှင်မ", started:"စတင်ပြီး", duration_lbl:"ကြာချိန်",
@@ -467,7 +470,7 @@ const LANG_DATA = {
     perf_30days:"အခန်းတစ်ခန်းလျှင် ပျမ်းမျှအချိန် — ၃၀ ရက်", staff_90days:"ဝန်ထမ်းကုသိုလ် — ၉၀ ရက်",
     report_title:"နေ့စဉ်အနှစ်ချုပ်", past_only:"ယနေ့ရက်ကိုသာကြည့်ပါ",
     assign_done:"တာဝန်ပေးပြီး", no_rooms_status:"ဤအခြေအနေတွင်အခန်းမရှိ",
-    waiting_fd:"ဧည့်ကြိုစောင့်ဆိုင်း", complete:"ပြီးဆုံးပြီ", waiting_inspect:"စစ်ဆေးရန်စောင့်",
+    waiting_fd:"ပြီးဆုံးပြီ", complete:"ပြီးဆုံးပြီ", waiting_inspect:"စစ်ဆေးရန်စောင့်",
     inspection_pass:"စစ်ဆေးပြီး", fd_checkedin:"ဧည့်ကြိုလက်ခံပြီး",
     note_lbl:"မှတ်ချက်", select_hk:"အိမ်ရှင်မရွေးပါ", note_for_hk:"အိမ်ရှင်မသို့မှတ်ချက် (ရှိလျှင်)",
     reason_fail:"မအောင်မြင်ရသည့်အကြောင်း", assign_to:"တာဝန်ပေးမည့်သူ", note_to_fd:"ဧည့်ကြိုသို့မှတ်ချက်",
@@ -486,6 +489,7 @@ const LANG_DATA = {
     latest_complaints:"နောက်ဆုံးတိုင်ကြားချက်", more_cases:"နှင့်", cases_unit:"ခု",
     no_data_date:"ဤနေ့တွင်ဒေတာမရှိ", cur_date_only:"ယနေ့ရက်ကိုသာ",
     all_assigned:"တာဝန်ပေးပြီးဆုံး", cur_hk:"လက်ရှိအိမ်ရှင်မ", by_who:"လုပ်သူ",
+    under_dev:"ဆက်ဖော်ဆောင်မည်",
     min_avg_lbl:"မိနစ်/အခန်း (ပျမ်းမျှ)", room_count_today:"ယနေ့အခန်း",
     fd_all_rooms:"အခန်းများအားလုံး", fd_filter_all:"အားလုံး",
     score_ok_lbl:"ကောင်း", score_warn_lbl:"သတိထား", score_bad_lbl:"တိုးတက်ရန်",
@@ -530,13 +534,31 @@ function todayISO() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 }
-function fmtDateTH(s) {
-  const mo = ["","ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-  const [y,m,d] = s.split("-");
-  return `${+d} ${mo[+m]} ${+y+543}`;
+function fmtDateTH(s) { return fmtDate(s); } // kept for backward compat
+function fmtDate(s) {
+  const [yr,mo,dy] = s.split("-").map(Number);
+  if(LANG==="en"){
+    const m=["","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    return `${dy} ${m[mo]} ${yr}`;
+  }
+  if(LANG==="my"){
+    const m=["","ဇန်","ဖေ","မတ်","ဧပြ","မေ","ဇွန်","ဇူ","ဩ","စက်","အောက်","နို","ဒီ"];
+    return `${dy} ${m[mo]} ${yr}`;
+  }
+  const m=["","ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+  return `${dy} ${m[mo]} ${yr+543}`;
 }
-function fmtMonthTH(y, m) {
-  const mo = ["","มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
+function fmtMonthTH(y, m) { return fmtMonth(y, m); } // kept for backward compat
+function fmtMonth(y, m) {
+  if(LANG==="en"){
+    const mo=["","January","February","March","April","May","June","July","August","September","October","November","December"];
+    return `${mo[m]} ${y}`;
+  }
+  if(LANG==="my"){
+    const mo=["","ဇန်နဝါရီ","ဖေဖော်ဝါရီ","မတ်","ဧပြီ","မေ","ဇွန်","ဇူလိုင်","ဩဂုတ်","စက်တင်ဘာ","အောက်တိုဘာ","နိုဝင်ဘာ","ဒီဇင်ဘာ"];
+    return `${mo[m]} ${y}`;
+  }
+  const mo=["","มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
   return `${mo[m]} ${y+543}`;
 }
 function isToday() { return ST.date === todayISO(); }
@@ -695,7 +717,7 @@ function updateDateNav(){
   const today = isToday();
   nav.innerHTML = `
     <button class="date-btn" onclick="changeDate(-1)">‹</button>
-    <div class="date-lbl" onclick="openCalendar()">${fmtDateTH(ST.date)}${today?` <span class="date-today">วันนี้</span>`:""}</div>
+    <div class="date-lbl" onclick="openCalendar()">${fmtDate(ST.date)}${today?` <span class="date-today">${t("today_badge")}</span>`:""}</div>
     <button class="date-btn" onclick="changeDate(1)" ${today?"disabled":""}>›</button>
   `;
 }
@@ -716,7 +738,9 @@ function openCalendar(){
   let vy=cy, vm=cm;
   const today = todayISO();
   const [ty,tm] = today.split("-").map(Number);
-  const dayHdr = ["จ","อ","พ","พฤ","ศ","ส","อา"];
+  const dayHdr = LANG==="en" ? ["M","T","W","T","F","S","S"] :
+                 LANG==="my" ? ["တ","အ","ဗ","ကြ","သ","စ","တ"] :
+                               ["จ","อ","พ","พฤ","ศ","ส","อา"];
 
   function buildCal(){
     const daysInMonth = new Date(vy, vm, 0).getDate();
@@ -737,14 +761,14 @@ function openCalendar(){
       <div class="modal-hd"></div>
       <div class="cal-hd">
         <button class="cal-nav-btn" onclick="calNav(-1)">‹</button>
-        <div class="cal-month-lbl">${fmtMonthTH(vy,vm)}</div>
+        <div class="cal-month-lbl">${fmtMonth(vy,vm)}</div>
         <button class="cal-nav-btn" ${!canNext?"disabled":""} onclick="calNav(1)">›</button>
       </div>
       <div class="cal-grid">
         ${dayHdr.map(d=>`<div class="cal-dh">${d}</div>`).join("")}
         ${cells}
       </div>
-      <button class="btn bw btn-full" style="margin-top:12px" onclick="closeModal()">ยกเลิก</button>
+      <button class="btn bw btn-full" style="margin-top:12px" onclick="closeModal()">${t("btn_cancel")}</button>
     `;
   }
 
@@ -858,7 +882,7 @@ function renderView(v){
     case "adm_rooms":     return vAdmRooms();
     case "adm_inspect":   return vAdmInspect();
     case "adm_complaints":return vAdmComplaints();
-    default: return `<div class="empty"><div class="empty-ic">···</div>กำลังพัฒนา</div>`;
+    default: return `<div class="empty"><div class="empty-ic">···</div>${t("under_dev")}</div>`;
   }
 }
 
@@ -889,9 +913,7 @@ function vSupRooms(){
         </div>
         <div class="acts">
           ${r.status==="done"&&isToday()?`<button class="btn bg" onclick="openInspect('${r.id}')">${t("btn_inspect")}</button>`:""}
-          ${["pending","cleaning","done"].includes(r.status)&&isToday()?`<button class="btn bw" onclick="openAssign('${r.id}')">${t("btn_reassign")}</button>`:""}
-          ${r.status==="passed"?`<span style="font-size:12px;color:var(--saged)">${t("waiting_fd")}</span>`:""}
-          ${r.status==="ack"?`<span style="font-size:12px;color:#2D4A25">${t("complete")}</span>`:""}
+          ${isToday()?`<button class="btn bw" onclick="openAssign('${r.id}')">${t("btn_reassign")}</button>`:""}
         </div>
       </div>
     `).join("")}
@@ -900,13 +922,14 @@ function vSupRooms(){
 
 // ─── SUPERVISOR: Assign ──────────────────────────────
 function vSupAssign(){
+  const _adm = USER?.role==="admin" ? adminSeedBanner() : "";
   if(ST.rooms.length===0 && isToday())
-    return `<div class="empty"><div class="empty-ic">···</div><div style="margin-bottom:12px">${t("no_work_today")}</div>
+    return `${_adm}<div class="empty"><div class="empty-ic">···</div><div style="margin-bottom:12px">${t("no_work_today")}</div>
       <button class="btn bg" onclick="doInitDaily()">${t("btn_create")}</button></div>`;
   if(isPast())
-    return `<div class="empty"><div class="empty-ic">···</div>${t("cur_date_only")}</div>`;
+    return `${_adm}<div class="empty"><div class="empty-ic">···</div>${t("cur_date_only")}</div>`;
   const unassigned = ST.rooms.filter(r=>!r.assignedTo||r.status==="pending");
-  return `
+  return `${_adm}
     <div class="sec">${t("sec_unassigned")} (${unassigned.length})</div>
     ${unassigned.length===0?`<div class="empty"><div class="empty-ic">···</div>${t("all_assigned")}</div>`:""}
     ${unassigned.map(r=>`
@@ -926,7 +949,7 @@ function vSupAssign(){
 function vSupPerf(){
   const rooms = ST.rooms;
   if(rooms.length===0)
-    return `<div class="empty"><div class="empty-ic">···</div>ไม่มีข้อมูล${isPast()?" วันที่เลือก":""}</div>`;
+    return `<div class="empty"><div class="empty-ic">···</div>${isPast()?t("no_data_date"):t("no_data")}</div>`;
 
   const cleaning  = rooms.filter(r=>r.status==="cleaning"&&r.startTime);
   const completed = rooms.filter(r=>["done","passed","ack"].includes(r.status)&&r.startTime&&r.endTime);
@@ -1302,9 +1325,10 @@ function vFdStatus(){
 
 // ─── MANAGER: สถิติพนักงาน ──────────────────────────
 function vMgrStaff(){
+  const _adm = USER?.role==="admin" ? adminSeedBanner() : "";
   const data = ST.staffReport||[];
   if(data.length===0)
-    return `<div class="empty"><div class="empty-ic">···</div>${t("no_data")}<br><span style="font-size:12px">${t("last_30d").replace("30","90")}</span></div>`;
+    return `${_adm}<div class="empty"><div class="empty-ic">···</div>${t("no_data")}<br><span style="font-size:12px">${t("last_30d").replace("30","90")}</span></div>`;
 
   function scoreColor(complaints){
     if(complaints===0) return "score-ok";
@@ -1312,7 +1336,7 @@ function vMgrStaff(){
     return "score-bad";
   }
 
-  return `
+  return `${_adm}
     <div class="sec">${t("staff_90days")} (${t("sort_complaints")})</div>
     <div style="font-size:11px;color:var(--mu);margin-bottom:10px">
       <span style="color:var(--saged);font-weight:700">● ${t("score_ok_lbl")}</span> = ${t("no_complaints_yet")}&nbsp;&nbsp;
@@ -1368,10 +1392,19 @@ function vMgrStaff(){
   `;
 }
 
+// ─── ADMIN: shared seed banner (test only) ───────────
+function adminSeedBanner(){
+  if(!IS_TEST) return "";
+  return `<div style="background:#2D1B69;color:#fff;border-radius:10px;padding:9px 12px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:8px">
+    <span style="font-size:11px;font-weight:700;opacity:.7;white-space:nowrap">TEST ENV</span>
+    <button style="background:rgba(255,255,255,.18);border:none;color:#fff;padding:5px 12px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Sarabun',sans-serif;white-space:nowrap" onclick="doSeedData()">${t("seed_btn")}</button>
+  </div>`;
+}
+
 // ─── ADMIN: ห้องทั้งหมด (with override) ─────────────
 function vAdmRooms(){
   const all   = ST.rooms;
-  const seedBtn = IS_TEST ? `<div style="margin-bottom:10px"><button class="btn" style="background:#4C1D95;color:#fff;height:36px;padding:0 14px;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;width:100%;justify-content:center;font-family:'Sarabun',sans-serif" onclick="doSeedData()">${t("seed_btn")}</button></div>` : "";
+  const seedBtn = adminSeedBanner();
   const flist = ["all","pending","cleaning","done","passed","ack"];
   const shown = ST.filter==="all" ? all : all.filter(r=>r.status===ST.filter);
   if(all.length===0 && isToday())
@@ -1407,8 +1440,8 @@ function vAdmRooms(){
 function vAdmInspect(){
   const rooms = ST.rooms.filter(r=>r.status==="done");
   if(rooms.length===0)
-    return `<div class="empty"><div class="empty-ic">···</div>${t("no_inspect")}</div>`;
-  return `
+    return `${adminSeedBanner()}<div class="empty"><div class="empty-ic">···</div>${t("no_inspect")}</div>`;
+  return `${adminSeedBanner()}
     <div class="sec">${t("sec_done_rooms")} (${rooms.length} ${t("rooms_count")})</div>
     ${rooms.map(r=>`
       <div class="card">
@@ -1431,7 +1464,7 @@ function vAdmInspect(){
 // ─── ADMIN: ข้อร้องเรียน ─────────────────────────────
 function vAdmComplaints(){
   const data = ST.complaints||[];
-  return `
+  return `${adminSeedBanner()}
     <div class="sec">${t("complaints_90d")} (${data.length})</div>
     ${data.length===0?`<div class="empty"><div class="empty-ic">···</div>${t("no_complaint_data")}</div>`:""}
     ${data.map(c=>`
