@@ -319,10 +319,7 @@ const IS_TEST = location.hostname.includes("test") || new URLSearchParams(locati
 const GAS_URL = IS_TEST
   ? "https://script.google.com/macros/s/AKfycbz4J1LCWJ4zmj_9LKlHulqXmrJIifp13Kg_oOOwoMrVydYyUWsRXBwqHbbjmzdJwvf9uA/exec"
   : "https://script.google.com/macros/s/AKfycbx6R2fDH0w0Pt1fYNFZykjDvQjYfiEzpaOAxHXUZqaCw3OFGhxIkxvK2ibUR3zt4r7J/exec";
-if(IS_TEST){
-  const tb=document.getElementById("test-banner"); if(tb) tb.style.display="flex";
-  document.title="[TEST] Dusit Connect";
-}
+if(IS_TEST){ document.title="[TEST] Dusit Connect"; }
 
 // ─── SESSION & STATE ──────────────────────────────────
 let USER = JSON.parse(sessionStorage.getItem("dc_user") || "null");
@@ -379,6 +376,7 @@ const LANG_DATA = {
     under_dev:"กำลังพัฒนา",
     min_avg_lbl:"นาที/ห้อง (เฉลี่ย)", room_count_today:"ห้องวันนี้",
     fd_all_rooms:"ห้องทั้งหมด", fd_filter_all:"ทั้งหมด",
+    tab_hk_track:"ติดตามแม่บ้าน", fd_hk_cleaning_now:"กำลังทำอยู่ตอนนี้", fd_no_active_hk:"ไม่มีแม่บ้านที่ได้รับมอบหมาย",
     score_ok_lbl:"ดี", score_warn_lbl:"พอใช้", score_bad_lbl:"ต้องปรับปรุง",
     no_complaints_yet:"ไม่มีข้อร้องเรียน", total_rooms_lbl:"ห้องทั้งหมด",
     completed_lbl:"เสร็จแล้ว", complaints_lbl:"ข้อร้องเรียน",
@@ -440,6 +438,7 @@ const LANG_DATA = {
     under_dev:"Coming soon",
     min_avg_lbl:"min/room (avg)", room_count_today:"rooms today",
     fd_all_rooms:"All Rooms", fd_filter_all:"All",
+    tab_hk_track:"Track Staff", fd_hk_cleaning_now:"Currently Cleaning", fd_no_active_hk:"No housekeepers assigned",
     score_ok_lbl:"Good", score_warn_lbl:"Caution", score_bad_lbl:"Needs Work",
     no_complaints_yet:"No complaints", total_rooms_lbl:"Total Rooms",
     completed_lbl:"Done", complaints_lbl:"Complaints",
@@ -501,6 +500,7 @@ const LANG_DATA = {
     under_dev:"ဆက်ဖော်ဆောင်မည်",
     min_avg_lbl:"မိနစ်/အခန်း (ပျမ်းမျှ)", room_count_today:"ယနေ့အခန်း",
     fd_all_rooms:"အခန်းများအားလုံး", fd_filter_all:"အားလုံး",
+    tab_hk_track:"ဝန်ထမ်းကြည့်", fd_hk_cleaning_now:"သန့်ရှင်းနေ", fd_no_active_hk:"တာဝန်ပေးထားသောအိမ်ရှင်မမရှိ",
     score_ok_lbl:"ကောင်း", score_warn_lbl:"သတိထား", score_bad_lbl:"တိုးတက်ရန်",
     no_complaints_yet:"တိုင်ကြားချက်မရှိ", total_rooms_lbl:"အခန်းစုစုပေါင်း",
     completed_lbl:"ပြီးဆုံး", complaints_lbl:"တိုင်ကြားချက်",
@@ -662,6 +662,7 @@ function doLogout(){
   stopAutoRefresh(); stopLiveTimer();
   document.getElementById("main-app").style.display="none";
   document.getElementById("login-screen").style.display="flex";
+  const _tb=document.getElementById("test-banner"); if(_tb) _tb.style.display="none";
   document.getElementById("inp-user").value="";
   document.getElementById("inp-pass").value="";
   document.getElementById("login-err").textContent="";
@@ -687,12 +688,11 @@ function showApp(){
   if(hl) hl.innerHTML = langToggleHTML();
   const bl2 = document.getElementById("btn-logout");
   if(bl2) bl2.textContent = t("logout");
-  // show test banner for IS_TEST OR admin role
+  // show admin tools banner only for admin role
   const tb = document.getElementById("test-banner");
-  if(tb && (IS_TEST || USER.role==="admin")){
-    tb.style.display="flex";
+  if(tb){ tb.style.display = USER.role==="admin" ? "flex" : "none"; }
+  if(tb && USER.role==="admin")
     tb.querySelector(".test-banner-lbl").textContent = IS_TEST ? "⚗ TEST ENVIRONMENT" : "⚙ ADMIN TOOLS";
-  }
   const sb = document.getElementById("test-seed-btn");
   if(sb) sb.textContent = `⚙ ${t("seed_btn").replace("⚙ ","")}`;
 
@@ -707,7 +707,7 @@ function tabCfg(){
   return {
     supervisor:  [{lbl:t("tab_all_rooms"),v:"sup_rooms"},{lbl:t("tab_assign"),v:"sup_assign"},{lbl:t("tab_perf"),v:"sup_perf"}],
     housekeeper: [{lbl:t("tab_my_rooms"),v:"hk_rooms"}],
-    frontdesk:   [{lbl:t("tab_status"),v:"fd_status"}],
+    frontdesk:   [{lbl:t("tab_status"),v:"fd_status"},{lbl:t("tab_hk_track"),v:"fd_hk"}],
     manager:     [{lbl:t("tab_dash"),v:"mgr_dash"},{lbl:t("tab_all_rooms"),v:"mgr_all"},{lbl:t("tab_perf"),v:"mgr_perf"},{lbl:t("tab_staff"),v:"mgr_staff"},{lbl:t("tab_report"),v:"mgr_report"}],
     admin:       [{lbl:t("tab_all_rooms"),v:"adm_rooms"},{lbl:t("tab_assign"),v:"sup_assign"},{lbl:t("tab_inspect"),v:"adm_inspect"},{lbl:t("tab_complaints"),v:"adm_complaints"},{lbl:t("tab_staff"),v:"mgr_staff"}],
   };
@@ -882,7 +882,7 @@ function renderContent(){
   renderTabs();
   document.getElementById("content").innerHTML = renderView(getView());
   const v = getView();
-  if(["sup_perf","hk_rooms","fd_status","mgr_all","adm_rooms","adm_inspect"].includes(v)) startLiveTimer();
+  if(["sup_perf","hk_rooms","fd_status","fd_hk","mgr_all","adm_rooms","adm_inspect"].includes(v)) startLiveTimer();
   else stopLiveTimer();
 }
 function renderView(v){
@@ -892,6 +892,7 @@ function renderView(v){
     case "sup_perf":      return vSupPerf();
     case "hk_rooms":      return vHkRooms();
     case "fd_status":     return vFdStatus();
+    case "fd_hk":         return vFdHk();
     case "mgr_dash":      return vMgrDash();
     case "mgr_all":       return vMgrAll();
     case "mgr_perf":      return vMgrPerf();
@@ -1338,6 +1339,63 @@ function vFdStatus(){
     ${pending.length>0?`
     <div class="sec">${t("fd_pending")} (${pending.length})</div>
     ${pending.map(r=>fdCard(r,false)).join("")}`:""}
+  `;
+}
+
+// ─── FRONT DESK: Track by Housekeeper ───────────────
+function vFdHk(){
+  const rooms = ST.rooms.filter(r=>r.assignedTo);
+  if(rooms.length===0)
+    return `<div class="empty"><div class="empty-ic">···</div>${t("fd_no_active_hk")}</div>`;
+
+  // Group by housekeeper
+  const byHk = {};
+  rooms.forEach(r=>{
+    if(!byHk[r.assignedTo]) byHk[r.assignedTo]={id:r.assignedTo, name:r.assignedName||r.assignedTo, rooms:[]};
+    byHk[r.assignedTo].rooms.push(r);
+  });
+
+  const statusOrder = {cleaning:0,done:1,pending:2,passed:3,ack:4};
+  const hkList = Object.values(byHk).sort((a,b)=>{
+    const aC=a.rooms.filter(r=>r.status==="cleaning").length;
+    const bC=b.rooms.filter(r=>r.status==="cleaning").length;
+    return bC-aC || a.name.localeCompare(b.name);
+  });
+
+  function roomRow(r){
+    return `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--br)">
+      <div style="min-width:44px;font-size:17px;font-weight:700;color:var(--navy)">${r.id}</div>
+      <div style="flex:1">
+        ${sb(r.status)}
+        ${r.status==="cleaning"&&r.startTime?`<div style="font-size:12px;color:var(--o);font-weight:700;margin-top:3px" data-elapsed="${r.startTime}">—</div>`:""}
+        ${r.status==="done"&&r.startTime&&r.endTime?`<div style="font-size:11px;color:var(--mu);margin-top:2px">${duration(r.startTime,r.endTime)}</div>`:""}
+      </div>
+      <div style="font-size:11px;color:var(--mu);">${t("floor")} ${r.floor}</div>
+    </div>`;
+  }
+
+  return `
+    <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px;display:flex;align-items:center;gap:6px">
+      <span class="live-dot"></span>${t("fd_hk_cleaning_now")}
+    </div>
+    ${hkList.map(hk=>{
+      const cleaning=hk.rooms.filter(r=>r.status==="cleaning");
+      const sorted=hk.rooms.slice().sort((a,b)=>(statusOrder[a.status]??5)-(statusOrder[b.status]??5));
+      const hasCleaning=cleaning.length>0;
+      return `<div style="background:var(--wh);border:1.5px solid ${hasCleaning?"var(--o)":"var(--br)"};border-radius:12px;padding:12px 14px;margin-bottom:10px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div>
+            <div style="font-size:16px;font-weight:700;color:var(--navy)">${hk.name}</div>
+            <div style="font-size:11px;color:var(--mu);margin-top:2px">
+              ${hk.rooms.length} ${t("rooms_count")}
+              ${hasCleaning?`&nbsp;·&nbsp;<span style="color:var(--o);font-weight:700">${cleaning.length} ${t("fd_cleaning")}</span>`:""}
+            </div>
+          </div>
+          ${hasCleaning?`<span class="live-dot" style="width:9px;height:9px;flex-shrink:0"></span>`:""}
+        </div>
+        ${sorted.map(r=>roomRow(r)).join("")}
+      </div>`;
+    }).join("")}
   `;
 }
 
