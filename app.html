@@ -99,6 +99,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--tx);min-h
 
 /* Status */
 .s{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.s-unassigned{background:#E8EBF2;color:#3B4B6B}
 .s-pending{background:var(--warm);color:#555555}
 .s-cleaning{background:var(--ol);color:#9A3E00}
 .s-done{background:var(--bl);color:#1E40AF}
@@ -312,7 +313,7 @@ const LANG_DATA = {
     signin:"เข้าสู่ระบบ", signing_in:"กำลังเข้าสู่ระบบ...", username:"Username", password:"Password",
     logout:"ออก",
     role_supervisor:"หัวหน้า", role_housekeeper:"แม่บ้าน", role_frontdesk:"Front Desk", role_manager:"ผู้จัดการ", role_admin:"Admin",
-    s_pending:"รอทำ", s_cleaning:"กำลังทำ", s_done:"รอตรวจ", s_passed:"เสร็จสมบูรณ์", s_ack:"รับทราบ",
+    s_unassigned:"ยังไม่มอบหมาย", s_pending:"รอทำ", s_cleaning:"กำลังทำ", s_done:"รอตรวจ", s_passed:"เสร็จสมบูรณ์", s_ack:"รับทราบ",
     tab_all_rooms:"ห้องทั้งหมด", tab_assign:"มอบหมาย", tab_perf:"เวลาทำงาน", tab_my_rooms:"ห้องของฉัน",
     tab_dash:"Dashboard", tab_daily_report:"รายงานรายวัน", tab_staff:"สถิติพนักงาน", tab_inspect:"ตรวจห้อง", tab_status:"สถานะห้อง",
     btn_start:"เริ่มทำ", btn_done:"เสร็จแล้ว", btn_inspect:"ตรวจห้อง", btn_assign:"มอบหมาย",
@@ -372,7 +373,7 @@ const LANG_DATA = {
     signin:"Sign In", signing_in:"Signing in...", username:"Username", password:"Password",
     logout:"Logout",
     role_supervisor:"Supervisor", role_housekeeper:"Housekeeper", role_frontdesk:"Front Desk", role_manager:"Manager", role_admin:"Admin",
-    s_pending:"Pending", s_cleaning:"Cleaning", s_done:"Awaiting", s_passed:"Complete", s_ack:"Checked In",
+    s_unassigned:"Unassigned", s_pending:"Pending", s_cleaning:"Cleaning", s_done:"Awaiting", s_passed:"Complete", s_ack:"Checked In",
     tab_all_rooms:"All Rooms", tab_assign:"Assign", tab_perf:"Performance", tab_my_rooms:"My Rooms",
     tab_dash:"Dashboard", tab_daily_report:"Daily Report", tab_staff:"Staff Stats", tab_inspect:"Inspect", tab_status:"Room Status",
     btn_start:"Start", btn_done:"Done", btn_inspect:"Inspect", btn_assign:"Assign",
@@ -431,7 +432,7 @@ const LANG_DATA = {
     signin:"ဝင်ရောက်ရန်", signing_in:"ဝင်ရောက်နေသည်...", username:"အသုံးပြုသူ", password:"စကားဝှက်",
     logout:"ထွက်မည်",
     role_supervisor:"ကြီးကြပ်", role_housekeeper:"အိမ်ရှင်မ", role_frontdesk:"ဧည့်ကြိုစားပွဲ", role_manager:"မန်နေဂျာ", role_admin:"အက်ဒမင်",
-    s_pending:"စောင့်ဆိုင်း", s_cleaning:"သန့်ရှင်းနေ", s_done:"စစ်ဆေးရန်", s_passed:"ပြီးဆုံးပြီ", s_ack:"လက်ခံပြီး",
+    s_unassigned:"တာဝန်မပေးရသေး", s_pending:"စောင့်ဆိုင်း", s_cleaning:"သန့်ရှင်းနေ", s_done:"စစ်ဆေးရန်", s_passed:"ပြီးဆုံးပြီ", s_ack:"လက်ခံပြီး",
     tab_all_rooms:"အခန်းများ", tab_assign:"တာဝန်ပေး", tab_perf:"အချိန်မှတ်တမ်း", tab_my_rooms:"ကျွန်မ၏အခန်း",
     tab_dash:"ဒက်ရှ်ဘုတ်", tab_daily_report:"နေ့စဉ်အစီရင်ခံ", tab_staff:"ဝန်ထမ်းစာရင်း", tab_inspect:"စစ်ဆေး", tab_status:"အခန်းအခြေအနေ",
     btn_start:"စတင်မည်", btn_done:"ပြီးပြီ", btn_inspect:"စစ်ဆေးမည်", btn_assign:"တာဝန်ပေးမည်",
@@ -545,7 +546,7 @@ function isToday() { return ST.date === todayISO(); }
 function isPast()  { return ST.date < todayISO(); }
 
 // ─── STATUS HELPERS ──────────────────────────────────
-function SL(){ return { pending:t("s_pending"), cleaning:t("s_cleaning"), done:t("s_done"), passed:t("s_passed"), ack:t("s_ack") }; }
+function SL(){ return { unassigned:t("s_unassigned"), pending:t("s_pending"), cleaning:t("s_cleaning"), done:t("s_done"), passed:t("s_passed"), ack:t("s_ack") }; }
 function sb(s){ return `<span class="s s-${s}">${SL()[s]||s}</span>`; }
 function elapsed(ms){
   if(!ms) return "—";
@@ -868,7 +869,7 @@ function vSupRooms(){
       <button class="btn bg" onclick="doInitDaily()">${t("btn_create")} (${fmtDateTH(ST.date)})</button></div>`;
   const all = ST.rooms;
   const sl  = SL();
-  const flist = ["all","done","cleaning","pending","passed"];
+  const flist = ["all","unassigned","pending","cleaning","done","passed"];
 
   // secondary filters
   const floors = [...new Set(all.filter(r=>r.floor).map(r=>r.floor))].sort((a,b)=>a-b);
@@ -929,8 +930,8 @@ function vSupAssign(){
   if(isPast())
     return `<div class="empty"><div class="empty-ic">···</div>${t("cur_date_only")}</div>`;
   const sheetMap={}; ST.rooms.forEach(r=>{ sheetMap[r.id]=r; });
-  const allRooms  = allHotelRooms().map(r=>sheetMap[r.id]||{...r,status:"pending",assignedTo:"",assignedName:""});
-  const unassigned = allRooms.filter(r=>!r.assignedTo||r.status==="pending");
+  const allRooms  = allHotelRooms().map(r=>sheetMap[r.id]||{...r,status:"unassigned",assignedTo:"",assignedName:""});
+  const unassigned = allRooms.filter(r=>r.status==="unassigned");
   return `
     ${isToday()?`<button class="btn bg btn-lg" style="margin-bottom:12px" onclick="openAutoAssign()">${t("auto_assign_btn")}</button>`:""}
     <div class="sec">${t("sec_unassigned")} (${unassigned.length})</div>
@@ -1045,16 +1046,17 @@ function vHkRooms(){
 function vMgrDash(){
   const rooms = ST.rooms;
   const total = rooms.length;
-  const cnt = {pending:0,cleaning:0,done:0,passed:0};
+  const cnt = {unassigned:0,pending:0,cleaning:0,done:0,passed:0};
   rooms.forEach(r=>{ if(cnt[r.status]!==undefined) cnt[r.status]++; });
   const finished = cnt.passed;
   const pct = total ? Math.round(finished/total*100) : 0;
 
   const segs = [
-    {k:"passed",  c:"#A8B59A", get label(){ return SL()["passed"]; }},
-    {k:"done",    c:"#1A56DB", get label(){ return SL()["done"]; }},
-    {k:"cleaning",c:"#C45C10", get label(){ return SL()["cleaning"]; }},
-    {k:"pending", c:"#D8D4CD", get label(){ return SL()["pending"]; }},
+    {k:"passed",     c:"#A8B59A", get label(){ return SL()["passed"]; }},
+    {k:"done",       c:"#1A56DB", get label(){ return SL()["done"]; }},
+    {k:"cleaning",   c:"#C45C10", get label(){ return SL()["cleaning"]; }},
+    {k:"pending",    c:"#D8D4CD", get label(){ return SL()["pending"]; }},
+    {k:"unassigned", c:"#B8C0CC", get label(){ return SL()["unassigned"]; }},
   ];
   let cumPct = 0;
   const gradParts = segs.map(s=>{
@@ -1104,10 +1106,11 @@ function vMgrDash(){
       </div>
     </div>
 
-    <div class="stats" style="grid-template-columns:repeat(3,1fr);margin-bottom:4px">
+    <div class="stats" style="grid-template-columns:repeat(2,1fr);margin-bottom:4px">
       <div class="stat"><div class="stat-n" style="color:var(--saged)">${finished}</div><div class="stat-l">${SL()["passed"]}</div></div>
       <div class="stat"><div class="stat-n" style="color:var(--o)">${cnt.cleaning+cnt.done}</div><div class="stat-l">${t("in_progress_section")}</div></div>
-      <div class="stat"><div class="stat-n" style="color:var(--mu)">${cnt.pending}</div><div class="stat-l">${t("not_started_section")}</div></div>
+      <div class="stat"><div class="stat-n" style="color:#555">${cnt.pending}</div><div class="stat-l">${SL()["pending"]}</div></div>
+      <div class="stat"><div class="stat-n" style="color:#3B4B6B">${cnt.unassigned}</div><div class="stat-l">${SL()["unassigned"]}</div></div>
     </div>
 
     <div class="prog" style="margin-bottom:16px">
@@ -1143,7 +1146,7 @@ function vMgrDash(){
 function vMgrAll(){
   const all   = ST.rooms;
   const sl    = SL();
-  const flist = ["all","pending","cleaning","done","passed"];
+  const flist = ["all","unassigned","pending","cleaning","done","passed"];
   const floors = [...new Set(all.filter(r=>r.floor).map(r=>r.floor))].sort((a,b)=>a-b);
   const hks    = [...new Set(all.filter(r=>r.assignedName).map(r=>r.assignedName))].sort();
   const selSt  = `width:100%;padding:8px 28px 8px 10px;border:1.5px solid var(--br);border-radius:9px;font-family:'Sarabun',sans-serif;font-size:13px;color:var(--tx);background:var(--wh);outline:none;-webkit-appearance:none;cursor:pointer`;
@@ -1212,7 +1215,7 @@ function vFdStatus(){
   const sheetMap={};
   ST.rooms.forEach(r=>{ sheetMap[r.id]=r; });
   const all = allHotelRooms().map(r=>sheetMap[r.id]||{
-    ...r, date:ST.date, status:"pending", assignedTo:"", assignedName:"",
+    ...r, date:ST.date, status:"unassigned", assignedTo:"", assignedName:"",
     startTime:null, endTime:null, note:""
   });
   const sl  = SL();
@@ -1223,10 +1226,11 @@ function vFdStatus(){
 
   // Status chips count (before secondary filters)
   const chips = [
-    { k:"all",     label:t("tab_all_rooms"), count: all.length },
-    { k:"pending", label:sl.pending,         count: all.filter(r=>r.status==="pending").length },
-    { k:"cleaning",label:sl.cleaning,        count: all.filter(r=>["cleaning","done"].includes(r.status)).length },
-    { k:"passed",  label:sl.passed,          count: all.filter(r=>r.status==="passed").length },
+    { k:"all",        label:t("tab_all_rooms"), count: all.length },
+    { k:"unassigned", label:sl.unassigned,      count: all.filter(r=>r.status==="unassigned").length },
+    { k:"pending",    label:sl.pending,         count: all.filter(r=>r.status==="pending").length },
+    { k:"cleaning",   label:sl.cleaning,        count: all.filter(r=>["cleaning","done"].includes(r.status)).length },
+    { k:"passed",     label:sl.passed,          count: all.filter(r=>r.status==="passed").length },
   ];
 
   // Apply all 3 filters together
@@ -1667,7 +1671,7 @@ function openAutoAssign(){
   ST.rooms.forEach(r=>{ sheetMap[r.id]=r; });
   const pending = allHotelRooms().filter(r=>{
     const s=sheetMap[r.id];
-    return !s || !s.assignedTo || s.status==="pending";
+    return !s || s.status==="unassigned";
   });
 
   // ST.staff already contains only active housekeepers (filtered by GAS getStaff)
@@ -1761,7 +1765,7 @@ async function doAutoAssign(){
     const existing=ST.rooms.find(x=>x.id===r.id);
     const assign=map[r.id];
     if(assign) return {...(existing||r), status:"pending", assignedTo:assign.staffId, assignedName:assign.staffName};
-    return existing||{...r, status:"pending", assignedTo:"", assignedName:""};
+    return existing||{...r, status:"unassigned", assignedTo:"", assignedName:""};
   });
   renderContent();
 

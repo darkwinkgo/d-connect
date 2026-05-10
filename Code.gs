@@ -104,7 +104,7 @@ function getRooms(role, staffId, date, showAll) {
         if (roomId.endsWith("4")) continue;
         rooms.push(sheetMap[roomId] || {
           id: roomId, floor: f, date: targetDate,
-          status: "pending", assignedTo: "", assignedName: "",
+          status: "unassigned", assignedTo: "", assignedName: "",
           startTime: null, endTime: null, note: "",
         });
       }
@@ -290,7 +290,7 @@ function initDaily(date) {
     for (let n = 1; n <= 9; n++) {
       const room = String(f) + String(n).padStart(2, "0");
       if (room.endsWith("4")) continue;
-      rows.push([room, f, targetDate, "pending", "", "", "", "", ""]);
+      rows.push([room, f, targetDate, "unassigned", "", "", "", "", ""]);
     }
   }
   if (rows.length > 0)
