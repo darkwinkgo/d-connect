@@ -307,8 +307,10 @@ textarea{height:74px;resize:none;line-height:1.5}
 <div class="toast" id="toast"></div>
 
 <script>
-const GAS_URL = "https://script.google.com/macros/s/AKfycbx6R2fDH0w0Pt1fYNFZykjDvQjYfiEzpaOAxHXUZqaCw3OFGhxIkxvK2ibUR3zt4r7J/exec";
 const IS_TEST = location.hostname.includes("test") || new URLSearchParams(location.search).get("mode")==="test";
+const GAS_URL = IS_TEST
+  ? "https://script.google.com/macros/s/AKfycbz4J1LCWJ4zmj_9LKlHulqXmrJIifp13Kg_oOOwoMrVydYyUWsRXBwqHbbjmzdJwvf9uA/exec"
+  : "https://script.google.com/macros/s/AKfycbx6R2fDH0w0Pt1fYNFZykjDvQjYfiEzpaOAxHXUZqaCw3OFGhxIkxvK2ibUR3zt4r7J/exec";
 if(IS_TEST){ const tb=document.getElementById("test-banner"); if(tb) tb.style.display="block"; document.title="[TEST] Dusit Connect"; }
 
 // ─── SESSION & STATE ──────────────────────────────────
