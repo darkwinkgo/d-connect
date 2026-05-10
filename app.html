@@ -63,6 +63,7 @@ body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--tx);min-h
 .b-housekeeper{background:var(--sagel);color:var(--saged)}
 .b-frontdesk{background:#E8EBF2;color:var(--navy)}
 .b-manager{background:var(--warm);color:var(--navy)}
+.b-admin{background:#2D1B69;color:#fff}
 .hdr-name{font-size:12px;color:var(--mu);margin-bottom:6px}
 .logout-btn{font-size:11px;color:var(--mu);background:none;border:1px solid var(--br);border-radius:20px;padding:3px 9px;cursor:pointer;font-family:'Sarabun',sans-serif}
 
@@ -207,6 +208,34 @@ textarea{height:74px;resize:none;line-height:1.5}
 .perf-sub{font-size:10px;color:var(--mu)}
 .perf-room-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:5px 0;border-top:1px solid var(--br)}
 
+/* Complaint / Staff stats */
+.complaint-card{background:var(--rl);border:1.5px solid #FECACA;border-radius:var(--rd);padding:11px;margin-bottom:8px}
+.complaint-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.complaint-room{font-size:16px;font-weight:700;color:var(--r)}
+.complaint-date{font-size:11px;color:var(--mu)}
+.complaint-desc{font-size:13px;color:var(--tx);margin-top:3px}
+.complaint-by{font-size:11px;color:var(--mu);margin-top:2px}
+.staff-score-card{background:var(--wh);border:1.5px solid var(--br);border-radius:var(--rd);padding:13px;margin-bottom:10px}
+.staff-score-name{font-size:15px;font-weight:700}
+.staff-score-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.staff-score-item{text-align:center;background:var(--bg);border-radius:9px;padding:7px 4px}
+.staff-score-val{font-size:18px;font-weight:700}
+.staff-score-lbl{font-size:9px;color:var(--mu);margin-top:2px}
+.score-bad{color:var(--r)}
+.score-ok{color:var(--g)}
+.score-warn{color:var(--o)}
+/* Override modal */
+.override-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.ov-btn{padding:9px 4px;border:1.5px solid var(--br);border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;text-align:center;transition:all .15s;font-family:'Sarabun',sans-serif}
+.ov-btn.active{border-color:var(--g);background:var(--gl);color:var(--gd)}
+/* Report mode tabs */
+.rpt-mode{display:flex;gap:6px;margin-bottom:12px}
+.rpt-mode-btn{padding:5px 14px;border:1.5px solid var(--br);border-radius:20px;font-size:12px;font-weight:600;color:var(--mu);background:var(--wh);cursor:pointer;font-family:'Sarabun',sans-serif;transition:all .15s}
+.rpt-mode-btn.on{border-color:var(--g);background:var(--gl);color:var(--gd)}
+/* Live badge */
+.live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#E74C3C;margin-right:4px;animation:pulse 1.5s infinite}
+/* Test banner */
+.test-banner{background:#B91C1C;color:#fff;text-align:center;font-size:11px;font-weight:700;letter-spacing:1px;padding:5px;position:sticky;top:0;z-index:999}
 /* Toast */
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--tx);color:#fff;padding:9px 18px;border-radius:20px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;z-index:200;white-space:nowrap;pointer-events:none}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -220,6 +249,7 @@ textarea{height:74px;resize:none;line-height:1.5}
 </head>
 <body>
 <div class="app">
+<div class="test-banner" id="test-banner" style="display:none">TEST ENVIRONMENT — ข้อมูลนี้ใช้สำหรับทดสอบเท่านั้น</div>
 
 <!-- LOGIN -->
 <div id="login-screen">
@@ -278,10 +308,12 @@ textarea{height:74px;resize:none;line-height:1.5}
 
 <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbx6R2fDH0w0Pt1fYNFZykjDvQjYfiEzpaOAxHXUZqaCw3OFGhxIkxvK2ibUR3zt4r7J/exec";
+const IS_TEST = location.hostname.includes("test") || new URLSearchParams(location.search).get("mode")==="test";
+if(IS_TEST){ const tb=document.getElementById("test-banner"); if(tb) tb.style.display="block"; document.title="[TEST] Dusit Connect"; }
 
 // ─── SESSION & STATE ──────────────────────────────────
 let USER = JSON.parse(sessionStorage.getItem("dc_user") || "null");
-const ST = { tabIdx:0, filter:"all", rooms:[], staff:[], date:todayISO(), report:[], perf:[] };
+const ST = { tabIdx:0, filter:"all", rooms:[], staff:[], date:todayISO(), report:[], perf:[], staffReport:[], complaints:[], reportMode:"daily" };
 
 // ─── DATE HELPERS ────────────────────────────────────
 function todayISO() {
@@ -338,8 +370,10 @@ function startAutoRefresh(){
   _refreshTimer = setInterval(async () => {
     if(!USER) return;
     const v = getView();
-    if(v==="mgr_report"||v==="mgr_perf") return;
-    const res = await gasGet({ action:"getRooms", role:USER.role, staffId:USER.staffId, date:ST.date });
+    if(["mgr_report","mgr_perf","mgr_staff","adm_complaints","fd_complaint"].includes(v)) return;
+    const needAll = (v==="fd_cleaning");
+    const role = (USER.role==="admin") ? "supervisor" : USER.role;
+    const res = await gasGet({ action:"getRooms", role, staffId:USER.staffId, date:ST.date, showAll: needAll || undefined });
     if(res.success){ ST.rooms = res.rooms||[]; renderContent(); }
   }, 30000);
 }
@@ -382,13 +416,15 @@ async function doLogin(){
 function doLogout(){
   USER=null;
   sessionStorage.removeItem("dc_user");
-  ST.rooms=[]; ST.staff=[]; ST.tabIdx=0; ST.filter="all"; ST.date=todayISO(); ST.report=[]; ST.perf=[];
+  ST.rooms=[]; ST.staff=[]; ST.tabIdx=0; ST.filter="all"; ST.date=todayISO(); ST.report=[]; ST.perf=[]; ST.staffReport=[]; ST.complaints=[]; ST.reportMode="daily";
   stopAutoRefresh(); stopLiveTimer();
   document.getElementById("main-app").style.display="none";
   document.getElementById("login-screen").style.display="flex";
   document.getElementById("inp-user").value="";
   document.getElementById("inp-pass").value="";
   document.getElementById("login-err").textContent="";
+  const bl = document.getElementById("btn-login");
+  bl.disabled=false; bl.textContent="เข้าสู่ระบบ";
 }
 
 // ─── SHOW APP ────────────────────────────────────────
@@ -397,8 +433,8 @@ function showApp(){
   const ma = document.getElementById("main-app");
   ma.style.display="flex";
 
-  const roleLabel = { supervisor:"หัวหน้า", housekeeper:"แม่บ้าน", frontdesk:"Front Desk", manager:"ผู้จัดการ" };
-  const roleClass = { supervisor:"b-supervisor", housekeeper:"b-housekeeper", frontdesk:"b-frontdesk", manager:"b-manager" };
+  const roleLabel = { supervisor:"หัวหน้า", housekeeper:"แม่บ้าน", frontdesk:"Front Desk", manager:"ผู้จัดการ", admin:"Admin" };
+  const roleClass = { supervisor:"b-supervisor", housekeeper:"b-housekeeper", frontdesk:"b-frontdesk", manager:"b-manager", admin:"b-admin" };
   const b = document.getElementById("role-badge");
   b.textContent = roleLabel[USER.role]||USER.role;
   b.className   = "badge "+(roleClass[USER.role]||"");
@@ -415,8 +451,9 @@ function tabCfg(){
   return {
     supervisor:  [{lbl:"ห้องทั้งหมด",v:"sup_rooms"},{lbl:"Assign",v:"sup_assign"},{lbl:"เวลาทำงาน",v:"sup_perf"}],
     housekeeper: [{lbl:"ห้องของฉัน",v:"hk_rooms"}],
-    frontdesk:   [{lbl:"พร้อมรับลูกค้า",v:"fd_ack"}],
-    manager:     [{lbl:"Dashboard",v:"mgr_dash"},{lbl:"ห้องทั้งหมด",v:"mgr_all"},{lbl:"เวลาทำงาน",v:"mgr_perf"},{lbl:"รายงาน",v:"mgr_report"}],
+    frontdesk:   [{lbl:"พร้อมรับลูกค้า",v:"fd_ack"},{lbl:"กำลังทำ",v:"fd_cleaning"},{lbl:"แจ้งปัญหา",v:"fd_complaint"}],
+    manager:     [{lbl:"Dashboard",v:"mgr_dash"},{lbl:"ห้องทั้งหมด",v:"mgr_all"},{lbl:"เวลาทำงาน",v:"mgr_perf"},{lbl:"สถิติพนักงาน",v:"mgr_staff"},{lbl:"รายงาน",v:"mgr_report"}],
+    admin:       [{lbl:"ห้องทั้งหมด",v:"adm_rooms"},{lbl:"Assign",v:"sup_assign"},{lbl:"ตรวจห้อง",v:"adm_inspect"},{lbl:"ข้อร้องเรียน",v:"adm_complaints"},{lbl:"สถิติ",v:"mgr_staff"}],
   };
 }
 function renderTabs(){
@@ -519,12 +556,18 @@ function openCalendar(){
 // ─── LOAD DATA ───────────────────────────────────────
 async function loadAndRender(){
   const v = getView();
-  if(v==="mgr_report"){ await loadReport(); return; }
-  if(v==="mgr_perf"){   await loadPerformance(); return; }
+  if(v==="mgr_report"){    await loadReport();       return; }
+  if(v==="mgr_perf"){      await loadPerformance();  return; }
+  if(v==="mgr_staff"){     await loadStaffReport();  return; }
+  if(v==="adm_complaints"){ await loadComplaints();  return; }
+  if(v==="fd_complaint"){ await loadTodayComplaints(); renderContent(); return; }
+
   showLoader();
-  const res = await gasGet({ action:"getRooms", role:USER.role, staffId:USER.staffId, date:ST.date });
+  const needAll = (v==="fd_cleaning");
+  const role = (USER.role==="admin") ? "supervisor" : USER.role;
+  const res = await gasGet({ action:"getRooms", role, staffId:USER.staffId, date:ST.date, showAll: needAll || undefined });
   if(res.success) ST.rooms = res.rooms||[];
-  if(USER.role==="supervisor" && ST.staff.length===0){
+  if((USER.role==="supervisor"||USER.role==="admin") && ST.staff.length===0){
     const sr = await gasGet({ action:"getStaff" });
     if(sr.success) ST.staff = sr.staff||[];
   }
@@ -535,7 +578,7 @@ async function loadReport(){
   showLoader();
   const end = ST.date;
   const dt = new Date(ST.date);
-  dt.setDate(dt.getDate()-29);
+  dt.setFullYear(dt.getFullYear()-2); // 2 years back for yearly view
   const start = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`;
   const res = await gasGet({ action:"getReport", startDate:start, endDate:end });
   if(res.success) ST.report = res.byDate||[];
@@ -553,6 +596,32 @@ async function loadPerformance(){
   renderContent();
 }
 
+async function loadStaffReport(){
+  showLoader();
+  const end = ST.date;
+  const dt = new Date(ST.date); dt.setDate(dt.getDate()-89);
+  const start = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`;
+  const res = await gasGet({ action:"getStaffReport", startDate:start, endDate:end });
+  if(res.success) ST.staffReport = res.byStaff||[];
+  renderContent();
+}
+
+async function loadComplaints(){
+  showLoader();
+  const end = ST.date;
+  const dt = new Date(ST.date); dt.setDate(dt.getDate()-89);
+  const start = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`;
+  const res = await gasGet({ action:"getComplaints", startDate:start, endDate:end });
+  if(res.success) ST.complaints = res.complaints||[];
+  renderContent();
+}
+
+async function loadTodayComplaints(){
+  // lightweight: just load today's complaints for fd_complaint view
+  const res = await gasGet({ action:"getComplaints", startDate:ST.date, endDate:ST.date });
+  ST.todayComplaints = res.success ? (res.complaints||[]) : [];
+}
+
 function showLoader(){
   document.getElementById("content").innerHTML =
     `<div class="loader"><div class="spinner"></div><span style="font-size:13px;color:var(--mu)">กำลังโหลด...</span></div>`;
@@ -563,20 +632,26 @@ function renderContent(){
   renderTabs();
   document.getElementById("content").innerHTML = renderView(getView());
   const v = getView();
-  if(["sup_perf","hk_rooms"].includes(v)) startLiveTimer();
+  if(["sup_perf","hk_rooms","fd_cleaning","mgr_all","adm_rooms","adm_inspect"].includes(v)) startLiveTimer();
   else stopLiveTimer();
 }
 function renderView(v){
   switch(v){
-    case "sup_rooms":  return vSupRooms();
-    case "sup_assign": return vSupAssign();
-    case "sup_perf":   return vSupPerf();
-    case "hk_rooms":   return vHkRooms();
-    case "fd_ack":     return vFdAck();
-    case "mgr_dash":   return vMgrDash();
-    case "mgr_all":    return vMgrAll();
-    case "mgr_perf":   return vMgrPerf();
-    case "mgr_report": return vMgrReport();
+    case "sup_rooms":     return vSupRooms();
+    case "sup_assign":    return vSupAssign();
+    case "sup_perf":      return vSupPerf();
+    case "hk_rooms":      return vHkRooms();
+    case "fd_ack":        return vFdAck();
+    case "fd_cleaning":   return vFdCleaning();
+    case "fd_complaint":  return vFdComplaint();
+    case "mgr_dash":      return vMgrDash();
+    case "mgr_all":       return vMgrAll();
+    case "mgr_perf":      return vMgrPerf();
+    case "mgr_staff":     return vMgrStaff();
+    case "mgr_report":    return vMgrReport();
+    case "adm_rooms":     return vAdmRooms();
+    case "adm_inspect":   return vAdmInspect();
+    case "adm_complaints":return vAdmComplaints();
     default: return `<div class="empty"><div class="empty-ic">···</div>กำลังพัฒนา</div>`;
   }
 }
@@ -906,17 +981,55 @@ function vMgrPerf(){
 
 // ─── MANAGER: Report ─────────────────────────────────
 function vMgrReport(){
-  const data = ST.report;
-  if(data.length===0) return `<div class="empty"><div class="empty-ic">···</div>ไม่มีข้อมูลย้อนหลัง</div>`;
+  const raw = ST.report;
+  if(raw.length===0) return `<div class="empty"><div class="empty-ic">···</div>ไม่มีข้อมูลย้อนหลัง</div>`;
+  const mode = ST.reportMode||"daily";
+
+  // Group by month for monthly view
+  function groupByMonth(rows){
+    const m = {};
+    rows.forEach(d=>{
+      const key = d.date.substring(0,7);
+      if(!m[key]) m[key]={date:key,pending:0,cleaning:0,done:0,passed:0,ack:0,total:0};
+      ["pending","cleaning","done","passed","ack","total"].forEach(k=>{ m[key][k]+=(d[k]||0); });
+    });
+    return Object.values(m).sort((a,b)=>b.date.localeCompare(a.date));
+  }
+  function groupByYear(rows){
+    const y = {};
+    rows.forEach(d=>{
+      const key = d.date.substring(0,4);
+      if(!y[key]) y[key]={date:key,pending:0,cleaning:0,done:0,passed:0,ack:0,total:0};
+      ["pending","cleaning","done","passed","ack","total"].forEach(k=>{ y[key][k]+=(d[k]||0); });
+    });
+    return Object.values(y).sort((a,b)=>b.date.localeCompare(a.date));
+  }
+
+  const data = mode==="monthly" ? groupByMonth(raw) : mode==="yearly" ? groupByYear(raw) : raw;
+
+  function fmtKey(d){
+    if(mode==="monthly"){
+      const [y,m]=d.date.split("-");
+      const mo=["","ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+      return `${mo[+m]} ${+y+543}`;
+    }
+    if(mode==="yearly") return `ปี ${+d.date+543}`;
+    return fmtDateTH(d.date);
+  }
+
   return `
-    <div class="sec">สรุปรายวัน (30 วันล่าสุด)</div>
+    <div class="rpt-mode">
+      <button class="rpt-mode-btn ${mode==="daily"?"on":""}"   onclick="ST.reportMode='daily';renderContent()">รายวัน</button>
+      <button class="rpt-mode-btn ${mode==="monthly"?"on":""}" onclick="ST.reportMode='monthly';renderContent()">รายเดือน</button>
+      <button class="rpt-mode-btn ${mode==="yearly"?"on":""}"  onclick="ST.reportMode='yearly';renderContent()">รายปี</button>
+    </div>
     ${data.map(d=>{
       const t = d.total||1;
       const fin = (d.ack||0)+(d.passed||0);
       const pct = Math.round(fin/t*100);
       return `<div class="card" style="padding:10px 13px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-          <span style="font-size:13px;font-weight:700">${fmtDateTH(d.date)}</span>
+          <span style="font-size:13px;font-weight:700">${fmtKey(d)}</span>
           <span style="font-size:12px;color:${pct===100?"var(--saged)":pct>50?"var(--g)":"var(--mu)"};font-weight:700">${fin}/${t} (${pct}%)</span>
         </div>
         <div class="rpt-bars">
@@ -932,6 +1045,213 @@ function vMgrReport(){
         </div>
       </div>`;
     }).join("")}
+  `;
+}
+
+// ─── FRONT DESK: กำลังทำ (real-time) ────────────────
+function vFdCleaning(){
+  const rooms = ST.rooms;
+  if(rooms.length===0)
+    return `<div class="empty"><div class="empty-ic">···</div>ไม่มีห้องที่กำลังทำความสะอาดอยู่</div>`;
+  const cleaning = rooms.filter(r=>r.status==="cleaning");
+  const waiting  = rooms.filter(r=>r.status==="done");
+  return `
+    <div class="sec"><span class="live-dot"></span>กำลังทำ — Real-time (${cleaning.length} ห้อง)</div>
+    ${cleaning.length===0?`<div style="font-size:13px;color:var(--mu);padding:4px 0 10px">ไม่มีห้องที่กำลังทำ</div>`:""}
+    ${cleaning.map(r=>`
+      <div class="card">
+        <div class="card-hd">
+          <div><div class="rnum">${r.id}</div><div class="rfloor">ชั้น ${r.floor}</div></div>
+          ${sb(r.status)}
+        </div>
+        <div class="rinfo">แม่บ้าน: <b>${r.assignedName||"—"}</b>
+          ${r.startTime?` · เริ่มมาแล้ว <b data-elapsed="${r.startTime}">—</b>`:""}
+        </div>
+      </div>
+    `).join("")}
+    ${waiting.length>0?`
+    <div class="sec" style="margin-top:6px">รอตรวจ — เสร็จแล้ว (${waiting.length} ห้อง)</div>
+    ${waiting.map(r=>`
+      <div class="card">
+        <div class="card-hd">
+          <div><div class="rnum">${r.id}</div><div class="rfloor">ชั้น ${r.floor}</div></div>
+          ${sb(r.status)}
+        </div>
+        <div class="rinfo">แม่บ้าน: <b>${r.assignedName||"—"}</b>
+          ${r.startTime&&r.endTime?` · ใช้เวลา <b>${duration(r.startTime,r.endTime)}</b>`:""}
+        </div>
+      </div>
+    `).join("")}`:""}
+  `;
+}
+
+// ─── FRONT DESK: แจ้งปัญหา ───────────────────────────
+function vFdComplaint(){
+  const hist = ST.todayComplaints||[];
+  return `
+    <div class="sec">แจ้งปัญหาห้องพัก (Guest Complaint)</div>
+    <div class="card">
+      <div class="field">
+        <label>หมายเลขห้อง</label>
+        <input type="number" id="cmp-room" placeholder="เช่น 801" style="width:100%;height:44px;padding:0 12px;border:1.5px solid var(--br);border-radius:9px;font-size:16px;font-family:'Sarabun',sans-serif;outline:none" />
+      </div>
+      <div class="field" style="margin-top:10px">
+        <label>รายละเอียดปัญหา</label>
+        <textarea id="cmp-desc" placeholder="เช่น แขกร้องเรียนห้องน้ำไม่สะอาด, ผ้าปูที่นอนมีรอยเปื้อน..." style="height:90px"></textarea>
+      </div>
+      <button class="btn bg btn-full" style="margin-top:4px" onclick="doLogComplaint()">บันทึกข้อร้องเรียน</button>
+    </div>
+    <div class="sec" style="margin-top:4px">ประวัติข้อร้องเรียนวันนี้ (${hist.length} รายการ)</div>
+    ${hist.length===0
+      ? `<div style="font-size:13px;color:var(--mu);padding:4px 0">ยังไม่มีข้อร้องเรียนวันนี้</div>`
+      : hist.map(c=>`<div class="complaint-card"><div class="complaint-hd"><span class="complaint-room">ห้อง ${c.roomId}</span><span class="complaint-date">${c.date}</span></div><div class="complaint-desc">${c.description}</div><div class="complaint-by">แม่บ้าน: ${c.assignedName||"ไม่ระบุ"}</div></div>`).join("")}
+  `;
+}
+
+// ─── MANAGER: สถิติพนักงาน ──────────────────────────
+function vMgrStaff(){
+  const data = ST.staffReport||[];
+  if(data.length===0)
+    return `<div class="empty"><div class="empty-ic">···</div>ไม่มีข้อมูล<br><span style="font-size:12px">90 วันล่าสุด</span></div>`;
+
+  function scoreColor(complaints){
+    if(complaints===0) return "score-ok";
+    if(complaints<=2)  return "score-warn";
+    return "score-bad";
+  }
+
+  return `
+    <div class="sec">สรุปผลงานพนักงาน — 90 วันล่าสุด (เรียงตามข้อร้องเรียน)</div>
+    <div style="font-size:11px;color:var(--mu);margin-bottom:10px">
+      <span style="color:var(--saged);font-weight:700">● ดี</span> = ไม่มีข้อร้องเรียน&nbsp;&nbsp;
+      <span style="color:var(--o);font-weight:700">● พอใช้</span> = 1-2 ครั้ง&nbsp;&nbsp;
+      <span style="color:var(--r);font-weight:700">● ต้องปรับปรุง</span> = 3+ ครั้ง
+    </div>
+    ${data.map(s=>{
+      const avgMin = s.avgDuration>0 ? Math.round(s.avgDuration/60000) : null;
+      const sc = scoreColor(s.complaints);
+      return `<div class="staff-score-card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="staff-score-name">${s.name}</div>
+          <div style="font-size:20px;font-weight:700" class="${sc}">${s.complaints}</div>
+        </div>
+        <div style="font-size:11px;color:var(--mu)">ข้อร้องเรียน</div>
+        <div class="staff-score-grid">
+          <div class="staff-score-item">
+            <div class="staff-score-val">${s.totalRooms}</div>
+            <div class="staff-score-lbl">ห้องทั้งหมด</div>
+          </div>
+          <div class="staff-score-item">
+            <div class="staff-score-val">${s.completedRooms}</div>
+            <div class="staff-score-lbl">เสร็จแล้ว</div>
+          </div>
+          <div class="staff-score-item">
+            <div class="staff-score-val ${!avgMin?'':avgMin>45?'score-warn':''}">${avgMin?avgMin+"'":"—"}</div>
+            <div class="staff-score-lbl">นาที/ห้อง</div>
+          </div>
+        </div>
+        ${s.complaintList&&s.complaintList.length>0?`
+        <div style="margin-top:8px">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mu);margin-bottom:4px">ข้อร้องเรียนล่าสุด</div>
+          ${s.complaintList.slice(0,3).map(c=>`
+            <div class="complaint-card" style="padding:8px">
+              <div style="display:flex;justify-content:space-between">
+                <span style="font-size:12px;font-weight:700;color:var(--r)">ห้อง ${c.roomId}</span>
+                <span style="font-size:11px;color:var(--mu)">${c.date}</span>
+              </div>
+              <div style="font-size:12px;margin-top:2px">${c.description}</div>
+            </div>
+          `).join("")}
+          ${s.complaintList.length>3?`<div style="font-size:11px;color:var(--mu);margin-top:2px">... และอีก ${s.complaintList.length-3} ครั้ง</div>`:""}
+        </div>`:""}
+        <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+          ${s.complaints===0
+            ?`<span style="font-size:11px;color:var(--saged);font-weight:700">ผลงานดีเยี่ยม</span>`
+            :s.complaints<=2
+              ?`<span style="font-size:11px;color:var(--o);font-weight:700">ควรติดตามผลงาน</span>`
+              :`<span style="font-size:11px;color:var(--r);font-weight:700">แนะนำการอบรมเพิ่มเติม</span>`}
+        </div>
+      </div>`;
+    }).join("")}
+  `;
+}
+
+// ─── ADMIN: ห้องทั้งหมด (with override) ─────────────
+function vAdmRooms(){
+  const all   = ST.rooms;
+  const flist = ["all","pending","cleaning","done","passed","ack"];
+  const flbl  = {all:"ทั้งหมด",done:"รอตรวจ",cleaning:"กำลังทำ",pending:"รอทำ",passed:"ผ่านตรวจ",ack:"รับทราบ"};
+  const shown = ST.filter==="all" ? all : all.filter(r=>r.status===ST.filter);
+  if(all.length===0 && isToday())
+    return `<div class="empty"><div class="empty-ic">···</div><div style="margin-bottom:12px">ยังไม่มีงานวันนี้</div>
+      <button class="btn bg" onclick="doInitDaily()">+ สร้างงานวันนี้</button></div>`;
+  return `
+    <div class="chips">
+      ${flist.map(f=>`<div class="chip ${ST.filter===f?"on":""}" onclick="setF('${f}')">${flbl[f]} (${f==="all"?all.length:all.filter(r=>r.status===f).length})</div>`).join("")}
+    </div>
+    ${shown.length===0?`<div class="empty"><div class="empty-ic">···</div>ไม่มีห้องในสถานะนี้</div>`:""}
+    ${shown.map(r=>`
+      <div class="card">
+        <div class="card-hd">
+          <div><div class="rnum">${r.id}</div><div class="rfloor">ชั้น ${r.floor}</div></div>
+          ${sb(r.status)}
+        </div>
+        <div class="rinfo">แม่บ้าน: <b>${r.assignedName||"—"}</b>
+          ${r.status==="cleaning"&&r.startTime?` · <span data-elapsed="${r.startTime}">—</span>`:""}
+          ${r.startTime&&r.endTime?` · ${duration(r.startTime,r.endTime)}`:""}
+        </div>
+        ${r.note?`<div class="rnote-ok">${r.note}</div>`:""}
+        <div class="acts">
+          ${r.status==="done"?`<button class="btn bg" onclick="openInspect('${r.id}')">ตรวจห้อง</button>`:""}
+          <button class="btn bw" onclick="openAssign('${r.id}')">Re-assign</button>
+          <button class="btn" style="background:#EDE9FE;color:#5B21B6;height:38px;padding:0 12px;border-radius:9px;font-size:12px;font-weight:700;border:none;cursor:pointer" onclick="openAdminOverride('${r.id}')">Override</button>
+        </div>
+      </div>
+    `).join("")}
+  `;
+}
+
+// ─── ADMIN: ตรวจห้อง (rooms with status done) ───────
+function vAdmInspect(){
+  const rooms = ST.rooms.filter(r=>r.status==="done");
+  if(rooms.length===0)
+    return `<div class="empty"><div class="empty-ic">···</div>ไม่มีห้องที่รอตรวจ</div>`;
+  return `
+    <div class="sec">รอตรวจ (${rooms.length} ห้อง)</div>
+    ${rooms.map(r=>`
+      <div class="card">
+        <div class="card-hd">
+          <div><div class="rnum">${r.id}</div><div class="rfloor">ชั้น ${r.floor}</div></div>
+          ${sb(r.status)}
+        </div>
+        <div class="rinfo">แม่บ้าน: <b>${r.assignedName||"—"}</b>
+          ${r.startTime&&r.endTime?` · ใช้เวลา <b>${duration(r.startTime,r.endTime)}</b>`:""}
+        </div>
+        <div class="acts">
+          <button class="btn bg" onclick="openInspect('${r.id}')">ตรวจห้อง</button>
+          <button class="btn" style="background:#EDE9FE;color:#5B21B6;height:38px;padding:0 12px;border-radius:9px;font-size:12px;font-weight:700;border:none;cursor:pointer" onclick="openAdminOverride('${r.id}')">Override</button>
+        </div>
+      </div>
+    `).join("")}
+  `;
+}
+
+// ─── ADMIN: ข้อร้องเรียน ─────────────────────────────
+function vAdmComplaints(){
+  const data = ST.complaints||[];
+  return `
+    <div class="sec">ข้อร้องเรียนทั้งหมด — 90 วันล่าสุด (${data.length} รายการ)</div>
+    ${data.length===0?`<div class="empty"><div class="empty-ic">···</div>ไม่มีข้อร้องเรียน</div>`:""}
+    ${data.map(c=>`
+      <div class="complaint-card">
+        <div class="complaint-hd">
+          <span class="complaint-room">ห้อง ${c.roomId}</span>
+          <span class="complaint-date">${c.date}</span>
+        </div>
+        <div class="complaint-desc">${c.description}</div>
+        <div class="complaint-by">แม่บ้าน: ${c.assignedName||"ไม่ระบุ"} · แจ้งโดย: ${c.reportedByName||"ไม่ระบุ"}</div>
+      </div>
+    `).join("")}
   `;
 }
 
@@ -965,6 +1285,62 @@ async function doInitDaily(){
   } else {
     toast(res.message||"เกิดข้อผิดพลาด","err");
   }
+}
+
+async function doLogComplaint(){
+  const roomId = document.getElementById("cmp-room")?.value?.trim();
+  const desc   = document.getElementById("cmp-desc")?.value?.trim();
+  if(!roomId){ toast("กรุณาระบุหมายเลขห้อง","err"); return; }
+  if(!desc)  { toast("กรุณาระบุรายละเอียดปัญหา","err"); return; }
+  await gasCall({ action:"logComplaint", roomId, description:desc, staffId:USER.staffId, staffName:USER.name, date:ST.date });
+  toast("บันทึกข้อร้องเรียนแล้ว","ok");
+  // re-fetch today's complaints then re-render
+  await loadTodayComplaints();
+  renderContent();
+}
+
+function openAdminOverride(roomId){
+  const r = ST.rooms.find(x=>x.id===roomId);
+  const statuses = ["pending","cleaning","done","passed","ack"];
+  const opts = ST.staff.length
+    ? ST.staff.map(s=>`<option value="${s.id}" data-name="${s.name}" data-nick="${s.nickname}" ${r.assignedTo===s.id?"selected":""}>${s.name} (${s.nickname})</option>`).join("")
+    : `<option value="${r.assignedTo||""}" selected>${r.assignedName||"—"}</option>`;
+  showModal(`
+    <div class="modal-hd"></div>
+    <div class="modal-room">${roomId}</div>
+    <div class="modal-fl">ชั้น ${r.floor} · Admin Override</div>
+    <div class="field">
+      <label>เปลี่ยน Status เป็น</label>
+      <div class="override-grid">
+        ${statuses.map(s=>`<button class="ov-btn ${r.status===s?"active":""}" onclick="this.closest('.override-grid').querySelectorAll('.ov-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active');document.getElementById('ov-status').value='${s}'">${SL[s]||s}</button>`).join("")}
+      </div>
+      <input type="hidden" id="ov-status" value="${r.status}"/>
+    </div>
+    <div class="field">
+      <label>เปลี่ยนแม่บ้าน (ถ้าต้องการ)</label>
+      <div class="sw"><select id="ov-staff">${opts}</select></div>
+    </div>
+    <div class="field">
+      <label>หมายเหตุ</label>
+      <textarea id="ov-note" placeholder="เหตุผลที่แก้ไข...">${r.note||""}</textarea>
+    </div>
+    <button class="btn bg btn-full" style="background:#5B21B6" onclick="confirmAdminOverride('${roomId}')">บันทึก Override</button>
+    <button class="btn bw btn-full" onclick="closeModal()">ยกเลิก</button>
+  `);
+}
+
+async function confirmAdminOverride(roomId){
+  const status = document.getElementById("ov-status")?.value||"pending";
+  const sel    = document.getElementById("ov-staff");
+  const sid    = sel?.value||"";
+  const sname  = sel?.options[sel.selectedIndex]?.dataset.name||"";
+  const snick  = sel?.options[sel.selectedIndex]?.dataset.nick||sname;
+  const note   = document.getElementById("ov-note")?.value||"";
+  const r = ST.rooms.find(x=>x.id===roomId);
+  if(r){ r.status=status; if(sid){ r.assignedTo=sid; r.assignedName=snick; } r.note=note; }
+  closeModal(); renderContent();
+  await gasCall({ action:"adminSetStatus", roomId, status, assignedTo:sid, assignedName:sname, note, staffId:USER.staffId, staffName:USER.name, date:ST.date });
+  toast(`Override ห้อง ${roomId} → ${SL[status]||status}`,"ok");
 }
 
 // ─── MODALS ──────────────────────────────────────────

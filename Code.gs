@@ -2,9 +2,10 @@
 // Dusit Connect — Code.gs
 // ===================================================
 
-const SH_STAFF = "พนักงาน";
-const SH_ROOMS = "ห้อง";
-const SH_LOG   = "ประวัติ";
+const SH_STAFF       = "พนักงาน";
+const SH_ROOMS       = "ห้อง";
+const SH_LOG         = "ประวัติ";
+const SH_COMPLAINTS  = "ข้อร้องเรียน";
 
 // ห้อง columns (0-indexed):
 // 0=ห้อง  1=ชั้น  2=วันที่  3=Status  4=assignedTo  5=assignedName  6=startTime  7=endTime  8=หมายเหตุ
@@ -29,17 +30,21 @@ function doPost(e) {
     const req = JSON.parse(e.postData.contents);
     let res = {};
     switch (req.action) {
-      case "login":        res = login(req.username, req.password); break;
-      case "getRooms":     res = getRooms(req.role, req.staffId, req.date); break;
-      case "getStaff":     res = getStaff(); break;
-      case "updateStatus": res = updateStatus(req); break;
-      case "assignRoom":   res = assignRoom(req); break;
-      case "inspect":      res = inspect(req); break;
-      case "ackRoom":      res = ackRoom(req); break;
-      case "getReport":       res = getReport(req.startDate, req.endDate); break;
-      case "getPerformance":  res = getPerformance(req.startDate, req.endDate); break;
-      case "initDaily":    res = initDaily(req.date); break;
-      case "initSheets":   res = initSheets(); break;
+      case "login":          res = login(req.username, req.password); break;
+      case "getRooms":       res = getRooms(req.role, req.staffId, req.date, req.showAll); break;
+      case "getStaff":       res = getStaff(); break;
+      case "updateStatus":   res = updateStatus(req); break;
+      case "assignRoom":     res = assignRoom(req); break;
+      case "inspect":        res = inspect(req); break;
+      case "ackRoom":        res = ackRoom(req); break;
+      case "getReport":      res = getReport(req.startDate, req.endDate); break;
+      case "getPerformance": res = getPerformance(req.startDate, req.endDate); break;
+      case "logComplaint":   res = logComplaint(req); break;
+      case "getComplaints":  res = getComplaints(req.startDate, req.endDate, req.assignedName); break;
+      case "getStaffReport": res = getStaffReport(req.startDate, req.endDate); break;
+      case "adminSetStatus": res = adminSetStatus(req); break;
+      case "initDaily":      res = initDaily(req.date); break;
+      case "initSheets":     res = initSheets(); break;
       default: res = { success: false, message: "Unknown action" };
     }
     out.setContent(JSON.stringify(res));
@@ -69,7 +74,7 @@ function login(username, password) {
   return { success: false, message: "Username หรือ Password ไม่ถูกต้อง" };
 }
 
-function getRooms(role, staffId, date) {
+function getRooms(role, staffId, date, showAll) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName(SH_ROOMS);
   if (!sheet) return { success: true, rooms: [] };
@@ -90,7 +95,8 @@ function getRooms(role, staffId, date) {
       note: String(r[8] || ""),
     };
     if (role === "housekeeper" && room.assignedTo !== staffId) continue;
-    if (role === "frontdesk"   && room.status !== "passed")    continue;
+    if (role === "frontdesk" && !showAll && room.status !== "passed") continue;
+    if (role === "frontdesk" && showAll && !["cleaning","done","passed"].includes(room.status)) continue;
     rooms.push(room);
   }
   return { success: true, rooms };
@@ -261,6 +267,126 @@ function log(roomId, userId, userName, action, note) {
   sh.appendRow([new Date(), roomId, userId, userName, action, note]);
 }
 
+function logComplaint(req) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sh = ss.getSheetByName(SH_COMPLAINTS);
+  if (!sh) {
+    sh = ss.insertSheet(SH_COMPLAINTS);
+    sh.appendRow(["Timestamp","วันที่","ห้อง","ชั้น","assignedTo","assignedName","reportedBy","reportedByName","รายละเอียด"]);
+    const h = sh.getRange(1,1,1,9);
+    h.setBackground("#1a237e"); h.setFontColor("#fff"); h.setFontWeight("bold");
+    sh.setFrozenRows(1);
+  }
+  const roomSheet = ss.getSheetByName(SH_ROOMS);
+  const date = req.date || todayStr();
+  let assignedTo = "", assignedName = "", floor = req.floor || "";
+  if (roomSheet) {
+    const row = findRow(roomSheet, req.roomId, date);
+    if (row > 0) {
+      const d = roomSheet.getRange(row, 1, 1, 9).getValues()[0];
+      assignedTo = d[4] || ""; assignedName = d[5] || ""; floor = d[1] || floor;
+    }
+  }
+  sh.appendRow([new Date(), date, req.roomId, floor, assignedTo, assignedName, req.staffId, req.staffName, req.description]);
+  log(req.roomId, req.staffId, req.staffName, "complaint", req.description);
+  return { success: true };
+}
+
+function getComplaints(startDate, endDate, filterStaff) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sh = ss.getSheetByName(SH_COMPLAINTS);
+  if (!sh) return { success: true, complaints: [] };
+  const data = sh.getDataRange().getValues();
+  const complaints = [];
+  for (let i = 1; i < data.length; i++) {
+    const r = data[i];
+    const rowDate = r[1] ? fmtDate(r[1]) : "";
+    if (startDate && rowDate < startDate) continue;
+    if (endDate   && rowDate > endDate)   continue;
+    if (filterStaff && String(r[5]) !== filterStaff) continue;
+    complaints.push({
+      timestamp:      r[0] ? new Date(r[0]).getTime() : null,
+      date:           rowDate,
+      roomId:         String(r[2]),
+      floor:          r[3],
+      assignedTo:     String(r[4] || ""),
+      assignedName:   String(r[5] || ""),
+      reportedBy:     String(r[6] || ""),
+      reportedByName: String(r[7] || ""),
+      description:    String(r[8] || "")
+    });
+  }
+  return { success: true, complaints: complaints.reverse() };
+}
+
+function getStaffReport(startDate, endDate) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const roomSheet = ss.getSheetByName(SH_ROOMS);
+  const compSheet = ss.getSheetByName(SH_COMPLAINTS);
+  const byStaff = {};
+
+  if (roomSheet) {
+    const data = roomSheet.getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) {
+      if (!data[i][0]) continue;
+      const rowDate = data[i][2] ? fmtDate(data[i][2]) : "";
+      if (startDate && rowDate < startDate) continue;
+      if (endDate   && rowDate > endDate)   continue;
+      const name = String(data[i][5] || ""); if (!name) continue;
+      if (!byStaff[name]) byStaff[name] = { name, totalRooms:0, completedRooms:0, totalMs:0, timingCount:0, complaints:0, complaintList:[] };
+      byStaff[name].totalRooms++;
+      const status = String(data[i][3]);
+      if (["done","passed","ack"].includes(status)) {
+        byStaff[name].completedRooms++;
+        const s0 = data[i][6] ? new Date(data[i][6]).getTime() : null;
+        const e0 = data[i][7] ? new Date(data[i][7]).getTime() : null;
+        if (s0 && e0 && e0 > s0) { byStaff[name].totalMs += (e0-s0); byStaff[name].timingCount++; }
+      }
+    }
+  }
+
+  if (compSheet) {
+    const cdata = compSheet.getDataRange().getValues();
+    for (let i = 1; i < cdata.length; i++) {
+      const rowDate = cdata[i][1] ? fmtDate(cdata[i][1]) : "";
+      if (startDate && rowDate < startDate) continue;
+      if (endDate   && rowDate > endDate)   continue;
+      const name = String(cdata[i][5] || ""); if (!name) continue;
+      if (!byStaff[name]) byStaff[name] = { name, totalRooms:0, completedRooms:0, totalMs:0, timingCount:0, complaints:0, complaintList:[] };
+      byStaff[name].complaints++;
+      byStaff[name].complaintList.push({ date:rowDate, roomId:String(cdata[i][2]), description:String(cdata[i][8]||""), reportedByName:String(cdata[i][7]||"") });
+    }
+  }
+
+  const result = Object.values(byStaff).map(s => ({
+    name: s.name,
+    totalRooms: s.totalRooms,
+    completedRooms: s.completedRooms,
+    avgDuration: s.timingCount > 0 ? Math.round(s.totalMs / s.timingCount) : 0,
+    complaints: s.complaints,
+    complaintList: s.complaintList.slice(-20)
+  })).sort((a,b) => b.complaints - a.complaints || a.avgDuration - b.avgDuration);
+  return { success: true, byStaff: result };
+}
+
+function adminSetStatus(req) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SH_ROOMS);
+  const date = req.date || todayStr();
+  const row = findRow(sheet, req.roomId, date);
+  if (row < 0) return { success: false, message: "ไม่พบห้อง" };
+  sheet.getRange(row, 4).setValue(req.status);
+  if (req.assignedTo)       sheet.getRange(row, 5).setValue(req.assignedTo);
+  if (req.assignedName)     sheet.getRange(row, 6).setValue(req.assignedName);
+  if (req.note !== undefined) sheet.getRange(row, 9).setValue(req.note);
+  if (req.status === "cleaning") sheet.getRange(row, 7).setValue(new Date());
+  if (req.status === "done")     sheet.getRange(row, 8).setValue(new Date());
+  if (["pending","passed","ack"].includes(req.status) && req.clearTimes) {
+    sheet.getRange(row, 7).setValue(""); sheet.getRange(row, 8).setValue("");
+  }
+  log(req.roomId, req.staffId, req.staffName, "admin_override:"+req.status, req.note||"");
+  return { success: true };
+}
+
 function initSheets() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
 
@@ -299,6 +425,15 @@ function initSheets() {
     const h = roomSheet.getRange(1,1,1,9);
     h.setBackground("#1a237e"); h.setFontColor("#fff"); h.setFontWeight("bold");
     roomSheet.setFrozenRows(1);
+  }
+
+  // ข้อร้องเรียน
+  if (!ss.getSheetByName(SH_COMPLAINTS)) {
+    const csh = ss.insertSheet(SH_COMPLAINTS);
+    csh.appendRow(["Timestamp","วันที่","ห้อง","ชั้น","assignedTo","assignedName","reportedBy","reportedByName","รายละเอียด"]);
+    const ch = csh.getRange(1,1,1,9);
+    ch.setBackground("#1a237e"); ch.setFontColor("#fff"); ch.setFontWeight("bold");
+    csh.setFrozenRows(1);
   }
 
   const res = initDaily(todayStr());
