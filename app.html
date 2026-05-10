@@ -235,7 +235,10 @@ textarea{height:74px;resize:none;line-height:1.5}
 /* Live badge */
 .live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#E74C3C;margin-right:4px;animation:pulse 1.5s infinite}
 /* Test banner */
-.test-banner{background:#B91C1C;color:#fff;text-align:center;font-size:11px;font-weight:700;letter-spacing:1px;padding:5px;position:sticky;top:0;z-index:999}
+.test-banner{background:#B91C1C;color:#fff;font-size:11px;font-weight:700;letter-spacing:1px;padding:6px 12px;position:sticky;top:0;z-index:999;display:none;align-items:center;justify-content:space-between;gap:8px}
+.test-banner-lbl{opacity:.85;white-space:nowrap}
+.test-seed-btn{background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.4);color:#fff;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Sarabun',sans-serif;white-space:nowrap;transition:background .15s}
+.test-seed-btn:hover{background:rgba(255,255,255,.3)}
 /* Toast */
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--tx);color:#fff;padding:9px 18px;border-radius:20px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;z-index:200;white-space:nowrap;pointer-events:none}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -249,7 +252,10 @@ textarea{height:74px;resize:none;line-height:1.5}
 </head>
 <body>
 <div class="app">
-<div class="test-banner" id="test-banner" style="display:none">TEST ENVIRONMENT — ข้อมูลนี้ใช้สำหรับทดสอบเท่านั้น</div>
+<div class="test-banner" id="test-banner">
+  <span class="test-banner-lbl">⚗ TEST ENVIRONMENT</span>
+  <button class="test-seed-btn" id="test-seed-btn" onclick="doSeedData()">⚙ Seed 3-month Data</button>
+</div>
 
 <!-- LOGIN -->
 <div id="login-screen">
@@ -313,7 +319,10 @@ const IS_TEST = location.hostname.includes("test") || new URLSearchParams(locati
 const GAS_URL = IS_TEST
   ? "https://script.google.com/macros/s/AKfycbz4J1LCWJ4zmj_9LKlHulqXmrJIifp13Kg_oOOwoMrVydYyUWsRXBwqHbbjmzdJwvf9uA/exec"
   : "https://script.google.com/macros/s/AKfycbx6R2fDH0w0Pt1fYNFZykjDvQjYfiEzpaOAxHXUZqaCw3OFGhxIkxvK2ibUR3zt4r7J/exec";
-if(IS_TEST){ const tb=document.getElementById("test-banner"); if(tb) tb.style.display="block"; document.title="[TEST] Dusit Connect"; }
+if(IS_TEST){
+  const tb=document.getElementById("test-banner"); if(tb) tb.style.display="flex";
+  document.title="[TEST] Dusit Connect";
+}
 
 // ─── SESSION & STATE ──────────────────────────────────
 let USER = JSON.parse(sessionStorage.getItem("dc_user") || "null");
@@ -511,6 +520,7 @@ function t(k){ return (LANG_DATA[LANG]||LANG_DATA.th)[k]||k; }
 function changeLang(l){
   LANG=l; localStorage.setItem("dc_lang",l);
   document.querySelectorAll(".lang-btn").forEach(b=>b.classList.toggle("on",b.dataset.lang===l));
+  const sb=document.getElementById("test-seed-btn"); if(sb) sb.textContent=`⚙ ${t("seed_btn").replace("⚙ ","")}`;
   if(USER) showApp(); else updateLoginLang();
 }
 function langToggleHTML(){
@@ -656,7 +666,7 @@ function doLogout(){
   document.getElementById("inp-pass").value="";
   document.getElementById("login-err").textContent="";
   const bl = document.getElementById("btn-login");
-  bl.disabled=false; bl.textContent="เข้าสู่ระบบ";
+  bl.disabled=false; bl.textContent=t("signin");
 }
 
 // ─── SHOW APP ────────────────────────────────────────
@@ -677,6 +687,9 @@ function showApp(){
   if(hl) hl.innerHTML = langToggleHTML();
   const bl2 = document.getElementById("btn-logout");
   if(bl2) bl2.textContent = t("logout");
+  // update seed btn label in test banner
+  const sb = document.getElementById("test-seed-btn");
+  if(sb) sb.textContent = `⚙ ${t("seed_btn").replace("⚙ ","")}`;
 
   renderTabs();
   updateDateNav();
