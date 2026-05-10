@@ -303,7 +303,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbx6R2fDH0w0Pt1fYNFZykjD
 
 // ─── SESSION & STATE ──────────────────────────────────
 let USER = JSON.parse(sessionStorage.getItem("dc_user") || "null");
-const ST = { tabIdx:0, filter:"all", fdFloor:"", fdHk:"", supFloor:"", supHk:"", rooms:[], staff:[], date:todayISO(), report:[], perf:[], staffReport:[], reportMode:"daily" };
+const ST = { tabIdx:0, filter:"all", fdFloor:"", fdHk:"", supFloor:"", supHk:"", rooms:[], staff:[], date:todayISO(), report:[], perf:[], staffReport:[], reportMode:"daily", staffMode:"30d", staffMonth:"", staffYear:"" };
 
 // ─── LANGUAGE ─────────────────────────────────────────
 let LANG = localStorage.getItem("dc_lang") || "th";
@@ -314,7 +314,7 @@ const LANG_DATA = {
     role_supervisor:"หัวหน้า", role_housekeeper:"แม่บ้าน", role_frontdesk:"Front Desk", role_manager:"ผู้จัดการ", role_admin:"Admin",
     s_pending:"รอทำ", s_cleaning:"กำลังทำ", s_done:"รอตรวจ", s_passed:"เสร็จสมบูรณ์", s_ack:"รับทราบ",
     tab_all_rooms:"ห้องทั้งหมด", tab_assign:"มอบหมาย", tab_perf:"เวลาทำงาน", tab_my_rooms:"ห้องของฉัน",
-    tab_dash:"Dashboard", tab_daily_report:"รายงานรายวัน", tab_report:"รายงาน", tab_staff:"สถิติพนักงาน (90 วัน)", tab_inspect:"ตรวจห้อง", tab_status:"สถานะห้อง",
+    tab_dash:"Dashboard", tab_daily_report:"รายงานรายวัน", tab_staff:"สถิติพนักงาน", tab_inspect:"ตรวจห้อง", tab_status:"สถานะห้อง",
     btn_start:"เริ่มทำ", btn_done:"เสร็จแล้ว", btn_inspect:"ตรวจห้อง", btn_assign:"มอบหมาย",
     btn_reassign:"มอบหมายใหม่", btn_pass:"ผ่าน — เสร็จสมบูรณ์", btn_fail:"ไม่ผ่าน — ให้ทำใหม่",
     btn_create:"+ สร้างงานวันนี้", btn_override:"Override", btn_cancel:"ยกเลิก", btn_save:"บันทึก",
@@ -374,7 +374,7 @@ const LANG_DATA = {
     role_supervisor:"Supervisor", role_housekeeper:"Housekeeper", role_frontdesk:"Front Desk", role_manager:"Manager", role_admin:"Admin",
     s_pending:"Pending", s_cleaning:"Cleaning", s_done:"Awaiting", s_passed:"Complete", s_ack:"Checked In",
     tab_all_rooms:"All Rooms", tab_assign:"Assign", tab_perf:"Performance", tab_my_rooms:"My Rooms",
-    tab_dash:"Dashboard", tab_daily_report:"Daily Report", tab_report:"Report", tab_staff:"Staff Stats (90d)", tab_inspect:"Inspect", tab_status:"Room Status",
+    tab_dash:"Dashboard", tab_daily_report:"Daily Report", tab_staff:"Staff Stats", tab_inspect:"Inspect", tab_status:"Room Status",
     btn_start:"Start", btn_done:"Done", btn_inspect:"Inspect", btn_assign:"Assign",
     btn_reassign:"Re-assign", btn_pass:"Pass — Complete", btn_fail:"Fail — Redo",
     btn_create:"+ Create Today", btn_override:"Override", btn_cancel:"Cancel", btn_save:"Save",
@@ -433,7 +433,7 @@ const LANG_DATA = {
     role_supervisor:"ကြီးကြပ်", role_housekeeper:"အိမ်ရှင်မ", role_frontdesk:"ဧည့်ကြိုစားပွဲ", role_manager:"မန်နေဂျာ", role_admin:"အက်ဒမင်",
     s_pending:"စောင့်ဆိုင်း", s_cleaning:"သန့်ရှင်းနေ", s_done:"စစ်ဆေးရန်", s_passed:"ပြီးဆုံးပြီ", s_ack:"လက်ခံပြီး",
     tab_all_rooms:"အခန်းများ", tab_assign:"တာဝန်ပေး", tab_perf:"အချိန်မှတ်တမ်း", tab_my_rooms:"ကျွန်မ၏အခန်း",
-    tab_dash:"ဒက်ရှ်ဘုတ်", tab_daily_report:"နေ့စဉ်အစီရင်ခံ", tab_report:"အစီရင်ခံ", tab_staff:"ဝန်ထမ်းစာရင်း (၉၀ ရက်)", tab_inspect:"စစ်ဆေး", tab_status:"အခန်းအခြေအနေ",
+    tab_dash:"ဒက်ရှ်ဘုတ်", tab_daily_report:"နေ့စဉ်အစီရင်ခံ", tab_staff:"ဝန်ထမ်းစာရင်း", tab_inspect:"စစ်ဆေး", tab_status:"အခန်းအခြေအနေ",
     btn_start:"စတင်မည်", btn_done:"ပြီးပြီ", btn_inspect:"စစ်ဆေးမည်", btn_assign:"တာဝန်ပေးမည်",
     btn_reassign:"ပြန်တာဝန်ပေး", btn_pass:"အောင်မြင် — ပြီးဆုံး", btn_fail:"မအောင်မြင် — ပြန်လုပ်",
     btn_create:"+ ယနေ့အလုပ်ဖန်တီး", btn_override:"ကျော်လွန်", btn_cancel:"ပယ်ဖျက်", btn_save:"သိမ်းဆည်း",
@@ -582,7 +582,7 @@ function startAutoRefresh(){
   _refreshTimer = setInterval(async () => {
     if(!USER) return;
     const v = getView();
-    if(["mgr_report","mgr_staff"].includes(v)) return;
+    if(v==="mgr_staff") return;
     const isFD  = USER.role==="frontdesk";
     const isMgr = USER.role==="manager";
     const role  = (USER.role==="admin") ? "supervisor" : USER.role;
@@ -634,7 +634,7 @@ async function doLogin(){
 function doLogout(){
   USER=null;
   sessionStorage.removeItem("dc_user");
-  ST.rooms=[]; ST.staff=[]; ST.tabIdx=0; ST.filter="all"; ST.fdFloor=""; ST.fdHk=""; ST.supFloor=""; ST.supHk=""; ST.date=todayISO(); ST.report=[]; ST.perf=[]; ST.staffReport=[]; ST.reportMode="daily";
+  ST.rooms=[]; ST.staff=[]; ST.tabIdx=0; ST.filter="all"; ST.fdFloor=""; ST.fdHk=""; ST.supFloor=""; ST.supHk=""; ST.date=todayISO(); ST.report=[]; ST.perf=[]; ST.staffReport=[]; ST.reportMode="daily"; ST.staffMode="30d"; ST.staffMonth=""; ST.staffYear="";
   stopAutoRefresh(); stopLiveTimer();
   document.getElementById("main-app").style.display="none";
   document.getElementById("login-screen").style.display="flex";
@@ -675,7 +675,7 @@ function tabCfg(){
     supervisor:  [{lbl:t("tab_all_rooms"),v:"sup_rooms"},{lbl:t("tab_assign"),v:"sup_assign"},{lbl:t("tab_perf"),v:"sup_perf"}],
     housekeeper: [{lbl:t("tab_my_rooms"),v:"hk_rooms"}],
     frontdesk:   [{lbl:t("tab_all_rooms"),v:"fd_status"}],
-    manager:     [{lbl:t("tab_daily_report"),v:"mgr_dash"},{lbl:t("tab_all_rooms"),v:"mgr_all"},{lbl:t("tab_staff"),v:"mgr_staff"},{lbl:t("tab_report"),v:"mgr_report"}],
+    manager:     [{lbl:t("tab_daily_report"),v:"mgr_dash"},{lbl:t("tab_all_rooms"),v:"mgr_all"},{lbl:t("tab_staff"),v:"mgr_staff"}],
     admin:       [{lbl:t("tab_all_rooms"),v:"adm_rooms"},{lbl:t("tab_assign"),v:"sup_assign"},{lbl:t("tab_inspect"),v:"adm_inspect"},{lbl:t("tab_staff"),v:"mgr_staff"}],
   };
 }
@@ -785,7 +785,6 @@ function openCalendar(){
 // ─── LOAD DATA ───────────────────────────────────────
 async function loadAndRender(){
   const v = getView();
-  if(v==="mgr_report"){ await loadReport();       return; }
   if(v==="mgr_staff"){  await loadStaffReport();  return; }
   showLoader();
   const isFD  = USER.role==="frontdesk";
@@ -800,23 +799,33 @@ async function loadAndRender(){
   renderContent();
 }
 
-async function loadReport(){
-  showLoader();
-  const end = ST.date;
-  const dt = new Date(ST.date);
-  dt.setFullYear(dt.getFullYear()-2); // 2 years back for yearly view
-  const start = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`;
-  const res = await gasGet({ action:"getReport", startDate:start, endDate:end });
-  if(res.success) ST.report = res.byDate||[];
-  renderContent();
+function getStaffDateRange(){
+  const mode = ST.staffMode||"30d";
+  if(mode==="7d"||mode==="30d"||mode==="90d"){
+    const days = mode==="7d"?7:mode==="30d"?30:90;
+    const end = ST.date;
+    const dt = new Date(ST.date); dt.setDate(dt.getDate()-(days-1));
+    const start = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`;
+    return { start, end };
+  }
+  if(mode==="month"){
+    const y = ST.staffYear || new Date().getFullYear();
+    const m = ST.staffMonth || (new Date().getMonth()+1);
+    const start = `${y}-${String(m).padStart(2,"0")}-01`;
+    const lastDay = new Date(y, m, 0).getDate();
+    const end   = `${y}-${String(m).padStart(2,"0")}-${lastDay}`;
+    return { start, end };
+  }
+  if(mode==="year"){
+    const y = ST.staffYear || new Date().getFullYear();
+    return { start:`${y}-01-01`, end:`${y}-12-31` };
+  }
+  return { start:"2020-01-01", end:ST.date };
 }
-
 
 async function loadStaffReport(){
   showLoader();
-  const end = ST.date;
-  const dt = new Date(ST.date); dt.setDate(dt.getDate()-89);
-  const start = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`;
+  const { start, end } = getStaffDateRange();
   const res = await gasGet({ action:"getStaffReport", startDate:start, endDate:end });
   if(res.success) ST.staffReport = res.byStaff||[];
   renderContent();
@@ -846,7 +855,6 @@ function renderView(v){
     case "mgr_dash":      return vMgrDash();
     case "mgr_all":       return vMgrAll();
     case "mgr_staff":     return vMgrStaff();
-    case "mgr_report":    return vMgrReport();
     case "adm_rooms":     return vAdmRooms();
     case "adm_inspect":   return vAdmInspect();
     default: return `<div class="empty"><div class="empty-ic">···</div>${t("under_dev")}</div>`;
@@ -1183,78 +1191,6 @@ function vMgrAll(){
 }
 
 
-// ─── MANAGER: Report ─────────────────────────────────
-function vMgrReport(){
-  const raw = ST.report;
-  if(raw.length===0) return `<div class="empty"><div class="empty-ic">···</div>${t("no_data")}</div>`;
-  const mode = ST.reportMode||"daily";
-
-  // Group by month for monthly view
-  function groupByMonth(rows){
-    const m = {};
-    rows.forEach(d=>{
-      const key = d.date.substring(0,7);
-      if(!m[key]) m[key]={date:key,pending:0,cleaning:0,done:0,passed:0,ack:0,total:0};
-      ["pending","cleaning","done","passed","ack","total"].forEach(k=>{ m[key][k]+=(d[k]||0); });
-    });
-    return Object.values(m).sort((a,b)=>b.date.localeCompare(a.date));
-  }
-  function groupByYear(rows){
-    const y = {};
-    rows.forEach(d=>{
-      const key = d.date.substring(0,4);
-      if(!y[key]) y[key]={date:key,pending:0,cleaning:0,done:0,passed:0,ack:0,total:0};
-      ["pending","cleaning","done","passed","ack","total"].forEach(k=>{ y[key][k]+=(d[k]||0); });
-    });
-    return Object.values(y).sort((a,b)=>b.date.localeCompare(a.date));
-  }
-
-  const data = mode==="monthly" ? groupByMonth(raw) : mode==="yearly" ? groupByYear(raw) : raw;
-
-  function fmtKey(d){
-    if(mode==="monthly"){
-      const [y,m]=d.date.split("-");
-      if(LANG==="th"){
-        const mo=["","ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-        return `${mo[+m]} ${+y+543}`;
-      }
-      const mo=["","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-      return `${mo[+m]} ${+y}`;
-    }
-    if(mode==="yearly") return LANG==="th"?`${t("year_label")} ${+d.date+543}`:`${t("year_label")} ${d.date}`;
-    return fmtDateTH(d.date);
-  }
-
-  return `
-    <div class="rpt-mode">
-      <button class="rpt-mode-btn ${mode==="daily"?"on":""}"   onclick="ST.reportMode='daily';renderContent()">${t("daily")}</button>
-      <button class="rpt-mode-btn ${mode==="monthly"?"on":""}" onclick="ST.reportMode='monthly';renderContent()">${t("monthly")}</button>
-      <button class="rpt-mode-btn ${mode==="yearly"?"on":""}"  onclick="ST.reportMode='yearly';renderContent()">${t("yearly")}</button>
-    </div>
-    ${data.map(d=>{
-      const tot = d.total||1;
-      const fin = (d.passed||0);
-      const pct = Math.round(fin/tot*100);
-      const sl  = SL();
-      return `<div class="card" style="padding:10px 13px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-          <span style="font-size:13px;font-weight:700">${fmtKey(d)}</span>
-          <span style="font-size:12px;color:${pct===100?"var(--saged)":pct>50?"var(--g)":"var(--mu)"};font-weight:700">${fin}/${tot} (${pct}%)</span>
-        </div>
-        <div class="rpt-bars">
-          ${(d.passed||0)?`<div class="rpt-seg" style="width:${(d.passed/tot*100).toFixed(1)}%;background:#A8B59A"></div>`:""}
-          ${(d.done  ||0)?`<div class="rpt-seg" style="width:${(d.done/tot*100).toFixed(1)}%;background:#1A56DB"></div>`:""}
-          ${(d.cleaning||0)?`<div class="rpt-seg" style="width:${(d.cleaning/tot*100).toFixed(1)}%;background:#C45C10"></div>`:""}
-          ${(d.pending||0)?`<div class="rpt-seg" style="width:${(d.pending/tot*100).toFixed(1)}%;background:#D8D4CD"></div>`:""}
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:5px">
-          ${[["#4E6642",sl.passed,d.passed],["#1A56DB",sl.done,d.done],["#C45C10",sl.cleaning,d.cleaning],["#8A857D",sl.pending,d.pending]]
-            .filter(x=>x[2]).map(x=>`<span style="font-size:10px;color:${x[0]};font-weight:700">${x[1]} ${x[2]}</span>`).join("")}
-        </div>
-      </div>`;
-    }).join("")}
-  `;
-}
 
 // generate full 250-room hotel list (floors 8-38, no 13, no *4)
 function allHotelRooms(){
@@ -1339,36 +1275,140 @@ function vFdStatus(){
   `;
 }
 
-// ─── MANAGER: สถิติพนักงาน 90 วัน ──────────────────
+// ─── MANAGER: สถิติพนักงาน (flexible date range) ────
 function vMgrStaff(){
   const data = ST.staffReport||[];
-  if(data.length===0)
-    return `<div class="empty"><div class="empty-ic">···</div>${t("no_data")}<br><span style="font-size:12px">${t("staff_90days")}</span></div>`;
+  const mode = ST.staffMode||"30d";
 
-  // Sort by completedRooms desc for ranking
-  const sorted = [...data].sort((a,b)=>b.completedRooms-a.completedRooms||a.avgDuration-b.avgDuration);
-  const maxAvg = Math.max(...data.map(s=>s.avgDuration||0), 1);
+  // Period label
+  const { start, end } = getStaffDateRange();
+  const periodLabel = (()=>{
+    if(mode==="month") return fmtMonth(+(ST.staffYear||new Date().getFullYear()), +(ST.staffMonth||(new Date().getMonth()+1)));
+    if(mode==="year"){
+      const y = +(ST.staffYear||new Date().getFullYear());
+      return LANG==="th"?`ปี ${y+543}`:`Year ${y}`;
+    }
+    return `${fmtDateTH(start)} – ${fmtDateTH(end)}`;
+  })();
+
+  const curYear  = new Date().getFullYear();
+  const years    = [curYear-2, curYear-1, curYear];
+  const selYear  = +(ST.staffYear||curYear);
+  const selMonth = +(ST.staffMonth||(new Date().getMonth()+1));
+  const moNames  = LANG==="en"
+    ? ["","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+    : LANG==="my"
+      ? ["","ဇန်","ဖေဖ","မတ်","ဧပြီ","မေ","ဇွန်","ဇူ","ဩဂ","စက်","အောက်","နို","ဒီ"]
+      : ["","ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+
+  const selSt = `padding:6px 26px 6px 10px;border:1.5px solid var(--br);border-radius:9px;font-family:'Sarabun',sans-serif;font-size:12px;color:var(--tx);background:var(--wh);outline:none;-webkit-appearance:none;cursor:pointer;width:100%`;
+
+  const modeBtns = `<div class="rpt-mode" style="flex-wrap:wrap">
+    ${["7d","30d","90d","month","year"].map(m=>{
+      const lbl = m==="7d"?"7 วัน":m==="30d"?"30 วัน":m==="90d"?"90 วัน":m==="month"?(LANG==="en"?"Month":"เดือน"):(LANG==="en"?"Year":"ปี");
+      return `<button class="rpt-mode-btn ${mode===m?"on":""}" onclick="ST.staffMode='${m}';ST.staffReport=[];loadStaffReport()">${lbl}</button>`;
+    }).join("")}
+  </div>`;
+
+  const datePickers = mode==="month" ? `
+    <div style="display:flex;gap:8px;margin:6px 0 10px">
+      <div style="flex:1;position:relative">
+        <select style="${selSt}" onchange="ST.staffMonth=+this.value;ST.staffReport=[];loadStaffReport()">
+          ${moNames.slice(1).map((n,i)=>`<option value="${i+1}" ${selMonth===i+1?"selected":""}>${n}</option>`).join("")}
+        </select>
+        <span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--mu);font-size:10px">▾</span>
+      </div>
+      <div style="flex:1;position:relative">
+        <select style="${selSt}" onchange="ST.staffYear=+this.value;ST.staffReport=[];loadStaffReport()">
+          ${years.map(y=>`<option value="${y}" ${selYear===y?"selected":""}>${LANG==="th"?y+543:y}</option>`).join("")}
+        </select>
+        <span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--mu);font-size:10px">▾</span>
+      </div>
+    </div>` :
+    mode==="year" ? `
+    <div style="margin:6px 0 10px;position:relative;max-width:140px">
+      <select style="${selSt}" onchange="ST.staffYear=+this.value;ST.staffReport=[];loadStaffReport()">
+        ${years.map(y=>`<option value="${y}" ${selYear===y?"selected":""}>${LANG==="th"?y+543:y}</option>`).join("")}
+      </select>
+      <span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--mu);font-size:10px">▾</span>
+    </div>` : "";
+
+  if(data.length===0) return `
+    ${modeBtns}
+    ${datePickers}
+    <div class="loader" style="padding:32px"><div class="spinner"></div></div>`;
+
+  // Sorting & stats
+  const sorted   = [...data].sort((a,b)=>b.completedRooms-a.completedRooms||a.avgDuration-b.avgDuration);
+  const maxRooms = Math.max(...data.map(s=>s.completedRooms||0), 1);
+  const maxAvg   = Math.max(...data.map(s=>s.avgDuration||0), 1);
+  const top3     = sorted.slice(0, Math.min(3, sorted.length));
+  const n        = sorted.length;
+  const bottom3  = n >= 4 ? sorted.slice(Math.max(n-3, top3.length)) : [];
+
+  function perfCard(s, rank, type){
+    const avgMin = s.avgDuration>0 ? Math.round(s.avgDuration/60000) : 0;
+    const pct    = s.totalRooms>0  ? Math.round(s.completedRooms/s.totalRooms*100) : 0;
+    const bg     = type==="top"  ? "rgba(200,154,91,.1)"  : "rgba(196,92,16,.08)";
+    const bdr    = type==="top"  ? "rgba(200,154,91,.4)"  : "rgba(196,92,16,.3)";
+    const medal  = rank===1?"🥇":rank===2?"🥈":rank===3?"🥉":"";
+    const rankCol= type==="top"  ? "var(--g)" : "var(--o)";
+    return `<div style="background:${bg};border:1.5px solid ${bdr};border-radius:10px;padding:10px 11px;flex:1;min-width:0">
+      <div style="font-size:11px;font-weight:700;color:${rankCol};margin-bottom:3px">${medal} #${rank}</div>
+      <div style="font-size:12px;font-weight:700;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name}</div>
+      <div style="font-size:10px;color:var(--mu);margin-top:2px">${s.completedRooms} ${LANG==="en"?"rooms":"ห้อง"} · ${pct}%</div>
+      ${avgMin>0?`<div style="font-size:10px;color:${avgMin>45?"var(--o)":"var(--saged)"};margin-top:1px">⏱ ${avgMin}'</div>`:""}
+    </div>`;
+  }
 
   return `
-    <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu);margin-bottom:12px">${t("staff_90days")}</div>
+    ${modeBtns}
+    ${datePickers}
+    <div style="font-size:11px;color:var(--mu);margin:4px 0 12px;font-weight:600">${periodLabel}</div>
 
-    <div class="sec">${t("sec_by_staff")} — ${t("rooms_done_count")}</div>
+    <div class="sec" style="margin-top:0">🏆 Top Performer</div>
+    <div style="display:flex;gap:6px;margin-bottom:12px">
+      ${top3.map((s,i)=>perfCard(s,i+1,"top")).join("")}
+    </div>
+
+    ${bottom3.length>0?`
+    <div class="sec">⚠ Bottom Performer</div>
+    <div style="display:flex;gap:6px;margin-bottom:12px">
+      ${bottom3.map((s,i)=>perfCard(s,n-bottom3.length+i+1,"bot")).join("")}
+    </div>`:""}
+
+    <div style="height:1px;background:var(--br);margin:4px 0 14px"></div>
+
+    <div class="sec" style="margin-top:0;display:flex;align-items:center;justify-content:space-between">
+      <span>${LANG==="en"?"Rooms Completed":"ห้องที่ทำเสร็จ"}</span>
+      <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--g);font-weight:700">
+        <span style="width:10px;height:10px;border-radius:3px;background:var(--g);display:inline-block"></span>${LANG==="en"?"rooms done":"จำนวนห้อง"}
+      </span>
+    </div>
     ${sorted.map(s=>`
       <div class="bar-row">
-        <div class="bar-lbl" style="min-width:70px">${s.name}</div>
-        <div class="bar-track"><div class="bar-fill" style="width:${sorted[0].completedRooms?Math.round(s.completedRooms/sorted[0].completedRooms*100):0}%"></div></div>
+        <div class="bar-lbl" style="min-width:64px">${s.name}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${maxRooms?Math.round(s.completedRooms/maxRooms*100):0}%"></div></div>
         <div class="bar-val">${s.completedRooms}/${s.totalRooms}</div>
       </div>
     `).join("")}
 
-    <div class="sec" style="margin-top:16px">${t("perf_30days").replace("30","90")}</div>
+    <div style="height:1px;background:var(--br);margin:14px 0 10px"></div>
+
+    <div class="sec" style="margin-top:0;display:flex;align-items:center;justify-content:space-between">
+      <span>${LANG==="en"?"Avg. Time / Room":"เวลาเฉลี่ยต่อห้อง"}</span>
+      <span style="display:flex;align-items:center;gap:8px;font-size:10px;font-weight:700">
+        <span style="display:flex;align-items:center;gap:3px;color:var(--saged)"><span style="width:10px;height:10px;border-radius:3px;background:var(--saged);display:inline-block"></span>≤45'</span>
+        <span style="display:flex;align-items:center;gap:3px;color:var(--o)"><span style="width:10px;height:10px;border-radius:3px;background:var(--o);display:inline-block"></span>&gt;45'</span>
+      </span>
+    </div>
     ${[...data].filter(s=>s.avgDuration>0).sort((a,b)=>a.avgDuration-b.avgDuration).map(s=>{
       const avgMin = Math.round(s.avgDuration/60000);
-      const barPct = Math.round(s.avgDuration/maxAvg*100);
+      const col    = avgMin>45?"var(--o)":"var(--saged)";
       return `<div class="bar-row">
-        <div class="bar-lbl" style="min-width:70px">${s.name}</div>
-        <div class="bar-track"><div class="bar-fill" style="width:${barPct}%;background:${avgMin>45?"var(--o)":"var(--saged)"}"></div></div>
-        <div class="bar-val" style="color:${avgMin>45?"var(--o)":"var(--saged)"}">${avgMin}'</div>
+        <div class="bar-lbl" style="min-width:64px">${s.name}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.round(s.avgDuration/maxAvg*100)}%;background:${col}"></div></div>
+        <div class="bar-val" style="color:${col}">${avgMin}'</div>
       </div>`;
     }).join("")}
   `;

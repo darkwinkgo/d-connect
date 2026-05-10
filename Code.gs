@@ -405,6 +405,17 @@ function seedTestData() {
     .map(r => ({ id: String(r[0]), nick: String(r[3]) }));
   if (hks.length === 0) return { success: false, message: "ไม่พบ housekeeper ที่ active — รัน addMissingStaff() ก่อน" };
 
+  // ─── Assign each housekeeper a fixed profile (capacity + speed) ──
+  // capacity: max rooms per day (5–10)
+  // baseMin: average cleaning duration in minutes (20–50)
+  // absence: 8% daily chance of not working
+  const profiles = hks.map(hk => ({
+    ...hk,
+    capacity: 5 + Math.floor(Math.random() * 6),    // 5–10
+    baseMin:  20 + Math.floor(Math.random() * 31),   // 20–50
+    absence:  0.08 + (Math.random() - 0.5) * 0.06   // 5%–11%
+  }));
+
   // ─── Build hotel room list (same rules as app) ─────────
   const allRooms = [];
   for (let f = 8; f <= 38; f++) {
@@ -430,17 +441,32 @@ function seedTestData() {
     d.setDate(d.getDate() - daysAgo);
     if (existingDates.has(fmtDate(d))) continue;
 
+    // Determine which housekeepers are present today
+    const present = profiles.filter(hk => Math.random() > hk.absence);
+    if (present.length === 0) continue; // skip rare all-absent days
+
+    // Shuffle rooms and distribute by each housekeeper's capacity
     const shuffled = allRooms.slice().sort(() => Math.random() - 0.5);
-    shuffled.forEach((r, i) => {
-      const hk      = hks[i % hks.length];
-      const startH  = 7 + Math.floor(i / hks.length) % 5;   // stagger 7–11am
-      const startM  = Math.floor(Math.random() * 60);
-      const durMin  = 18 + Math.floor(Math.random() * 42);   // 18–60 min
-      const startDt = new Date(d); startDt.setHours(startH, startM, 0, 0);
-      const endDt   = new Date(startDt); endDt.setMinutes(endDt.getMinutes() + durMin);
-      // Recent 2 days keep some in-progress, older days all passed
-      const status  = daysAgo <= 2 ? (Math.random() < 0.3 ? "done" : "passed") : "passed";
-      rows.push([r.room, r.floor, d, status, hk.id, hk.nick, startDt, endDt, ""]);
+    let idx = 0;
+    present.forEach((hk, hi) => {
+      // Actual rooms taken today: ±20% variation around capacity
+      const cap = Math.max(1, Math.round(hk.capacity * (0.8 + Math.random() * 0.4)));
+      const myRooms = shuffled.slice(idx, idx + cap);
+      idx += cap;
+      if (myRooms.length === 0) return;
+
+      // Stagger start times 7am–10am across housekeepers
+      const baseStartH = 7 + Math.floor(hi / Math.max(present.length, 1) * 3);
+      myRooms.forEach((r, ri) => {
+        const startH  = baseStartH;
+        const startM  = Math.floor(Math.random() * 55) + (ri * 2 % 5); // slight stagger
+        // Duration: baseMin ± 30%, capped 15–90 min
+        const durMin  = Math.min(90, Math.max(15, Math.round(hk.baseMin * (0.7 + Math.random() * 0.6))));
+        const startDt = new Date(d); startDt.setHours(startH, startM, 0, 0);
+        const endDt   = new Date(startDt); endDt.setMinutes(endDt.getMinutes() + durMin);
+        const status  = daysAgo <= 2 ? (Math.random() < 0.3 ? "done" : "passed") : "passed";
+        rows.push([r.room, r.floor, d, status, hk.id, hk.nick, startDt, endDt, ""]);
+      });
     });
   }
 
