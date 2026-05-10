@@ -544,7 +544,8 @@ function resetProductionData() {
     const sh = ss.getSheetByName(name);
     if (!sh) return;
     const lastRow = sh.getLastRow();
-    if (lastRow > 1) sh.deleteRows(2, lastRow - 1);
+    if (lastRow <= 1) return;
+    sh.getRange(2, 1, lastRow - 1, sh.getMaxColumns()).clearContent();
   }
 
   clearSheetData(SH_ROOMS);         // ล้างข้อมูลห้องทั้งหมด
