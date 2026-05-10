@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>Dusit Connect</title>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <style>
 :root{
   /* D-Connect Brand Palette */
@@ -1712,7 +1711,13 @@ async function doSeedData(){
 // ─── BOOT ─────────────────────────────────────────────
 const LIFF_ID = "2009946209-cFt4JqH1";
 async function initLiff(){
-  if(IS_TEST) return;   // skip LINE LIFF on test environment
+  if(IS_TEST) return;   // skip LINE entirely on test — don't even load SDK
+  await new Promise((res,rej)=>{
+    const s=document.createElement("script");
+    s.src="https://static.line-scdn.net/liff/edge/2/sdk.js";
+    s.onload=res; s.onerror=rej;
+    document.head.appendChild(s);
+  });
   try { await liff.init({ liffId: LIFF_ID }); } catch(e) {}
 }
 initLiff().then(() => {
