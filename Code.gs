@@ -40,8 +40,6 @@ function doPost(e) {
       case "ackRoom":        res = ackRoom(req); break;
       case "getReport":      res = getReport(req.startDate, req.endDate); break;
       case "getPerformance": res = getPerformance(req.startDate, req.endDate); break;
-      case "logComplaint":   res = logComplaint(req); break;
-      case "getComplaints":  res = getComplaints(req.startDate, req.endDate, req.assignedName); break;
       case "getStaffReport": res = getStaffReport(req.startDate, req.endDate); break;
       case "adminSetStatus": res = adminSetStatus(req); break;
       case "initDaily":      res = initDaily(req.date); break;
@@ -349,62 +347,9 @@ function log(roomId, userId, userName, action, note) {
   sh.appendRow([new Date(), roomId, userId, userName, action, note]);
 }
 
-function logComplaint(req) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sh = ss.getSheetByName(SH_COMPLAINTS);
-  if (!sh) {
-    sh = ss.insertSheet(SH_COMPLAINTS);
-    sh.appendRow(["Timestamp","วันที่","ห้อง","ชั้น","assignedTo","assignedName","reportedBy","reportedByName","รายละเอียด"]);
-    const h = sh.getRange(1,1,1,9);
-    h.setBackground("#1a237e"); h.setFontColor("#fff"); h.setFontWeight("bold");
-    sh.setFrozenRows(1);
-  }
-  const roomSheet = ss.getSheetByName(SH_ROOMS);
-  const date = req.date || todayStr();
-  let assignedTo = "", assignedName = "", floor = req.floor || "";
-  if (roomSheet) {
-    const row = findRow(roomSheet, req.roomId, date);
-    if (row > 0) {
-      const d = roomSheet.getRange(row, 1, 1, 9).getValues()[0];
-      assignedTo = d[4] || ""; assignedName = d[5] || ""; floor = d[1] || floor;
-    }
-  }
-  sh.appendRow([new Date(), date, req.roomId, floor, assignedTo, assignedName, req.staffId, req.staffName, req.description]);
-  log(req.roomId, req.staffId, req.staffName, "complaint", req.description);
-  return { success: true };
-}
-
-function getComplaints(startDate, endDate, filterStaff) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sh = ss.getSheetByName(SH_COMPLAINTS);
-  if (!sh) return { success: true, complaints: [] };
-  const data = sh.getDataRange().getValues();
-  const complaints = [];
-  for (let i = 1; i < data.length; i++) {
-    const r = data[i];
-    const rowDate = r[1] ? fmtDate(r[1]) : "";
-    if (startDate && rowDate < startDate) continue;
-    if (endDate   && rowDate > endDate)   continue;
-    if (filterStaff && String(r[5]) !== filterStaff) continue;
-    complaints.push({
-      timestamp:      r[0] ? new Date(r[0]).getTime() : null,
-      date:           rowDate,
-      roomId:         String(r[2]),
-      floor:          r[3],
-      assignedTo:     String(r[4] || ""),
-      assignedName:   String(r[5] || ""),
-      reportedBy:     String(r[6] || ""),
-      reportedByName: String(r[7] || ""),
-      description:    String(r[8] || "")
-    });
-  }
-  return { success: true, complaints: complaints.reverse() };
-}
-
 function getStaffReport(startDate, endDate) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const roomSheet = ss.getSheetByName(SH_ROOMS);
-  const compSheet = ss.getSheetByName(SH_COMPLAINTS);
   const byStaff = {};
 
   if (roomSheet) {
@@ -415,7 +360,7 @@ function getStaffReport(startDate, endDate) {
       if (startDate && rowDate < startDate) continue;
       if (endDate   && rowDate > endDate)   continue;
       const name = String(data[i][5] || ""); if (!name) continue;
-      if (!byStaff[name]) byStaff[name] = { name, totalRooms:0, completedRooms:0, totalMs:0, timingCount:0, complaints:0, complaintList:[] };
+      if (!byStaff[name]) byStaff[name] = { name, totalRooms:0, completedRooms:0, totalMs:0, timingCount:0 };
       byStaff[name].totalRooms++;
       const status = String(data[i][3]);
       if (["done","passed"].includes(status)) {
@@ -427,27 +372,12 @@ function getStaffReport(startDate, endDate) {
     }
   }
 
-  if (compSheet) {
-    const cdata = compSheet.getDataRange().getValues();
-    for (let i = 1; i < cdata.length; i++) {
-      const rowDate = cdata[i][1] ? fmtDate(cdata[i][1]) : "";
-      if (startDate && rowDate < startDate) continue;
-      if (endDate   && rowDate > endDate)   continue;
-      const name = String(cdata[i][5] || ""); if (!name) continue;
-      if (!byStaff[name]) byStaff[name] = { name, totalRooms:0, completedRooms:0, totalMs:0, timingCount:0, complaints:0, complaintList:[] };
-      byStaff[name].complaints++;
-      byStaff[name].complaintList.push({ date:rowDate, roomId:String(cdata[i][2]), description:String(cdata[i][8]||""), reportedByName:String(cdata[i][7]||"") });
-    }
-  }
-
   const result = Object.values(byStaff).map(s => ({
     name: s.name,
     totalRooms: s.totalRooms,
     completedRooms: s.completedRooms,
-    avgDuration: s.timingCount > 0 ? Math.round(s.totalMs / s.timingCount) : 0,
-    complaints: s.complaints,
-    complaintList: s.complaintList.slice(-20)
-  })).sort((a,b) => b.complaints - a.complaints || a.avgDuration - b.avgDuration);
+    avgDuration: s.timingCount > 0 ? Math.round(s.totalMs / s.timingCount) : 0
+  })).sort((a,b) => b.completedRooms - a.completedRooms || a.avgDuration - b.avgDuration);
   return { success: true, byStaff: result };
 }
 
@@ -469,114 +399,67 @@ function adminSetStatus(req) {
   return { success: true };
 }
 
+// ─── SEED 3-MONTH TEST DATA ───────────────────────────
+// รันจาก Apps Script editor: เลือก seedTestData → Run
+// เติมข้อมูลย้อนหลัง 90 วัน (ข้ามวันที่มีข้อมูลอยู่แล้ว)
+// ใช้แม่บ้านจาก sheet จริง — รัน addMissingStaff() ก่อนถ้ายังไม่มี
 function seedTestData() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const roomSheet  = ss.getSheetByName(SH_ROOMS);
   const staffSheet = ss.getSheetByName(SH_STAFF);
-  if (!roomSheet || !staffSheet) return { success: false, message: "ไม่พบ Sheets" };
+  if (!roomSheet || !staffSheet) return { success: false, message: "ไม่พบ Sheets — รัน initSheets() ก่อน" };
 
-  // ─── Ensure enough housekeepers ───────────────────────
-  const extraStaff = [
-    ["hk005","1234","นภา ทองดี","นภา","housekeeper","active"],
-    ["hk006","1234","กัญญา ใจงาม","กัญญา","housekeeper","active"],
-    ["hk007","1234","มยุรี แสงจันทร์","มยุรี","housekeeper","active"],
-    ["hk008","1234","ฝน พรมดี","ฝน","housekeeper","active"],
-    ["hk009","1234","จิรา สุขใจ","จิรา","housekeeper","active"],
-    ["hk010","1234","ดาว ชมพู","ดาว","housekeeper","active"],
-    ["hk011","1234","Aye Aye","Aye","housekeeper","active"],
-    ["hk012","1234","Phyu Phyu","Phyu","housekeeper","active"],
-    ["hk013","1234","Moe Moe","Moe","housekeeper","active"],
-    ["hk014","1234","Su Su","Su","housekeeper","active"],
-    ["hk015","1234","Win Win","Win","housekeeper","active"],
-  ];
-  const existingIds = staffSheet.getDataRange().getValues().slice(1).map(r => String(r[0]));
-  extraStaff.forEach(r => { if (!existingIds.includes(r[0])) staffSheet.appendRow(r); });
-
-  // ─── Collect all housekeepers ──────────────────────────
+  // ─── Read housekeepers from sheet ─────────────────────
   const staffData = staffSheet.getDataRange().getValues().slice(1);
-  const hks = staffData.filter(r => String(r[4]) === "housekeeper" && (!r[5] || String(r[5]) === "active"))
-    .map(r => ({ id: String(r[0]), name: String(r[2]), nick: String(r[3]) }));
-  if (hks.length === 0) return { success: false, message: "ไม่พบ housekeeper" };
+  const hks = staffData
+    .filter(r => String(r[4]) === "housekeeper" && (!r[5] || String(r[5]).toLowerCase() === "active"))
+    .map(r => ({ id: String(r[0]), nick: String(r[3]) }));
+  if (hks.length === 0) return { success: false, message: "ไม่พบ housekeeper ที่ active — รัน addMissingStaff() ก่อน" };
 
-  // ─── Build room list ───────────────────────────────────
+  // ─── Build hotel room list (same rules as app) ─────────
   const allRooms = [];
   for (let f = 8; f <= 38; f++) {
     if (f === 13) continue;
     for (let n = 1; n <= 9; n++) {
-      if (n === 4) continue;
-      allRooms.push({ room: String(f) + String(n).padStart(2,"0"), floor: f });
+      const room = String(f) + String(n).padStart(2, "0");
+      if (room.endsWith("4")) continue;
+      allRooms.push({ room, floor: f });
     }
   }
 
-  // ─── Generate 90 days of data ──────────────────────────
-  const today = new Date();
-  today.setHours(0,0,0,0);
-  const rows = [];
-  const compRows = [];
-
-  // Check existing dates to avoid duplication
+  // ─── Skip dates that already have data ────────────────
   const existingDates = new Set();
-  const existing = roomSheet.getDataRange().getValues().slice(1);
-  existing.forEach(r => { if (r[2]) existingDates.add(fmtDate(r[2])); });
+  roomSheet.getDataRange().getValues().slice(1)
+    .forEach(r => { if (r[2]) existingDates.add(fmtDate(r[2])); });
+
+  // ─── Generate 90 days of room data ────────────────────
+  const today = new Date(); today.setHours(0,0,0,0);
+  const rows = [];
 
   for (let daysAgo = 90; daysAgo >= 1; daysAgo--) {
     const d = new Date(today);
     d.setDate(d.getDate() - daysAgo);
-    const dateStr = fmtDate(d);
-    if (existingDates.has(dateStr)) continue;
+    if (existingDates.has(fmtDate(d))) continue;
 
-    // Shuffle rooms and assign to housekeepers
     const shuffled = allRooms.slice().sort(() => Math.random() - 0.5);
     shuffled.forEach((r, i) => {
-      const hk = hks[i % hks.length];
-      const startH = 7 + Math.floor(i / hks.length) % 5; // stagger start 7–11am
-      const startM = Math.floor(Math.random() * 60);
-      const durMin = 18 + Math.floor(Math.random() * 42); // 18–60 min
-
-      const startDt = new Date(d);
-      startDt.setHours(startH, startM, 0, 0);
-      const endDt   = new Date(startDt);
-      endDt.setMinutes(endDt.getMinutes() + durMin);
-
-      // All historical records use "passed" as final status (no ack step)
-      const status = daysAgo <= 2 ? (Math.random()<0.3 ? "done" : "passed") : "passed";
+      const hk      = hks[i % hks.length];
+      const startH  = 7 + Math.floor(i / hks.length) % 5;   // stagger 7–11am
+      const startM  = Math.floor(Math.random() * 60);
+      const durMin  = 18 + Math.floor(Math.random() * 42);   // 18–60 min
+      const startDt = new Date(d); startDt.setHours(startH, startM, 0, 0);
+      const endDt   = new Date(startDt); endDt.setMinutes(endDt.getMinutes() + durMin);
+      // Recent 2 days keep some in-progress, older days all passed
+      const status  = daysAgo <= 2 ? (Math.random() < 0.3 ? "done" : "passed") : "passed";
       rows.push([r.room, r.floor, d, status, hk.id, hk.nick, startDt, endDt, ""]);
     });
-
-    // Add 2–4 complaints per day (5 days apart roughly)
-    if (daysAgo % 5 === 0) {
-      const numComp = 2 + Math.floor(Math.random() * 3);
-      for (let c = 0; c < numComp; c++) {
-        const victim = shuffled[Math.floor(Math.random() * shuffled.length)];
-        const hk = hks[Math.floor(Math.random() * hks.length)];
-        const issues = [
-          "แขกร้องเรียนห้องน้ำไม่สะอาด", "ผ้าปูที่นอนมีรอยเปื้อน",
-          "กระจกมีคราบ", "ห้องมีกลิ่นอับ", "ผ้าเช็ดตัวไม่เพียงพอ",
-          "ถังขยะไม่ได้เปลี่ยนถุง", "พรมยังมีเศษอาหาร"
-        ];
-        compRows.push([new Date(d), dateStr, victim.room, victim.floor,
-          hk.id, hk.nick, "fd001", "วิชัย",
-          issues[Math.floor(Math.random() * issues.length)]]);
-      }
-    }
   }
 
-  // ─── Batch write ──────────────────────────────────────
   if (rows.length > 0)
-    roomSheet.getRange(roomSheet.getLastRow()+1, 1, rows.length, 9).setValues(rows);
+    roomSheet.getRange(roomSheet.getLastRow() + 1, 1, rows.length, 9).setValues(rows);
 
-  let compSheet = ss.getSheetByName(SH_COMPLAINTS);
-  if (!compSheet) {
-    compSheet = ss.insertSheet(SH_COMPLAINTS);
-    compSheet.appendRow(["Timestamp","วันที่","ห้อง","ชั้น","assignedTo","assignedName","reportedBy","reportedByName","รายละเอียด"]);
-    const ch = compSheet.getRange(1,1,1,9);
-    ch.setBackground("#1a237e"); ch.setFontColor("#fff"); ch.setFontWeight("bold");
-    compSheet.setFrozenRows(1);
-  }
-  if (compRows.length > 0)
-    compSheet.getRange(compSheet.getLastRow()+1, 1, compRows.length, 9).setValues(compRows);
-
-  return { success: true, rooms: rows.length, complaints: compRows.length };
+  Logger.log(`✓ Seed complete: ${rows.length} rows across ${Math.round(rows.length/allRooms.length)} days`);
+  return { success: true, rooms: rows.length };
 }
 
 // ─── RESET: ล้างข้อมูลทั้งหมด เก็บแค่ header + พนักงาน ───
@@ -728,15 +611,6 @@ function initSheets() {
     const h = roomSheet.getRange(1,1,1,9);
     h.setBackground("#1a237e"); h.setFontColor("#fff"); h.setFontWeight("bold");
     roomSheet.setFrozenRows(1);
-  }
-
-  // ข้อร้องเรียน
-  if (!ss.getSheetByName(SH_COMPLAINTS)) {
-    const csh = ss.insertSheet(SH_COMPLAINTS);
-    csh.appendRow(["Timestamp","วันที่","ห้อง","ชั้น","assignedTo","assignedName","reportedBy","reportedByName","รายละเอียด"]);
-    const ch = csh.getRange(1,1,1,9);
-    ch.setBackground("#1a237e"); ch.setFontColor("#fff"); ch.setFontWeight("bold");
-    csh.setFrozenRows(1);
   }
 
   const res = initDaily(todayStr());
