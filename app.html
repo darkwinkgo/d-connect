@@ -597,17 +597,12 @@ async function gasCall(payload){
   } catch(e){ return { success:false, message:e.message }; }
 }
 async function gasGet(payload){
-  const ctrl = new AbortController();
-  const timer = setTimeout(()=>ctrl.abort(), 13000);
   try {
     const r = await fetch(GAS_URL, { method:"POST",
       headers:{"Content-Type":"text/plain"},
-      body:JSON.stringify(payload), redirect:"follow", signal:ctrl.signal });
-    clearTimeout(timer);
+      body:JSON.stringify(payload), redirect:"follow" });
     return await r.json();
   } catch(e){
-    clearTimeout(timer);
-    if(e.name==="AbortError") return { success:false, message:t("err_timeout") };
     return { success:false, message:e.message||t("err_load") };
   }
 }
