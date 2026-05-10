@@ -581,6 +581,64 @@ function seedTestData() {
 
 // ─── RESET: ล้างข้อมูลทั้งหมด เก็บแค่ header + พนักงาน ───
 // รันครั้งเดียวจาก Apps Script editor: เลือก resetProductionData → Run
+// ─── ADD MISSING STAFF ────────────────────────────────
+// รันจาก Apps Script editor: เลือก addMissingStaff → Run
+// เพิ่มเฉพาะ username ที่ยังไม่มีในชีต ไม่แตะรายการเดิม
+function addMissingStaff() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sh = ss.getSheetByName(SH_STAFF);
+  if (!sh) { Logger.log("ไม่พบ sheet พนักงาน — รัน initSheets() ก่อน"); return; }
+
+  const existing = sh.getDataRange().getValues().slice(1).map(r => String(r[0]));
+
+  const allStaff = [
+    ["admin001","1234","ผู้ดูแลระบบ","แอดมิน","admin","active"],
+    ["sup001","1234","สมชาย ดูแลดี","ชาย","supervisor","active"],
+    ["sup002","1234","สุดา ใจดี","สุดา","supervisor","active"],
+    ["hk001","1234","สมหญิง ใจดี","หญิง","housekeeper","active"],
+    ["hk002","1234","มาลี รักงาน","มาลี","housekeeper","active"],
+    ["hk003","1234","นุ่น สวยงาม","นุ่น","housekeeper","active"],
+    ["hk004","1234","แอ๊ม ขยัน","แอ๊ม","housekeeper","active"],
+    ["hk005","1234","นภา ทองดี","นภา","housekeeper","active"],
+    ["hk006","1234","กัญญา ใจงาม","กัญญา","housekeeper","active"],
+    ["hk007","1234","มยุรี แสงจันทร์","มยุรี","housekeeper","active"],
+    ["hk008","1234","ฝน พรมดี","ฝน","housekeeper","active"],
+    ["hk009","1234","จิรา สุขใจ","จิรา","housekeeper","active"],
+    ["hk010","1234","ดาว ชมพู","ดาว","housekeeper","active"],
+    ["hk011","1234","อ้อย มีสุข","อ้อย","housekeeper","active"],
+    ["hk012","1234","แป้ง รักดี","แป้ง","housekeeper","active"],
+    ["hk013","1234","ปุ้ย ทำงาน","ปุ้ย","housekeeper","active"],
+    ["hk014","1234","หน่อย ขันที","หน่อย","housekeeper","active"],
+    ["hk015","1234","กิ๊ฟ งานดี","กิ๊ฟ","housekeeper","active"],
+    ["hk016","1234","Aye Aye Khin","Aye","housekeeper","active"],
+    ["hk017","1234","Phyu Phyu Win","Phyu","housekeeper","active"],
+    ["hk018","1234","Moe Moe Lwin","Moe","housekeeper","active"],
+    ["hk019","1234","Su Su Htwe","Su","housekeeper","active"],
+    ["hk020","1234","Win Win Myint","Win","housekeeper","active"],
+    ["hk021","1234","Khin Khin Oo","Khin","housekeeper","active"],
+    ["hk022","1234","Thin Thin Aung","Thin","housekeeper","active"],
+    ["hk023","1234","Nwe Nwe Soe","Nwe","housekeeper","active"],
+    ["hk024","1234","May May Thwe","May","housekeeper","active"],
+    ["hk025","1234","Hnin Hnin Wai","Hnin","housekeeper","active"],
+    ["hk026","1234","Ei Ei Mon","Ei","housekeeper","active"],
+    ["hk027","1234","Cho Cho Zin","Cho","housekeeper","active"],
+    ["hk028","1234","Zin Zin Aye","Zin","housekeeper","active"],
+    ["hk029","1234","Yee Yee Naing","Yee","housekeeper","active"],
+    ["hk030","1234","San San Myat","San","housekeeper","active"],
+    ["fd001","1234","วิชัย ต้อนรับ","วิชัย","frontdesk","active"],
+    ["fd002","1234","กมล สวัสดี","กมล","frontdesk","active"],
+    ["mgr001","1234","พิมพ์ใจ บริหาร","พิมพ์","manager","active"],
+  ];
+
+  let added = 0;
+  allStaff.forEach(r => {
+    if (!existing.includes(r[0])) { sh.appendRow(r); added++; }
+  });
+
+  Logger.log(`✓ เพิ่มพนักงาน ${added} คน (ข้าม ${allStaff.length - added} คนที่มีอยู่แล้ว)`);
+  return { success: true, added };
+}
+
 function resetProductionData() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
 
