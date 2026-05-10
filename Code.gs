@@ -531,6 +531,27 @@ function seedTestData() {
   return { success: true, rooms: rows.length, complaints: compRows.length };
 }
 
+// ─── RESET: ล้างข้อมูลทั้งหมด เก็บแค่ header + พนักงาน ───
+// รันครั้งเดียวจาก Apps Script editor: เลือก resetProductionData → Run
+function resetProductionData() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  function clearSheetData(name) {
+    const sh = ss.getSheetByName(name);
+    if (!sh) return;
+    const lastRow = sh.getLastRow();
+    if (lastRow > 1) sh.deleteRows(2, lastRow - 1);
+  }
+
+  clearSheetData(SH_ROOMS);       // ล้างข้อมูลห้องทั้งหมด
+  clearSheetData(SH_LOG);         // ล้างประวัติทั้งหมด
+  clearSheetData(SH_COMPLAINTS);  // ล้างข้อร้องเรียนทั้งหมด
+  // SH_STAFF (พนักงาน) ไม่แตะ — ข้อมูลพนักงานยังอยู่ครบ
+
+  Logger.log("✓ Reset เสร็จแล้ว — ห้อง/ประวัติ/ข้อร้องเรียน ถูกล้างแล้ว พนักงานยังอยู่ครบ");
+  return { success: true, message: "Reset complete" };
+}
+
 function initSheets() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
 
