@@ -864,10 +864,7 @@ function renderView(v){
 
 // ─── SUPERVISOR: ห้องทั้งหมด ─────────────────────────
 function vSupRooms(){
-  if(ST.rooms.length===0 && isToday())
-    return `<div class="empty"><div class="empty-ic">···</div><div style="margin-bottom:12px">${t("no_work_today")}</div>
-      <button class="btn bg" onclick="doInitDaily()">${t("btn_create")} (${fmtDateTH(ST.date)})</button></div>`;
-  const all = ST.rooms;
+  const all = getMergedRooms();
   const sl  = SL();
   const flist = ["all","unassigned","pending","cleaning","done","passed"];
 
@@ -924,9 +921,6 @@ function vSupRooms(){
 
 // ─── SUPERVISOR: Assign ──────────────────────────────
 function vSupAssign(){
-  if(ST.rooms.length===0 && isToday())
-    return `<div class="empty"><div class="empty-ic">···</div><div style="margin-bottom:12px">${t("no_work_today")}</div>
-      <button class="btn bg" onclick="doInitDaily()">${t("btn_create")}</button></div>`;
   if(isPast())
     return `<div class="empty"><div class="empty-ic">···</div>${t("cur_date_only")}</div>`;
   const sheetMap={}; ST.rooms.forEach(r=>{ sheetMap[r.id]=r; });
@@ -1044,7 +1038,7 @@ function vHkRooms(){
 
 // ─── MANAGER: Dashboard ──────────────────────────────
 function vMgrDash(){
-  const rooms = ST.rooms;
+  const rooms = getMergedRooms();
   const total = rooms.length;
   const cnt = {unassigned:0,pending:0,cleaning:0,done:0,passed:0};
   rooms.forEach(r=>{ if(cnt[r.status]!==undefined) cnt[r.status]++; });
@@ -1084,7 +1078,7 @@ function vMgrDash(){
   const farr = Object.values(byF).sort((a,b)=>a.f-b.f);
 
   return `
-    ${total===0?`<div class="empty"><div class="empty-ic">···</div>${t("no_data_date")}</div>`:`
+    ${(isPast()&&total===0)?`<div class="empty"><div class="empty-ic">···</div>${t("no_data_date")}</div>`:`
 
     <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu);margin-bottom:8px">${fmtDateTH(ST.date)}</div>
 
@@ -1144,7 +1138,7 @@ function vMgrDash(){
 
 // ─── MANAGER: All Rooms ──────────────────────────────
 function vMgrAll(){
-  const all   = ST.rooms;
+  const all   = getMergedRooms();
   const sl    = SL();
   const flist = ["all","unassigned","pending","cleaning","done","passed"];
   const floors = [...new Set(all.filter(r=>r.floor).map(r=>r.floor))].sort((a,b)=>a-b);
@@ -1194,6 +1188,17 @@ function vMgrAll(){
 }
 
 
+
+// Returns merged 250-room list for today, or raw sheet data for past dates
+function getMergedRooms(){
+  if(!isToday()) return ST.rooms; // past date: only real data
+  const sheetMap={};
+  ST.rooms.forEach(r=>{ sheetMap[r.id]=r; });
+  return allHotelRooms().map(r=>sheetMap[r.id]||{
+    ...r, date:ST.date, status:"unassigned", assignedTo:"", assignedName:"",
+    startTime:null, endTime:null, note:""
+  });
+}
 
 // generate full 250-room hotel list (floors 8-38, no 13, no *4)
 function allHotelRooms(){

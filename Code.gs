@@ -221,7 +221,13 @@ function assignRoom(req) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SH_ROOMS);
   const date = req.date || todayStr();
   const row = findRow(sheet, req.roomId, date);
-  if (row < 0) return { success: false, message: "ไม่พบห้อง" };
+  if (row < 0) {
+    // Row doesn't exist yet (initDaily not run) — create it on the fly
+    const floor = parseInt(String(req.roomId).slice(0, -2)) || 0;
+    sheet.appendRow([req.roomId, floor, date, "pending", req.staffId, req.staffName, "", "", req.note || ""]);
+    log(req.roomId, req.supervisorId, req.supervisorName, "assigned", req.staffName);
+    return { success: true };
+  }
   sheet.getRange(row, 4).setValue("pending");
   sheet.getRange(row, 5).setValue(req.staffId);
   sheet.getRange(row, 6).setValue(req.staffName);
