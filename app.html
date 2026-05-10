@@ -233,11 +233,6 @@ textarea{height:74px;resize:none;line-height:1.5}
 .rpt-mode-btn.on{border-color:var(--g);background:var(--gl);color:var(--gd)}
 /* Live badge */
 .live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#E74C3C;margin-right:4px;animation:pulse 1.5s infinite}
-/* Test banner */
-.test-banner{background:#B91C1C;color:#fff;font-size:11px;font-weight:700;letter-spacing:1px;padding:6px 12px;position:sticky;top:0;z-index:999;display:none;align-items:center;justify-content:space-between;gap:8px}
-.test-banner-lbl{opacity:.85;white-space:nowrap}
-.test-seed-btn{background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.4);color:#fff;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Sarabun',sans-serif;white-space:nowrap;transition:background .15s}
-.test-seed-btn:hover{background:rgba(255,255,255,.3)}
 /* Toast */
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--tx);color:#fff;padding:9px 18px;border-radius:20px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;z-index:200;white-space:nowrap;pointer-events:none}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -251,9 +246,6 @@ textarea{height:74px;resize:none;line-height:1.5}
 </head>
 <body>
 <div class="app">
-<div class="test-banner" id="test-banner">
-  <span class="test-banner-lbl">⚗ TEST ENVIRONMENT</span>
-</div>
 
 <!-- LOGIN -->
 <div id="login-screen">
@@ -313,11 +305,7 @@ textarea{height:74px;resize:none;line-height:1.5}
 <div class="toast" id="toast"></div>
 
 <script>
-const IS_TEST = location.hostname.includes("test") || new URLSearchParams(location.search).get("mode")==="test";
-const GAS_URL = IS_TEST
-  ? "https://script.google.com/macros/s/AKfycbz4J1LCWJ4zmj_9LKlHulqXmrJIifp13Kg_oOOwoMrVydYyUWsRXBwqHbbjmzdJwvf9uA/exec"
-  : "https://script.google.com/macros/s/AKfycbx6R2fDH0w0Pt1fYNFZykjDvQjYfiEzpaOAxHXUZqaCw3OFGhxIkxvK2ibUR3zt4r7J/exec";
-if(IS_TEST){ document.title="[TEST] Dusit Connect"; }
+const GAS_URL = "https://script.google.com/macros/s/AKfycbx6R2fDH0w0Pt1fYNFZykjDvQjYfiEzpaOAxHXUZqaCw3OFGhxIkxvK2ibUR3zt4r7J/exec";
 
 // ─── SESSION & STATE ──────────────────────────────────
 let USER = JSON.parse(sessionStorage.getItem("dc_user") || "null");
@@ -359,8 +347,7 @@ const LANG_DATA = {
     override_submit:"บันทึก Override", no_cleaning:"ไม่มีห้องที่กำลังทำ",
     complaint_submitted:"บันทึกข้อร้องเรียนแล้ว", no_complaint_today:"ยังไม่มีข้อร้องเรียนวันนี้",
     no_inspect:"ไม่มีห้องที่รอตรวจ", no_complaint_data:"ไม่มีข้อร้องเรียน",
-    reported_by:"แจ้งโดย:", by_hk:"แม่บ้าน:", seed_btn:"⚙ โหลดข้อมูลทดสอบ 3 เดือน",
-    seed_loading:"กำลังโหลดข้อมูล...", seed_done:"โหลดข้อมูลสำเร็จ",
+    reported_by:"แจ้งโดย:", by_hk:"แม่บ้าน:",
     room_prefix:"ห้อง", in_progress_lbl:"กำลังดำเนินการ", not_started_lbl:"ยังไม่ได้ทำ",
     no_rooms_done:"ยังไม่มีห้องเสร็จ",
     done_by:"ทำโดย", last_30d:"30 วันล่าสุด",
@@ -428,8 +415,7 @@ const LANG_DATA = {
     override_submit:"Save Override", no_cleaning:"No rooms in progress",
     complaint_submitted:"Complaint recorded", no_complaint_today:"No complaints today",
     no_inspect:"No rooms awaiting inspection", no_complaint_data:"No complaints",
-    reported_by:"Reported by:", by_hk:"Housekeeper:", seed_btn:"⚙ Load 3-month Test Data",
-    seed_loading:"Loading data...", seed_done:"Data loaded successfully",
+    reported_by:"Reported by:", by_hk:"Housekeeper:",
     room_prefix:"Room", in_progress_lbl:"In Progress", not_started_lbl:"Not Started",
     no_rooms_done:"No rooms completed yet", no_assign_yet:"No assignments yet",
     done_by:"By", assign_room_title:"Assign Room", last_30d:"Last 30 days",
@@ -496,8 +482,7 @@ const LANG_DATA = {
     override_submit:"ကျော်လွန်မှတ်တမ်း", no_cleaning:"သန့်ရှင်းနေသောအခန်းမရှိ",
     complaint_submitted:"တိုင်ကြားချက်မှတ်တမ်းတင်ပြီ", no_complaint_today:"ယနေ့တိုင်ကြားချက်မရှိ",
     no_inspect:"စစ်ဆေးရန်အခန်းမရှိ", no_complaint_data:"တိုင်ကြားချက်မရှိ",
-    reported_by:"တင်ပြသူ:", by_hk:"အိမ်ရှင်မ:", seed_btn:"⚙ ကြိုတင်ဒေတာ ၃ လ တင်မည်",
-    seed_loading:"ဒေတာတင်နေသည်...", seed_done:"ဒေတာတင်ပြီး",
+    reported_by:"တင်ပြသူ:", by_hk:"အိမ်ရှင်မ:",
     room_prefix:"အခန်း", in_progress_lbl:"လုပ်ဆောင်နေ", not_started_lbl:"မစတင်သေး",
     no_rooms_done:"အခန်းမပြီးသေး", no_assign_yet:"တာဝန်မပေးရသေး",
     done_by:"လုပ်သူ", assign_room_title:"အခန်းတာဝန်ပေး", last_30d:"နောက်ဆုံး ၃၀ ရက်",
@@ -677,7 +662,6 @@ function doLogout(){
   stopAutoRefresh(); stopLiveTimer();
   document.getElementById("main-app").style.display="none";
   document.getElementById("login-screen").style.display="flex";
-  const _tb=document.getElementById("test-banner"); if(_tb) _tb.style.display="none";
   document.getElementById("inp-user").value="";
   document.getElementById("inp-pass").value="";
   document.getElementById("login-err").textContent="";
@@ -703,10 +687,6 @@ function showApp(){
   if(hl) hl.innerHTML = langToggleHTML();
   const bl2 = document.getElementById("btn-logout");
   if(bl2) bl2.textContent = t("logout");
-  // show test banner only on test environment (all roles)
-  const tb = document.getElementById("test-banner");
-  if(tb) tb.style.display = IS_TEST ? "flex" : "none";
-
   renderTabs();
   updateDateNav();
   loadAndRender();
@@ -953,16 +933,15 @@ function vSupRooms(){
 
 // ─── SUPERVISOR: Assign ──────────────────────────────
 function vSupAssign(){
-  const _adm = USER?.role==="admin" ? adminSeedBanner() : "";
   if(ST.rooms.length===0 && isToday())
-    return `${_adm}<div class="empty"><div class="empty-ic">···</div><div style="margin-bottom:12px">${t("no_work_today")}</div>
+    return `<div class="empty"><div class="empty-ic">···</div><div style="margin-bottom:12px">${t("no_work_today")}</div>
       <button class="btn bg" onclick="doInitDaily()">${t("btn_create")}</button></div>`;
   if(isPast())
-    return `${_adm}<div class="empty"><div class="empty-ic">···</div>${t("cur_date_only")}</div>`;
+    return `<div class="empty"><div class="empty-ic">···</div>${t("cur_date_only")}</div>`;
   const sheetMap={}; ST.rooms.forEach(r=>{ sheetMap[r.id]=r; });
   const allRooms  = allHotelRooms().map(r=>sheetMap[r.id]||{...r,status:"pending",assignedTo:"",assignedName:""});
   const unassigned = allRooms.filter(r=>!r.assignedTo||r.status==="pending");
-  return `${_adm}
+  return `
     ${isToday()?`<button class="btn bg btn-lg" style="margin-bottom:12px" onclick="openAutoAssign()">${t("auto_assign_btn")}</button>`:""}
     <div class="sec">${t("sec_unassigned")} (${unassigned.length})</div>
     ${unassigned.length===0?`<div class="empty"><div class="empty-ic">···</div>${t("all_assigned")}</div>`:""}
@@ -1376,10 +1355,9 @@ function vFdStatus(){
 
 // ─── MANAGER: สถิติพนักงาน ──────────────────────────
 function vMgrStaff(){
-  const _adm = USER?.role==="admin" ? adminSeedBanner() : "";
   const data = ST.staffReport||[];
   if(data.length===0)
-    return `${_adm}<div class="empty"><div class="empty-ic">···</div>${t("no_data")}<br><span style="font-size:12px">${t("last_30d").replace("30","90")}</span></div>`;
+    return `<div class="empty"><div class="empty-ic">···</div>${t("no_data")}<br><span style="font-size:12px">${t("last_30d").replace("30","90")}</span></div>`;
 
   function scoreColor(complaints){
     if(complaints===0) return "score-ok";
@@ -1387,7 +1365,7 @@ function vMgrStaff(){
     return "score-bad";
   }
 
-  return `${_adm}
+  return `
     <div class="sec">${t("staff_90days")} (${t("sort_complaints")})</div>
     <div style="font-size:11px;color:var(--mu);margin-bottom:10px">
       <span style="color:var(--saged);font-weight:700">● ${t("score_ok_lbl")}</span> = ${t("no_complaints_yet")}&nbsp;&nbsp;
@@ -1443,19 +1421,16 @@ function vMgrStaff(){
   `;
 }
 
-// ─── ADMIN: shared seed banner (test only) ───────────
-function adminSeedBanner(){ return ""; }
 
 // ─── ADMIN: ห้องทั้งหมด (with override) ─────────────
 function vAdmRooms(){
   const all   = ST.rooms;
-  const seedBtn = adminSeedBanner();
   const flist = ["all","pending","cleaning","done","passed"];
   const shown = ST.filter==="all" ? all : all.filter(r=>r.status===ST.filter);
   if(all.length===0 && isToday())
-    return `${seedBtn}<div class="empty"><div class="empty-ic">···</div><div style="margin-bottom:12px">${t("no_work_today")}</div>
+    return `<div class="empty"><div class="empty-ic">···</div><div style="margin-bottom:12px">${t("no_work_today")}</div>
       <button class="btn bg" onclick="doInitDaily()">${t("btn_create")}</button></div>`;
-  return `${seedBtn}
+  return `
     <div class="chips">
       ${flist.map(f=>`<div class="chip ${ST.filter===f?"on":""}" onclick="setF('${f}')">${f==="all"?t("fd_filter_all"):SL()[f]} (${f==="all"?all.length:all.filter(r=>r.status===f).length})</div>`).join("")}
     </div>
@@ -1485,8 +1460,8 @@ function vAdmRooms(){
 function vAdmInspect(){
   const rooms = ST.rooms.filter(r=>r.status==="done");
   if(rooms.length===0)
-    return `${adminSeedBanner()}<div class="empty"><div class="empty-ic">···</div>${t("no_inspect")}</div>`;
-  return `${adminSeedBanner()}
+    return `<div class="empty"><div class="empty-ic">···</div>${t("no_inspect")}</div>`;
+  return `
     <div class="sec">${t("sec_done_rooms")} (${rooms.length} ${t("rooms_count")})</div>
     ${rooms.map(r=>`
       <div class="card">
@@ -1509,7 +1484,7 @@ function vAdmInspect(){
 // ─── ADMIN: ข้อร้องเรียน ─────────────────────────────
 function vAdmComplaints(){
   const data = ST.complaints||[];
-  return `${adminSeedBanner()}
+  return `
     <div class="sec">${t("complaints_90d")} (${data.length})</div>
     ${data.length===0?`<div class="empty"><div class="empty-ic">···</div>${t("no_complaint_data")}</div>`:""}
     ${data.map(c=>`
@@ -1834,19 +1809,10 @@ async function doAutoAssign(){
   }
 }
 
-// ─── SEED DATA (test only) ────────────────────────────
-async function doSeedData(){
-  if(!confirm(t("seed_btn")+"?\n\n~30-60s")) return;
-  toast(t("seed_loading"));
-  const res = await gasGet({ action:"seedTestData" });
-  if(res.success) toast(`${t("seed_done")} — ${res.rooms} ${t("rooms_count")}, ${res.complaints} ${t("complaints_lbl")}`, "ok");
-  else toast(res.message||t("err_generic"),"err");
-}
 
 // ─── BOOT ─────────────────────────────────────────────
 const LIFF_ID = "2009946209-cFt4JqH1";
 async function initLiff(){
-  if(IS_TEST) return;   // skip LINE entirely on test — don't even load SDK
   await new Promise((res,rej)=>{
     const s=document.createElement("script");
     s.src="https://static.line-scdn.net/liff/edge/2/sdk.js";
