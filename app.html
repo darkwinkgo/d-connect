@@ -1274,9 +1274,29 @@ function vMgrReport(){
   `;
 }
 
+// generate full 250-room hotel list (floors 8-38, no 13, no *4)
+function allHotelRooms(){
+  const rooms=[];
+  for(let f=8;f<=38;f++){
+    if(f===13) continue;
+    for(let n=1;n<=9;n++){
+      const id=String(f)+String(n).padStart(2,"0");
+      if(id.endsWith("4")) continue;
+      rooms.push({id,floor:f});
+    }
+  }
+  return rooms;
+}
+
 // ─── FRONT DESK: Room Status Board ───────────────────
 function vFdStatus(){
-  const all = ST.rooms;
+  // Merge GAS data with full hotel list — FD always sees all 250 rooms
+  const sheetMap={};
+  ST.rooms.forEach(r=>{ sheetMap[r.id]=r; });
+  const all = allHotelRooms().map(r=>sheetMap[r.id]||{
+    ...r, date:ST.date, status:"pending", assignedTo:"", assignedName:"",
+    startTime:null, endTime:null, note:""
+  });
   const sl  = SL();
 
   // Build floor & housekeeper option lists from data
