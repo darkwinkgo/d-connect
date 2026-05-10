@@ -507,6 +507,7 @@ function initSheets() {
     const sh = ss.insertSheet(SH_STAFF);
     sh.appendRow(["Username","Password","ชื่อ","ชื่อเล่น","Role","Status"]);
     [
+      ["admin001","1234","ผู้ดูแลระบบ","แอดมิน","admin","active"],
       ["sup001","1234","สมชาย ดูแลดี","ชาย","supervisor","active"],
       ["hk001","1234","สมหญิง ใจดี","หญิง","housekeeper","active"],
       ["hk002","1234","มาลี รักงาน","มาลี","housekeeper","active"],
