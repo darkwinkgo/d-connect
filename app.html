@@ -265,13 +265,14 @@ textarea{height:74px;resize:none;line-height:1.5}
     <div class="logo-divider"></div>
     <div class="logo-tagline">Housekeeping &amp; Operations</div>
   </div>
+  <div style="margin-bottom:14px" id="lang-login"></div>
   <div class="login-box">
     <div class="field">
-      <label>Username</label>
+      <label id="lbl-user">Username</label>
       <input type="text" id="inp-user" placeholder="เช่น sup001" autocomplete="username" autocapitalize="none"/>
     </div>
     <div class="field">
-      <label>Password</label>
+      <label id="lbl-pass">Password</label>
       <input type="password" id="inp-pass" placeholder="••••" autocomplete="current-password"
              onkeydown="if(event.key==='Enter') doLogin()"/>
     </div>
@@ -293,7 +294,8 @@ textarea{height:74px;resize:none;line-height:1.5}
       </div>
       <div class="hdr-right">
         <span class="badge" id="role-badge"></span>
-        <button class="logout-btn" onclick="doLogout()">ออก</button>
+        <div id="hdr-lang"></div>
+        <button class="logout-btn" id="btn-logout" onclick="doLogout()">ออก</button>
       </div>
     </div>
     <div class="hdr-name" id="hdr-name"></div>
@@ -317,6 +319,140 @@ if(IS_TEST){ const tb=document.getElementById("test-banner"); if(tb) tb.style.di
 let USER = JSON.parse(sessionStorage.getItem("dc_user") || "null");
 const ST = { tabIdx:0, filter:"all", rooms:[], staff:[], date:todayISO(), report:[], perf:[], staffReport:[], complaints:[], reportMode:"daily" };
 
+// ─── LANGUAGE ─────────────────────────────────────────
+let LANG = localStorage.getItem("dc_lang") || "th";
+const LANG_DATA = {
+  th:{
+    signin:"เข้าสู่ระบบ", signing_in:"กำลังเข้าสู่ระบบ...", username:"Username", password:"Password",
+    logout:"ออก",
+    role_supervisor:"หัวหน้า", role_housekeeper:"แม่บ้าน", role_frontdesk:"Front Desk", role_manager:"ผู้จัดการ", role_admin:"Admin",
+    s_pending:"รอทำ", s_cleaning:"กำลังทำ", s_done:"รอตรวจ", s_passed:"ผ่านตรวจ", s_ack:"รับทราบ",
+    tab_all_rooms:"ห้องทั้งหมด", tab_assign:"Assign", tab_perf:"เวลาทำงาน", tab_my_rooms:"ห้องของฉัน",
+    tab_dash:"Dashboard", tab_report:"รายงาน", tab_staff:"สถิติพนักงาน", tab_complaints:"ข้อร้องเรียน", tab_inspect:"ตรวจห้อง", tab_status:"สถานะห้อง",
+    btn_start:"เริ่มทำ", btn_done:"เสร็จแล้ว", btn_inspect:"ตรวจห้อง", btn_assign:"Assign แม่บ้าน",
+    btn_reassign:"Re-assign", btn_pass:"ผ่าน — ส่ง Front Desk", btn_fail:"ไม่ผ่าน — ให้ทำใหม่",
+    btn_create:"+ สร้างงานวันนี้", btn_override:"Override", btn_cancel:"ยกเลิก", btn_save:"บันทึก",
+    btn_complaint:"บันทึกข้อร้องเรียน",
+    floor:"ชั้น", housekeeper:"แม่บ้าน", started:"เริ่มมาแล้ว", duration_lbl:"ใช้เวลา",
+    min:"นาที", hr:"ชั่วโมง",
+    fd_title:"สถานะห้องพัก — Real-time", fd_cleaning:"กำลังทำ", fd_ready:"พร้อมแล้ว",
+    fd_waiting:"รอตรวจ", fd_pending:"รอทำ", fd_ack:"รับทราบแล้ว",
+    sec_progress:"ความคืบหน้าวันนี้", sec_by_staff:"ผลงานรายคน", sec_by_floor:"ความคืบหน้าตามชั้น",
+    sec_realtime:"กำลังทำ — Real-time", sec_completed:"เสร็จแล้ว — สรุปผลงาน",
+    sec_unassigned:"ห้องที่รอ Assign", sec_done_rooms:"รอตรวจ",
+    no_rooms:"ยังไม่มีห้องที่ได้รับมอบหมาย", no_data:"ไม่มีข้อมูล", loading:"กำลังโหลด...",
+    today_badge:"วันนี้", min_per_room:"นาที/ห้อง", rooms_count:"ห้อง",
+    daily:"รายวัน", monthly:"รายเดือน", yearly:"รายปี",
+    complaint_room:"หมายเลขห้อง", complaint_desc:"รายละเอียดปัญหา", complaint_history:"ประวัติข้อร้องเรียนวันนี้",
+    perf_30days:"เวลาเฉลี่ยต่อห้อง — 30 วันล่าสุด", staff_90days:"สรุปผลงานพนักงาน — 90 วันล่าสุด",
+    report_title:"สรุปรายวัน", past_only:"ดูได้เฉพาะวันปัจจุบัน",
+    assign_done:"Assign ครบแล้ว", no_rooms_status:"ไม่มีห้องในสถานะนี้",
+    waiting_fd:"รอ Front Desk", complete:"เสร็จสมบูรณ์", waiting_inspect:"รอหัวหน้าตรวจ",
+    inspection_pass:"ผ่านการตรวจ", fd_checkedin:"Front Desk รับทราบ",
+    note_lbl:"หมายเหตุ", select_hk:"เลือกแม่บ้าน", note_for_hk:"หมายเหตุสำหรับแม่บ้าน (ถ้ามี)",
+    reason_fail:"เหตุผลที่ไม่ผ่าน", assign_to:"Assign ให้ใคร", note_to_fd:"หมายเหตุถึง Front Desk (ถ้ามี)",
+    change_to:"เปลี่ยน Status เป็น", change_hk:"เปลี่ยนแม่บ้าน (ถ้าต้องการ)", override_note:"หมายเหตุ",
+    override_submit:"บันทึก Override", no_cleaning:"ไม่มีห้องที่กำลังทำ",
+    complaint_submitted:"บันทึกข้อร้องเรียนแล้ว", no_complaint_today:"ยังไม่มีข้อร้องเรียนวันนี้",
+    no_inspect:"ไม่มีห้องที่รอตรวจ", no_complaint_data:"ไม่มีข้อร้องเรียน",
+    reported_by:"แจ้งโดย:", by_hk:"แม่บ้าน:", seed_btn:"⚙ โหลดข้อมูลทดสอบ 3 เดือน",
+    seed_loading:"กำลังโหลดข้อมูล...", seed_done:"โหลดข้อมูลสำเร็จ",
+  },
+  en:{
+    signin:"Sign In", signing_in:"Signing in...", username:"Username", password:"Password",
+    logout:"Logout",
+    role_supervisor:"Supervisor", role_housekeeper:"Housekeeper", role_frontdesk:"Front Desk", role_manager:"Manager", role_admin:"Admin",
+    s_pending:"Pending", s_cleaning:"Cleaning", s_done:"Awaiting", s_passed:"Passed", s_ack:"Checked In",
+    tab_all_rooms:"All Rooms", tab_assign:"Assign", tab_perf:"Performance", tab_my_rooms:"My Rooms",
+    tab_dash:"Dashboard", tab_report:"Report", tab_staff:"Staff Stats", tab_complaints:"Complaints", tab_inspect:"Inspect", tab_status:"Room Status",
+    btn_start:"Start", btn_done:"Done", btn_inspect:"Inspect", btn_assign:"Assign",
+    btn_reassign:"Re-assign", btn_pass:"Pass — Send to FD", btn_fail:"Fail — Redo",
+    btn_create:"+ Create Today", btn_override:"Override", btn_cancel:"Cancel", btn_save:"Save",
+    btn_complaint:"Submit Complaint",
+    floor:"Floor", housekeeper:"Housekeeper", started:"Started", duration_lbl:"Duration",
+    min:"min", hr:"hr",
+    fd_title:"Room Status — Live", fd_cleaning:"In Progress", fd_ready:"Ready",
+    fd_waiting:"Awaiting Inspection", fd_pending:"Pending", fd_ack:"Checked In",
+    sec_progress:"Today's Progress", sec_by_staff:"Staff Performance", sec_by_floor:"Progress by Floor",
+    sec_realtime:"In Progress — Live", sec_completed:"Completed — Summary",
+    sec_unassigned:"Unassigned Rooms", sec_done_rooms:"Awaiting Inspection",
+    no_rooms:"No rooms assigned", no_data:"No data", loading:"Loading...",
+    today_badge:"Today", min_per_room:"min/room", rooms_count:"rooms",
+    daily:"Daily", monthly:"Monthly", yearly:"Yearly",
+    complaint_room:"Room Number", complaint_desc:"Issue Details", complaint_history:"Today's Complaints",
+    perf_30days:"Avg time per room — last 30 days", staff_90days:"Staff performance — last 90 days",
+    report_title:"Daily Summary", past_only:"View current date only",
+    assign_done:"All assigned", no_rooms_status:"No rooms in this status",
+    waiting_fd:"Waiting Front Desk", complete:"Complete", waiting_inspect:"Waiting inspection",
+    inspection_pass:"Inspection passed", fd_checkedin:"Checked in by FD",
+    note_lbl:"Note", select_hk:"Select Housekeeper", note_for_hk:"Note for housekeeper (optional)",
+    reason_fail:"Reason for failure", assign_to:"Assign to", note_to_fd:"Note to Front Desk (optional)",
+    change_to:"Change Status to", change_hk:"Change Housekeeper (optional)", override_note:"Note",
+    override_submit:"Save Override", no_cleaning:"No rooms in progress",
+    complaint_submitted:"Complaint recorded", no_complaint_today:"No complaints today",
+    no_inspect:"No rooms awaiting inspection", no_complaint_data:"No complaints",
+    reported_by:"Reported by:", by_hk:"Housekeeper:", seed_btn:"⚙ Load 3-month Test Data",
+    seed_loading:"Loading data...", seed_done:"Data loaded successfully",
+  },
+  my:{
+    signin:"ဝင်ရောက်ရန်", signing_in:"ဝင်ရောက်နေသည်...", username:"အသုံးပြုသူ", password:"စကားဝှက်",
+    logout:"ထွက်မည်",
+    role_supervisor:"ကြီးကြပ်", role_housekeeper:"အိမ်ရှင်မ", role_frontdesk:"ဧည့်ကြိုစားပွဲ", role_manager:"မန်နေဂျာ", role_admin:"အက်ဒမင်",
+    s_pending:"စောင့်ဆိုင်း", s_cleaning:"သန့်ရှင်းနေ", s_done:"စစ်ဆေးရန်", s_passed:"စစ်ဆေးပြီး", s_ack:"လက်ခံပြီး",
+    tab_all_rooms:"အခန်းများ", tab_assign:"တာဝန်ပေး", tab_perf:"အချိန်မှတ်တမ်း", tab_my_rooms:"ကျွန်မ၏အခန်း",
+    tab_dash:"ဒက်ရှ်ဘုတ်", tab_report:"အစီရင်ခံ", tab_staff:"ဝန်ထမ်းစာရင်း", tab_complaints:"တိုင်ကြားချက်", tab_inspect:"စစ်ဆေး", tab_status:"အခန်းအခြေအနေ",
+    btn_start:"စတင်မည်", btn_done:"ပြီးပြီ", btn_inspect:"စစ်ဆေးမည်", btn_assign:"တာဝန်ပေးမည်",
+    btn_reassign:"ပြန်တာဝန်ပေး", btn_pass:"အောင်မြင် — FD သို့", btn_fail:"မအောင်မြင် — ပြန်လုပ်",
+    btn_create:"+ ယနေ့အလုပ်ဖန်တီး", btn_override:"ကျော်လွန်", btn_cancel:"ပယ်ဖျက်", btn_save:"သိမ်းဆည်း",
+    btn_complaint:"တိုင်ကြားချက်တင်",
+    floor:"ထပ်", housekeeper:"အိမ်ရှင်မ", started:"စတင်ပြီး", duration_lbl:"ကြာချိန်",
+    min:"မိနစ်", hr:"နာရီ",
+    fd_title:"အခန်းအခြေအနေ — တိုက်ရိုက်", fd_cleaning:"သန့်ရှင်းနေ", fd_ready:"အသင့်ဖြစ်ပြီ",
+    fd_waiting:"စစ်ဆေးရန်ဆိုင်း", fd_pending:"မစတင်သေး", fd_ack:"လက်ခံပြီး",
+    sec_progress:"ယနေ့တိုးတက်မှု", sec_by_staff:"ဝန်ထမ်းရလဒ်", sec_by_floor:"ထပ်အလိုက်",
+    sec_realtime:"သန့်ရှင်းနေ — တိုက်ရိုက်", sec_completed:"ပြီးဆုံး — အနှစ်ချုပ်",
+    sec_unassigned:"တာဝန်မပေးသေးသောအခန်း", sec_done_rooms:"စစ်ဆေးရန်ဆိုင်း",
+    no_rooms:"တာဝန်ပေးသောအခန်းမရှိသေး", no_data:"ဒေတာမရှိ", loading:"တင်နေသည်...",
+    today_badge:"ယနေ့", min_per_room:"မိနစ်/အခန်း", rooms_count:"အခန်း",
+    daily:"နေ့စဉ်", monthly:"လစဉ်", yearly:"နှစ်စဉ်",
+    complaint_room:"အခန်းနံပါတ်", complaint_desc:"ပြဿနာအသေးစိတ်", complaint_history:"ယနေ့တိုင်ကြားချက်",
+    perf_30days:"အခန်းတစ်ခန်းလျှင် ပျမ်းမျှအချိန် — ၃၀ ရက်", staff_90days:"ဝန်ထမ်းကုသိုလ် — ၉၀ ရက်",
+    report_title:"နေ့စဉ်အနှစ်ချုပ်", past_only:"ယနေ့ရက်ကိုသာကြည့်ပါ",
+    assign_done:"တာဝန်ပေးပြီး", no_rooms_status:"ဤအခြေအနေတွင်အခန်းမရှိ",
+    waiting_fd:"ဧည့်ကြိုစောင့်ဆိုင်း", complete:"ပြီးဆုံးပြီ", waiting_inspect:"စစ်ဆေးရန်စောင့်",
+    inspection_pass:"စစ်ဆေးပြီး", fd_checkedin:"ဧည့်ကြိုလက်ခံပြီး",
+    note_lbl:"မှတ်ချက်", select_hk:"အိမ်ရှင်မရွေးပါ", note_for_hk:"အိမ်ရှင်မသို့မှတ်ချက် (ရှိလျှင်)",
+    reason_fail:"မအောင်မြင်ရသည့်အကြောင်း", assign_to:"တာဝန်ပေးမည့်သူ", note_to_fd:"ဧည့်ကြိုသို့မှတ်ချက်",
+    change_to:"Status ပြောင်းမည်", change_hk:"အိမ်ရှင်မပြောင်း (ရွေးချယ်)", override_note:"မှတ်ချက်",
+    override_submit:"ကျော်လွန်မှတ်တမ်း", no_cleaning:"သန့်ရှင်းနေသောအခန်းမရှိ",
+    complaint_submitted:"တိုင်ကြားချက်မှတ်တမ်းတင်ပြီ", no_complaint_today:"ယနေ့တိုင်ကြားချက်မရှိ",
+    no_inspect:"စစ်ဆေးရန်အခန်းမရှိ", no_complaint_data:"တိုင်ကြားချက်မရှိ",
+    reported_by:"တင်ပြသူ:", by_hk:"အိမ်ရှင်မ:", seed_btn:"⚙ ကြိုတင်ဒေတာ ၃ လ တင်မည်",
+    seed_loading:"ဒေတာတင်နေသည်...", seed_done:"ဒေတာတင်ပြီး",
+  }
+};
+function t(k){ return (LANG_DATA[LANG]||LANG_DATA.th)[k]||k; }
+function changeLang(l){
+  LANG=l; localStorage.setItem("dc_lang",l);
+  document.querySelectorAll(".lang-btn").forEach(b=>b.classList.toggle("on",b.dataset.lang===l));
+  if(USER) showApp(); else updateLoginLang();
+}
+function langToggleHTML(){
+  return `<div style="display:flex;gap:3px;align-items:center">
+    ${["th","en","my"].map(l=>`<button class="lang-btn${LANG===l?" on":""}" data-lang="${l}" onclick="changeLang('${l}')"
+      style="padding:3px 7px;font-size:10px;font-weight:700;border:1.5px solid var(--br);border-radius:12px;background:${LANG===l?"var(--navy)":"var(--wh)"};color:${LANG===l?"#fff":"var(--mu)"};cursor:pointer;font-family:'Sarabun',sans-serif;transition:all .15s"
+    >${l==="th"?"ไทย":l==="en"?"EN":"မြ"}</button>`).join("")}
+  </div>`;
+}
+function updateLoginLang(){
+  const el = document.querySelector("#login-screen label");
+  // re-render login labels
+  document.querySelectorAll(".login-box label").forEach((lb,i)=>{ lb.textContent=i===0?t("username"):t("password"); });
+  document.querySelector("#btn-login").textContent=t("signin");
+  document.querySelector(".logo-tagline").textContent="Housekeeping & Operations";
+  document.querySelector("#lang-login")?.replaceWith(createLangToggle());
+}
+
 // ─── DATE HELPERS ────────────────────────────────────
 function todayISO() {
   const d = new Date();
@@ -335,17 +471,17 @@ function isToday() { return ST.date === todayISO(); }
 function isPast()  { return ST.date < todayISO(); }
 
 // ─── STATUS HELPERS ──────────────────────────────────
-const SL = { pending:"รอทำ", cleaning:"กำลังทำ", done:"รอตรวจ", passed:"ผ่านตรวจ", ack:"รับทราบ" };
-function sb(s){ return `<span class="s s-${s}">${SL[s]||s}</span>`; }
+function SL(){ return { pending:t("s_pending"), cleaning:t("s_cleaning"), done:t("s_done"), passed:t("s_passed"), ack:t("s_ack") }; }
+function sb(s){ return `<span class="s s-${s}">${SL()[s]||s}</span>`; }
 function elapsed(ms){
   if(!ms) return "—";
   const m = Math.floor((Date.now()-ms)/60000);
-  return m < 60 ? `${m} นาที` : `${Math.floor(m/60)} ชม. ${m%60} นาที`;
+  return m < 60 ? `${m} ${t("min")}` : `${Math.floor(m/60)} ${t("hr")} ${m%60} ${t("min")}`;
 }
 function duration(startMs, endMs){
   if(!startMs||!endMs) return "—";
   const m = Math.floor((endMs-startMs)/60000);
-  return m < 60 ? `${m} นาที` : `${Math.floor(m/60)} ชม. ${m%60} นาที`;
+  return m < 60 ? `${m} ${t("min")}` : `${Math.floor(m/60)} ${t("hr")} ${m%60} ${t("min")}`;
 }
 
 // ─── GAS CALLS ───────────────────────────────────────
@@ -372,10 +508,10 @@ function startAutoRefresh(){
   _refreshTimer = setInterval(async () => {
     if(!USER) return;
     const v = getView();
-    if(["mgr_report","mgr_perf","mgr_staff","adm_complaints","fd_complaint"].includes(v)) return;
-    const needAll = (v==="fd_cleaning");
+    if(["mgr_report","mgr_perf","mgr_staff","adm_complaints"].includes(v)) return;
+    const isFD = USER.role==="frontdesk";
     const role = (USER.role==="admin") ? "supervisor" : USER.role;
-    const res = await gasGet({ action:"getRooms", role, staffId:USER.staffId, date:ST.date, showAll: needAll || undefined });
+    const res = await gasGet({ action:"getRooms", role, staffId:USER.staffId, date:ST.date, showAll: isFD || undefined });
     if(res.success){ ST.rooms = res.rooms||[]; renderContent(); }
   }, 30000);
 }
@@ -403,7 +539,7 @@ async function doLogin(){
   const err  = document.getElementById("login-err");
   const btn  = document.getElementById("btn-login");
   if(!user||!pass){ err.textContent="กรุณากรอก Username และ Password"; return; }
-  btn.disabled=true; btn.textContent="กำลังเข้าสู่ระบบ..."; err.textContent="";
+  btn.disabled=true; btn.textContent=t("signing_in"); err.textContent="";
   const res = await gasGet({ action:"login", username:user, password:pass });
   if(res.success){
     USER = res;
@@ -435,12 +571,18 @@ function showApp(){
   const ma = document.getElementById("main-app");
   ma.style.display="flex";
 
-  const roleLabel = { supervisor:"หัวหน้า", housekeeper:"แม่บ้าน", frontdesk:"Front Desk", manager:"ผู้จัดการ", admin:"Admin" };
+  const roleLabel = { supervisor:t("role_supervisor"), housekeeper:t("role_housekeeper"), frontdesk:t("role_frontdesk"), manager:t("role_manager"), admin:t("role_admin") };
   const roleClass = { supervisor:"b-supervisor", housekeeper:"b-housekeeper", frontdesk:"b-frontdesk", manager:"b-manager", admin:"b-admin" };
   const b = document.getElementById("role-badge");
   b.textContent = roleLabel[USER.role]||USER.role;
   b.className   = "badge "+(roleClass[USER.role]||"");
   document.getElementById("hdr-name").textContent = USER.name;
+
+  // language toggle in header
+  const hl = document.getElementById("hdr-lang");
+  if(hl) hl.innerHTML = langToggleHTML();
+  const bl2 = document.getElementById("btn-logout");
+  if(bl2) bl2.textContent = t("logout");
 
   renderTabs();
   updateDateNav();
@@ -451,11 +593,11 @@ function showApp(){
 // ─── TABS ────────────────────────────────────────────
 function tabCfg(){
   return {
-    supervisor:  [{lbl:"ห้องทั้งหมด",v:"sup_rooms"},{lbl:"Assign",v:"sup_assign"},{lbl:"เวลาทำงาน",v:"sup_perf"}],
-    housekeeper: [{lbl:"ห้องของฉัน",v:"hk_rooms"}],
-    frontdesk:   [{lbl:"พร้อมรับลูกค้า",v:"fd_ack"},{lbl:"กำลังทำ",v:"fd_cleaning"},{lbl:"แจ้งปัญหา",v:"fd_complaint"}],
-    manager:     [{lbl:"Dashboard",v:"mgr_dash"},{lbl:"ห้องทั้งหมด",v:"mgr_all"},{lbl:"เวลาทำงาน",v:"mgr_perf"},{lbl:"สถิติพนักงาน",v:"mgr_staff"},{lbl:"รายงาน",v:"mgr_report"}],
-    admin:       [{lbl:"ห้องทั้งหมด",v:"adm_rooms"},{lbl:"Assign",v:"sup_assign"},{lbl:"ตรวจห้อง",v:"adm_inspect"},{lbl:"ข้อร้องเรียน",v:"adm_complaints"},{lbl:"สถิติ",v:"mgr_staff"}],
+    supervisor:  [{lbl:t("tab_all_rooms"),v:"sup_rooms"},{lbl:t("tab_assign"),v:"sup_assign"},{lbl:t("tab_perf"),v:"sup_perf"}],
+    housekeeper: [{lbl:t("tab_my_rooms"),v:"hk_rooms"}],
+    frontdesk:   [{lbl:t("tab_status"),v:"fd_status"}],
+    manager:     [{lbl:t("tab_dash"),v:"mgr_dash"},{lbl:t("tab_all_rooms"),v:"mgr_all"},{lbl:t("tab_perf"),v:"mgr_perf"},{lbl:t("tab_staff"),v:"mgr_staff"},{lbl:t("tab_report"),v:"mgr_report"}],
+    admin:       [{lbl:t("tab_all_rooms"),v:"adm_rooms"},{lbl:t("tab_assign"),v:"sup_assign"},{lbl:t("tab_inspect"),v:"adm_inspect"},{lbl:t("tab_complaints"),v:"adm_complaints"},{lbl:t("tab_staff"),v:"mgr_staff"}],
   };
 }
 function renderTabs(){
@@ -562,12 +704,10 @@ async function loadAndRender(){
   if(v==="mgr_perf"){      await loadPerformance();  return; }
   if(v==="mgr_staff"){     await loadStaffReport();  return; }
   if(v==="adm_complaints"){ await loadComplaints();  return; }
-  if(v==="fd_complaint"){ await loadTodayComplaints(); renderContent(); return; }
-
   showLoader();
-  const needAll = (v==="fd_cleaning");
+  const isFD = USER.role==="frontdesk";
   const role = (USER.role==="admin") ? "supervisor" : USER.role;
-  const res = await gasGet({ action:"getRooms", role, staffId:USER.staffId, date:ST.date, showAll: needAll || undefined });
+  const res = await gasGet({ action:"getRooms", role, staffId:USER.staffId, date:ST.date, showAll: isFD || undefined });
   if(res.success) ST.rooms = res.rooms||[];
   if((USER.role==="supervisor"||USER.role==="admin") && ST.staff.length===0){
     const sr = await gasGet({ action:"getStaff" });
@@ -634,7 +774,7 @@ function renderContent(){
   renderTabs();
   document.getElementById("content").innerHTML = renderView(getView());
   const v = getView();
-  if(["sup_perf","hk_rooms","fd_cleaning","mgr_all","adm_rooms","adm_inspect"].includes(v)) startLiveTimer();
+  if(["sup_perf","hk_rooms","fd_status","mgr_all","adm_rooms","adm_inspect"].includes(v)) startLiveTimer();
   else stopLiveTimer();
 }
 function renderView(v){
@@ -643,9 +783,7 @@ function renderView(v){
     case "sup_assign":    return vSupAssign();
     case "sup_perf":      return vSupPerf();
     case "hk_rooms":      return vHkRooms();
-    case "fd_ack":        return vFdAck();
-    case "fd_cleaning":   return vFdCleaning();
-    case "fd_complaint":  return vFdComplaint();
+    case "fd_status":     return vFdStatus();
     case "mgr_dash":      return vMgrDash();
     case "mgr_all":       return vMgrAll();
     case "mgr_perf":      return vMgrPerf();
@@ -684,10 +822,10 @@ function vSupRooms(){
           ${r.status==="done"&&r.startTime&&r.endTime?` · ใช้เวลา <b>${duration(r.startTime,r.endTime)}</b>`:""}
         </div>
         <div class="acts">
-          ${r.status==="done"&&isToday()?`<button class="btn bg" onclick="openInspect('${r.id}')">ตรวจห้อง</button>`:""}
-          ${["pending","cleaning","done"].includes(r.status)&&isToday()?`<button class="btn bw" onclick="openAssign('${r.id}')">Re-assign</button>`:""}
-          ${r.status==="passed"?`<span style="font-size:12px;color:var(--saged)">รอ Front Desk</span>`:""}
-          ${r.status==="ack"?`<span style="font-size:12px;color:#2D4A25">เสร็จสมบูรณ์</span>`:""}
+          ${r.status==="done"&&isToday()?`<button class="btn bg" onclick="openInspect('${r.id}')">${t("btn_inspect")}</button>`:""}
+          ${["pending","cleaning","done"].includes(r.status)&&isToday()?`<button class="btn bw" onclick="openAssign('${r.id}')">${t("btn_reassign")}</button>`:""}
+          ${r.status==="passed"?`<span style="font-size:12px;color:var(--saged)">${t("waiting_fd")}</span>`:""}
+          ${r.status==="ack"?`<span style="font-size:12px;color:#2D4A25">${t("complete")}</span>`:""}
         </div>
       </div>
     `).join("")}
@@ -801,11 +939,11 @@ function vHkRooms(){
         ${r.status==="cleaning"&&r.startTime?`<div class="rinfo">เริ่มมาแล้ว <b data-elapsed="${r.startTime}">—</b></div>`:""}
         ${r.status==="done"&&r.startTime&&r.endTime?`<div class="rinfo">ใช้เวลา <b>${duration(r.startTime,r.endTime)}</b></div>`:""}
         <div class="acts">
-          ${r.status==="pending"  &&isToday()?`<button class="btn bg"  onclick="doStatus('${r.id}','cleaning')">เริ่มทำ</button>`:""}
-          ${r.status==="cleaning" &&isToday()?`<button class="btn bb"  onclick="doStatus('${r.id}','done')">เสร็จแล้ว</button>`:""}
-          ${r.status==="done"    ?`<span style="font-size:12px;color:var(--y)">รอหัวหน้าตรวจ</span>`:""}
-          ${r.status==="passed"  ?`<span style="font-size:12px;color:var(--saged)">ผ่านการตรวจ</span>`:""}
-          ${r.status==="ack"     ?`<span style="font-size:12px;color:#2D4A25">Front Desk รับทราบ</span>`:""}
+          ${r.status==="pending"  &&isToday()?`<button class="btn bg"  onclick="doStatus('${r.id}','cleaning')">${t("btn_start")}</button>`:""}
+          ${r.status==="cleaning" &&isToday()?`<button class="btn bb"  onclick="doStatus('${r.id}','done')">${t("btn_done")}</button>`:""}
+          ${r.status==="done"    ?`<span style="font-size:12px;color:var(--y)">${t("waiting_inspect")}</span>`:""}
+          ${r.status==="passed"  ?`<span style="font-size:12px;color:var(--saged)">${t("inspection_pass")}</span>`:""}
+          ${r.status==="ack"     ?`<span style="font-size:12px;color:#2D4A25">${t("fd_checkedin")}</span>`:""}
         </div>
       </div>
     `).join("")}
@@ -934,7 +1072,7 @@ function vMgrAll(){
   const shown = ST.filter==="all" ? all : all.filter(r=>r.status===ST.filter);
   return `
     <div class="chips">
-      ${flist.map(f=>`<div class="chip ${ST.filter===f?"on":""}" onclick="setF('${f}')">${f==="all"?"ทั้งหมด":SL[f]} (${f==="all"?all.length:all.filter(r=>r.status===f).length})</div>`).join("")}
+      ${flist.map(f=>`<div class="chip ${ST.filter===f?"on":""}" onclick="setF('${f}')">${f==="all"?t("tab_all_rooms"):SL()[f]} (${f==="all"?all.length:all.filter(r=>r.status===f).length})</div>`).join("")}
     </div>
     ${shown.length===0?`<div class="empty"><div class="empty-ic">···</div>ไม่มีข้อมูล</div>`:""}
     ${shown.map(r=>`
@@ -1050,63 +1188,66 @@ function vMgrReport(){
   `;
 }
 
-// ─── FRONT DESK: กำลังทำ (real-time) ────────────────
-function vFdCleaning(){
+// ─── FRONT DESK: Read-only Status Board ─────────────
+function vFdStatus(){
   const rooms = ST.rooms;
   if(rooms.length===0)
-    return `<div class="empty"><div class="empty-ic">···</div>ไม่มีห้องที่กำลังทำความสะอาดอยู่</div>`;
-  const cleaning = rooms.filter(r=>r.status==="cleaning");
-  const waiting  = rooms.filter(r=>r.status==="done");
-  return `
-    <div class="sec"><span class="live-dot"></span>กำลังทำ — Real-time (${cleaning.length} ห้อง)</div>
-    ${cleaning.length===0?`<div style="font-size:13px;color:var(--mu);padding:4px 0 10px">ไม่มีห้องที่กำลังทำ</div>`:""}
-    ${cleaning.map(r=>`
-      <div class="card">
-        <div class="card-hd">
-          <div><div class="rnum">${r.id}</div><div class="rfloor">ชั้น ${r.floor}</div></div>
-          ${sb(r.status)}
-        </div>
-        <div class="rinfo">แม่บ้าน: <b>${r.assignedName||"—"}</b>
-          ${r.startTime?` · เริ่มมาแล้ว <b data-elapsed="${r.startTime}">—</b>`:""}
-        </div>
-      </div>
-    `).join("")}
-    ${waiting.length>0?`
-    <div class="sec" style="margin-top:6px">รอตรวจ — เสร็จแล้ว (${waiting.length} ห้อง)</div>
-    ${waiting.map(r=>`
-      <div class="card">
-        <div class="card-hd">
-          <div><div class="rnum">${r.id}</div><div class="rfloor">ชั้น ${r.floor}</div></div>
-          ${sb(r.status)}
-        </div>
-        <div class="rinfo">แม่บ้าน: <b>${r.assignedName||"—"}</b>
-          ${r.startTime&&r.endTime?` · ใช้เวลา <b>${duration(r.startTime,r.endTime)}</b>`:""}
-        </div>
-      </div>
-    `).join("")}`:""}
-  `;
-}
+    return `<div class="empty"><div class="empty-ic">···</div>${t("no_data")}</div>`;
 
-// ─── FRONT DESK: แจ้งปัญหา ───────────────────────────
-function vFdComplaint(){
-  const hist = ST.todayComplaints||[];
+  const cleaning = rooms.filter(r=>r.status==="cleaning");
+  const done     = rooms.filter(r=>r.status==="done");
+  const passed   = rooms.filter(r=>r.status==="passed");
+  const ack      = rooms.filter(r=>r.status==="ack");
+  const pending  = rooms.filter(r=>r.status==="pending");
+  const total    = rooms.length;
+  const fin      = passed.length + ack.length;
+  const pct      = total ? Math.round(fin/total*100) : 0;
+
+  function fdCard(r, showElapsed){
+    return `<div style="background:var(--wh);border:1.5px solid var(--br);border-radius:10px;padding:10px 11px;display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
+      <div>
+        <div style="font-size:19px;font-weight:700;line-height:1">${r.id}</div>
+        <div style="font-size:11px;color:var(--mu)">${t("floor")} ${r.floor}</div>
+        <div style="font-size:12px;font-weight:600;color:var(--tx);margin-top:3px">${r.assignedName||"—"}</div>
+      </div>
+      <div style="text-align:right">
+        ${sb(r.status)}
+        ${showElapsed&&r.startTime ? `<div style="font-size:12px;color:var(--o);margin-top:4px;font-weight:700" data-elapsed="${r.startTime}">—</div>` : ""}
+        ${r.status==="done"&&r.startTime&&r.endTime ? `<div style="font-size:11px;color:var(--mu);margin-top:3px">${duration(r.startTime,r.endTime)}</div>` : ""}
+        ${r.status==="passed" ? `<div style="font-size:11px;color:var(--saged);font-weight:700;margin-top:3px">✓ ${t("fd_ready")}</div>` : ""}
+        ${r.status==="ack"    ? `<div style="font-size:11px;color:#2D4A25;font-weight:700;margin-top:3px">✓</div>` : ""}
+      </div>
+    </div>`;
+  }
+
   return `
-    <div class="sec">แจ้งปัญหาห้องพัก (Guest Complaint)</div>
-    <div class="card">
-      <div class="field">
-        <label>หมายเลขห้อง</label>
-        <input type="number" id="cmp-room" placeholder="เช่น 801" style="width:100%;height:44px;padding:0 12px;border:1.5px solid var(--br);border-radius:9px;font-size:16px;font-family:'Sarabun',sans-serif;outline:none" />
-      </div>
-      <div class="field" style="margin-top:10px">
-        <label>รายละเอียดปัญหา</label>
-        <textarea id="cmp-desc" placeholder="เช่น แขกร้องเรียนห้องน้ำไม่สะอาด, ผ้าปูที่นอนมีรอยเปื้อน..." style="height:90px"></textarea>
-      </div>
-      <button class="btn bg btn-full" style="margin-top:4px" onclick="doLogComplaint()">บันทึกข้อร้องเรียน</button>
+    <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px;display:flex;align-items:center;gap:6px">
+      <span class="live-dot"></span>${t("fd_title")}
     </div>
-    <div class="sec" style="margin-top:4px">ประวัติข้อร้องเรียนวันนี้ (${hist.length} รายการ)</div>
-    ${hist.length===0
-      ? `<div style="font-size:13px;color:var(--mu);padding:4px 0">ยังไม่มีข้อร้องเรียนวันนี้</div>`
-      : hist.map(c=>`<div class="complaint-card"><div class="complaint-hd"><span class="complaint-room">ห้อง ${c.roomId}</span><span class="complaint-date">${c.date}</span></div><div class="complaint-desc">${c.description}</div><div class="complaint-by">แม่บ้าน: ${c.assignedName||"ไม่ระบุ"}</div></div>`).join("")}
+    <div class="prog" style="margin-bottom:12px">
+      <div class="prog-hd"><span>${t("sec_progress")}</span><span style="color:${pct===100?"var(--saged)":pct>60?"var(--g)":"var(--mu)"}">${fin}/${total} (${pct}%)</span></div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
+    </div>
+
+    ${cleaning.length>0?`
+    <div class="sec" style="color:var(--o)"><span class="live-dot"></span>${t("fd_cleaning")} (${cleaning.length})</div>
+    ${cleaning.map(r=>fdCard(r,true)).join("")}`:""}
+
+    ${done.length>0?`
+    <div class="sec" style="color:var(--b)">${t("fd_waiting")} (${done.length})</div>
+    ${done.map(r=>fdCard(r,false)).join("")}`:""}
+
+    ${passed.length>0?`
+    <div class="sec" style="color:var(--saged)">${t("fd_ready")} (${passed.length})</div>
+    ${passed.map(r=>fdCard(r,false)).join("")}`:""}
+
+    ${ack.length>0?`
+    <div class="sec" style="color:#2D4A25">${t("fd_ack")} (${ack.length})</div>
+    ${ack.map(r=>fdCard(r,false)).join("")}`:""}
+
+    ${pending.length>0?`
+    <div class="sec">${t("fd_pending")} (${pending.length})</div>
+    ${pending.map(r=>fdCard(r,false)).join("")}`:""}
   `;
 }
 
@@ -1181,13 +1322,14 @@ function vMgrStaff(){
 // ─── ADMIN: ห้องทั้งหมด (with override) ─────────────
 function vAdmRooms(){
   const all   = ST.rooms;
+  const seedBtn = IS_TEST ? `<div style="margin-bottom:10px"><button class="btn" style="background:#4C1D95;color:#fff;height:36px;padding:0 14px;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;width:100%;justify-content:center;font-family:'Sarabun',sans-serif" onclick="doSeedData()">${t("seed_btn")}</button></div>` : "";
   const flist = ["all","pending","cleaning","done","passed","ack"];
   const flbl  = {all:"ทั้งหมด",done:"รอตรวจ",cleaning:"กำลังทำ",pending:"รอทำ",passed:"ผ่านตรวจ",ack:"รับทราบ"};
   const shown = ST.filter==="all" ? all : all.filter(r=>r.status===ST.filter);
   if(all.length===0 && isToday())
-    return `<div class="empty"><div class="empty-ic">···</div><div style="margin-bottom:12px">ยังไม่มีงานวันนี้</div>
-      <button class="btn bg" onclick="doInitDaily()">+ สร้างงานวันนี้</button></div>`;
-  return `
+    return `${seedBtn}<div class="empty"><div class="empty-ic">···</div><div style="margin-bottom:12px">ยังไม่มีงานวันนี้</div>
+      <button class="btn bg" onclick="doInitDaily()">${t("btn_create")}</button></div>`;
+  return `${seedBtn}
     <div class="chips">
       ${flist.map(f=>`<div class="chip ${ST.filter===f?"on":""}" onclick="setF('${f}')">${flbl[f]} (${f==="all"?all.length:all.filter(r=>r.status===f).length})</div>`).join("")}
     </div>
@@ -1314,7 +1456,7 @@ function openAdminOverride(roomId){
     <div class="field">
       <label>เปลี่ยน Status เป็น</label>
       <div class="override-grid">
-        ${statuses.map(s=>`<button class="ov-btn ${r.status===s?"active":""}" onclick="this.closest('.override-grid').querySelectorAll('.ov-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active');document.getElementById('ov-status').value='${s}'">${SL[s]||s}</button>`).join("")}
+        ${statuses.map(s=>`<button class="ov-btn ${r.status===s?"active":""}" onclick="this.closest('.override-grid').querySelectorAll('.ov-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active');document.getElementById('ov-status').value='${s}'">${SL()[s]||s}</button>`).join("")}
       </div>
       <input type="hidden" id="ov-status" value="${r.status}"/>
     </div>
@@ -1342,7 +1484,7 @@ async function confirmAdminOverride(roomId){
   if(r){ r.status=status; if(sid){ r.assignedTo=sid; r.assignedName=snick; } r.note=note; }
   closeModal(); renderContent();
   await gasCall({ action:"adminSetStatus", roomId, status, assignedTo:sid, assignedName:sname, note, staffId:USER.staffId, staffName:USER.name, date:ST.date });
-  toast(`Override ห้อง ${roomId} → ${SL[status]||status}`,"ok");
+  toast(`Override ห้อง ${roomId} → ${SL()[status]||status}`,"ok");
 }
 
 // ─── MODALS ──────────────────────────────────────────
@@ -1458,12 +1600,27 @@ function toast(msg, type=""){
   _tt = setTimeout(()=>t.className="toast", 2400);
 }
 
+// ─── SEED DATA (test only) ────────────────────────────
+async function doSeedData(){
+  if(!confirm("โหลดข้อมูลทดสอบ 3 เดือน?\n\nดำเนินการนี้ใช้เวลาประมาณ 30-60 วินาที")) return;
+  toast(t("seed_loading"));
+  const res = await gasGet({ action:"seedTestData" });
+  if(res.success) toast(`${t("seed_done")} — ${res.rooms} ห้อง, ${res.complaints} ข้อร้องเรียน`, "ok");
+  else toast(res.message||"Error","err");
+}
+
 // ─── BOOT ─────────────────────────────────────────────
 const LIFF_ID = "2009946209-cFt4JqH1";
 async function initLiff(){
   try { await liff.init({ liffId: LIFF_ID }); } catch(e) {}
 }
 initLiff().then(() => {
+  // render login-page language toggle
+  const ll = document.getElementById("lang-login");
+  if(ll) ll.innerHTML = langToggleHTML();
+  document.getElementById("lbl-user").textContent = t("username");
+  document.getElementById("lbl-pass").textContent = t("password");
+  document.getElementById("btn-login").textContent = t("signin");
   if(USER){ showApp(); }
 });
 </script>
