@@ -707,7 +707,7 @@ function tabCfg(){
   return {
     supervisor:  [{lbl:t("tab_all_rooms"),v:"sup_rooms"},{lbl:t("tab_assign"),v:"sup_assign"},{lbl:t("tab_perf"),v:"sup_perf"}],
     housekeeper: [{lbl:t("tab_my_rooms"),v:"hk_rooms"}],
-    frontdesk:   [{lbl:t("tab_status"),v:"fd_status"},{lbl:t("tab_hk_track"),v:"fd_hk"}],
+    frontdesk:   [{lbl:t("tab_all_rooms"),v:"fd_status"}],
     manager:     [{lbl:t("tab_dash"),v:"mgr_dash"},{lbl:t("tab_all_rooms"),v:"mgr_all"},{lbl:t("tab_perf"),v:"mgr_perf"},{lbl:t("tab_staff"),v:"mgr_staff"},{lbl:t("tab_report"),v:"mgr_report"}],
     admin:       [{lbl:t("tab_all_rooms"),v:"adm_rooms"},{lbl:t("tab_assign"),v:"sup_assign"},{lbl:t("tab_inspect"),v:"adm_inspect"},{lbl:t("tab_complaints"),v:"adm_complaints"},{lbl:t("tab_staff"),v:"mgr_staff"}],
   };
@@ -882,7 +882,7 @@ function renderContent(){
   renderTabs();
   document.getElementById("content").innerHTML = renderView(getView());
   const v = getView();
-  if(["sup_perf","hk_rooms","fd_status","fd_hk","mgr_all","adm_rooms","adm_inspect"].includes(v)) startLiveTimer();
+  if(["sup_perf","hk_rooms","fd_status","mgr_all","adm_rooms","adm_inspect"].includes(v)) startLiveTimer();
   else stopLiveTimer();
 }
 function renderView(v){
@@ -892,7 +892,6 @@ function renderView(v){
     case "sup_perf":      return vSupPerf();
     case "hk_rooms":      return vHkRooms();
     case "fd_status":     return vFdStatus();
-    case "fd_hk":         return vFdHk();
     case "mgr_dash":      return vMgrDash();
     case "mgr_all":       return vMgrAll();
     case "mgr_perf":      return vMgrPerf();
@@ -912,7 +911,7 @@ function vSupRooms(){
       <button class="btn bg" onclick="doInitDaily()">${t("btn_create")} (${fmtDateTH(ST.date)})</button></div>`;
   const all   = ST.rooms;
   const sl    = SL();
-  const flist = ["all","done","cleaning","pending","passed","ack"];
+  const flist = ["all","done","cleaning","pending","passed"];
   const shown = ST.filter==="all" ? all : all.filter(r=>r.status===ST.filter);
   return `
     <div class="chips">
@@ -971,7 +970,7 @@ function vSupPerf(){
     return `<div class="empty"><div class="empty-ic">···</div>${isPast()?t("no_data_date"):t("no_data")}</div>`;
 
   const cleaning  = rooms.filter(r=>r.status==="cleaning"&&r.startTime);
-  const completed = rooms.filter(r=>["done","passed","ack"].includes(r.status)&&r.startTime&&r.endTime);
+  const completed = rooms.filter(r=>["done","passed"].includes(r.status)&&r.startTime&&r.endTime);
 
   const byStaff = {};
   completed.forEach(r=>{
@@ -1024,7 +1023,7 @@ function vSupPerf(){
 // ─── HOUSEKEEPER ─────────────────────────────────────
 function vHkRooms(){
   const rooms = ST.rooms;
-  const done  = rooms.filter(r=>["done","passed","ack"].includes(r.status)).length;
+  const done  = rooms.filter(r=>["done","passed"].includes(r.status)).length;
   const pct   = rooms.length ? Math.round(done/rooms.length*100) : 0;
   return `
     <div class="stats">
@@ -1051,7 +1050,6 @@ function vHkRooms(){
           ${r.status==="cleaning" &&isToday()?`<button class="btn bb"  onclick="doStatus('${r.id}','done')">${t("btn_done")}</button>`:""}
           ${r.status==="done"    ?`<span style="font-size:12px;color:var(--y)">${t("waiting_inspect")}</span>`:""}
           ${r.status==="passed"  ?`<span style="font-size:12px;color:var(--saged)">${t("inspection_pass")}</span>`:""}
-          ${r.status==="ack"     ?`<span style="font-size:12px;color:#2D4A25">${t("fd_checkedin")}</span>`:""}
         </div>
       </div>
     `).join("")}
@@ -1062,13 +1060,12 @@ function vHkRooms(){
 function vMgrDash(){
   const rooms = ST.rooms;
   const total = rooms.length;
-  const cnt = {pending:0,cleaning:0,done:0,passed:0,ack:0};
+  const cnt = {pending:0,cleaning:0,done:0,passed:0};
   rooms.forEach(r=>{ if(cnt[r.status]!==undefined) cnt[r.status]++; });
-  const finished = cnt.passed+cnt.ack;
+  const finished = cnt.passed;
   const pct = total ? Math.round(finished/total*100) : 0;
 
   const segs = [
-    {k:"ack",     c:"#2D4A25", get label(){ return SL()["ack"]; }},
     {k:"passed",  c:"#A8B59A", get label(){ return SL()["passed"]; }},
     {k:"done",    c:"#1A56DB", get label(){ return SL()["done"]; }},
     {k:"cleaning",c:"#C45C10", get label(){ return SL()["cleaning"]; }},
@@ -1086,7 +1083,7 @@ function vMgrDash(){
     if(!r.assignedName) return;
     byS[r.assignedName] = byS[r.assignedName]||{name:r.assignedName,done:0,total:0};
     byS[r.assignedName].total++;
-    if(["done","passed","ack"].includes(r.status)) byS[r.assignedName].done++;
+    if(["done","passed"].includes(r.status)) byS[r.assignedName].done++;
   });
   const sarr = Object.values(byS).sort((a,b)=>b.done-a.done);
   const maxT = Math.max(...sarr.map(s=>s.total),1);
@@ -1095,7 +1092,7 @@ function vMgrDash(){
   rooms.forEach(r=>{
     byF[r.floor] = byF[r.floor]||{f:r.floor,done:0,total:0};
     byF[r.floor].total++;
-    if(["done","passed","ack"].includes(r.status)) byF[r.floor].done++;
+    if(["done","passed"].includes(r.status)) byF[r.floor].done++;
   });
   const farr = Object.values(byF).sort((a,b)=>a.f-b.f);
 
@@ -1154,7 +1151,7 @@ function vMgrDash(){
 // ─── MANAGER: All Rooms ──────────────────────────────
 function vMgrAll(){
   const all   = ST.rooms;
-  const flist = ["all","pending","cleaning","done","passed","ack"];
+  const flist = ["all","pending","cleaning","done","passed"];
   const shown = ST.filter==="all" ? all : all.filter(r=>r.status===ST.filter);
   return `
     <div class="chips">
@@ -1255,7 +1252,7 @@ function vMgrReport(){
     </div>
     ${data.map(d=>{
       const tot = d.total||1;
-      const fin = (d.ack||0)+(d.passed||0);
+      const fin = (d.passed||0);
       const pct = Math.round(fin/tot*100);
       const sl  = SL();
       return `<div class="card" style="padding:10px 13px">
@@ -1264,14 +1261,13 @@ function vMgrReport(){
           <span style="font-size:12px;color:${pct===100?"var(--saged)":pct>50?"var(--g)":"var(--mu)"};font-weight:700">${fin}/${tot} (${pct}%)</span>
         </div>
         <div class="rpt-bars">
-          ${(d.ack   ||0)?`<div class="rpt-seg" style="width:${(d.ack/tot*100).toFixed(1)}%;background:#2D4A25"></div>`:""}
           ${(d.passed||0)?`<div class="rpt-seg" style="width:${(d.passed/tot*100).toFixed(1)}%;background:#A8B59A"></div>`:""}
           ${(d.done  ||0)?`<div class="rpt-seg" style="width:${(d.done/tot*100).toFixed(1)}%;background:#1A56DB"></div>`:""}
           ${(d.cleaning||0)?`<div class="rpt-seg" style="width:${(d.cleaning/tot*100).toFixed(1)}%;background:#C45C10"></div>`:""}
           ${(d.pending||0)?`<div class="rpt-seg" style="width:${(d.pending/tot*100).toFixed(1)}%;background:#D8D4CD"></div>`:""}
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:5px">
-          ${[["#2D4A25",sl.ack,d.ack],["#4E6642",sl.passed,d.passed],["#1A56DB",sl.done,d.done],["#C45C10",sl.cleaning,d.cleaning],["#8A857D",sl.pending,d.pending]]
+          ${[["#4E6642",sl.passed,d.passed],["#1A56DB",sl.done,d.done],["#C45C10",sl.cleaning,d.cleaning],["#8A857D",sl.pending,d.pending]]
             .filter(x=>x[2]).map(x=>`<span style="font-size:10px;color:${x[0]};font-weight:700">${x[1]} ${x[2]}</span>`).join("")}
         </div>
       </div>`;
@@ -1279,123 +1275,37 @@ function vMgrReport(){
   `;
 }
 
-// ─── FRONT DESK: Read-only Status Board ─────────────
+// ─── FRONT DESK: Room Status Board ───────────────────
 function vFdStatus(){
-  const rooms = ST.rooms;
-  if(rooms.length===0)
-    return `<div class="empty"><div class="empty-ic">···</div>${t("no_data")}</div>`;
-
-  const cleaning = rooms.filter(r=>r.status==="cleaning");
-  const done     = rooms.filter(r=>r.status==="done");
-  const passed   = rooms.filter(r=>r.status==="passed");
-  const ack      = rooms.filter(r=>r.status==="ack");
-  const pending  = rooms.filter(r=>r.status==="pending");
-  const total    = rooms.length;
-  const fin      = passed.length + ack.length;
-  const pct      = total ? Math.round(fin/total*100) : 0;
-
-  function fdCard(r, showElapsed){
-    return `<div style="background:var(--wh);border:1.5px solid var(--br);border-radius:10px;padding:10px 11px;display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
-      <div>
-        <div style="font-size:19px;font-weight:700;line-height:1">${r.id}</div>
-        <div style="font-size:11px;color:var(--mu)">${t("floor")} ${r.floor}</div>
-        <div style="font-size:12px;font-weight:600;color:var(--tx);margin-top:3px">${r.assignedName||"—"}</div>
-      </div>
-      <div style="text-align:right">
-        ${sb(r.status)}
-        ${showElapsed&&r.startTime ? `<div style="font-size:12px;color:var(--o);margin-top:4px;font-weight:700" data-elapsed="${r.startTime}">—</div>` : ""}
-        ${r.status==="done"&&r.startTime&&r.endTime ? `<div style="font-size:11px;color:var(--mu);margin-top:3px">${duration(r.startTime,r.endTime)}</div>` : ""}
-        ${r.status==="passed" ? `<div style="font-size:11px;color:var(--saged);font-weight:700;margin-top:3px">✓ ${t("fd_ready")}</div>` : ""}
-        ${r.status==="ack"    ? `<div style="font-size:11px;color:#2D4A25;font-weight:700;margin-top:3px">✓</div>` : ""}
-      </div>
-    </div>`;
-  }
-
+  const all = ST.rooms;
+  const sl  = SL();
+  // Chips: All, Pending, Cleaning (cleaning+done), Complete (passed)
+  const chips = [
+    { k:"all",      label:`${t("tab_all_rooms")}`,  count: all.length },
+    { k:"pending",  label: sl.pending,               count: all.filter(r=>r.status==="pending").length },
+    { k:"cleaning", label: sl.cleaning,              count: all.filter(r=>["cleaning","done"].includes(r.status)).length },
+    { k:"passed",   label: sl.passed,                count: all.filter(r=>r.status==="passed").length },
+  ];
+  const shown = ST.filter==="all"      ? all :
+                ST.filter==="cleaning" ? all.filter(r=>["cleaning","done"].includes(r.status)) :
+                                         all.filter(r=>r.status===ST.filter);
   return `
-    <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px;display:flex;align-items:center;gap:6px">
-      <span class="live-dot"></span>${t("fd_title")}
+    <div class="chips">
+      ${chips.map(c=>`<div class="chip ${ST.filter===c.k?"on":""}" onclick="setF('${c.k}')">${c.label} (${c.count})</div>`).join("")}
     </div>
-    <div class="prog" style="margin-bottom:12px">
-      <div class="prog-hd"><span>${t("sec_progress")}</span><span style="color:${pct===100?"var(--saged)":pct>60?"var(--g)":"var(--mu)"}">${fin}/${total} (${pct}%)</span></div>
-      <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
-    </div>
-
-    ${cleaning.length>0?`
-    <div class="sec" style="color:var(--o)"><span class="live-dot"></span>${t("fd_cleaning")} (${cleaning.length})</div>
-    ${cleaning.map(r=>fdCard(r,true)).join("")}`:""}
-
-    ${done.length>0?`
-    <div class="sec" style="color:var(--b)">${t("fd_waiting")} (${done.length})</div>
-    ${done.map(r=>fdCard(r,false)).join("")}`:""}
-
-    ${passed.length>0?`
-    <div class="sec" style="color:var(--saged)">${t("fd_ready")} (${passed.length})</div>
-    ${passed.map(r=>fdCard(r,false)).join("")}`:""}
-
-    ${ack.length>0?`
-    <div class="sec" style="color:#2D4A25">${t("fd_ack")} (${ack.length})</div>
-    ${ack.map(r=>fdCard(r,false)).join("")}`:""}
-
-    ${pending.length>0?`
-    <div class="sec">${t("fd_pending")} (${pending.length})</div>
-    ${pending.map(r=>fdCard(r,false)).join("")}`:""}
-  `;
-}
-
-// ─── FRONT DESK: Track by Housekeeper ───────────────
-function vFdHk(){
-  const rooms = ST.rooms.filter(r=>r.assignedTo);
-  if(rooms.length===0)
-    return `<div class="empty"><div class="empty-ic">···</div>${t("fd_no_active_hk")}</div>`;
-
-  // Group by housekeeper
-  const byHk = {};
-  rooms.forEach(r=>{
-    if(!byHk[r.assignedTo]) byHk[r.assignedTo]={id:r.assignedTo, name:r.assignedName||r.assignedTo, rooms:[]};
-    byHk[r.assignedTo].rooms.push(r);
-  });
-
-  const statusOrder = {cleaning:0,done:1,pending:2,passed:3,ack:4};
-  const hkList = Object.values(byHk).sort((a,b)=>{
-    const aC=a.rooms.filter(r=>r.status==="cleaning").length;
-    const bC=b.rooms.filter(r=>r.status==="cleaning").length;
-    return bC-aC || a.name.localeCompare(b.name);
-  });
-
-  function roomRow(r){
-    return `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--br)">
-      <div style="min-width:44px;font-size:17px;font-weight:700;color:var(--navy)">${r.id}</div>
-      <div style="flex:1">
-        ${sb(r.status)}
-        ${r.status==="cleaning"&&r.startTime?`<div style="font-size:12px;color:var(--o);font-weight:700;margin-top:3px" data-elapsed="${r.startTime}">—</div>`:""}
-        ${r.status==="done"&&r.startTime&&r.endTime?`<div style="font-size:11px;color:var(--mu);margin-top:2px">${duration(r.startTime,r.endTime)}</div>`:""}
-      </div>
-      <div style="font-size:11px;color:var(--mu);">${t("floor")} ${r.floor}</div>
-    </div>`;
-  }
-
-  return `
-    <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px;display:flex;align-items:center;gap:6px">
-      <span class="live-dot"></span>${t("fd_hk_cleaning_now")}
-    </div>
-    ${hkList.map(hk=>{
-      const cleaning=hk.rooms.filter(r=>r.status==="cleaning");
-      const sorted=hk.rooms.slice().sort((a,b)=>(statusOrder[a.status]??5)-(statusOrder[b.status]??5));
-      const hasCleaning=cleaning.length>0;
-      return `<div style="background:var(--wh);border:1.5px solid ${hasCleaning?"var(--o)":"var(--br)"};border-radius:12px;padding:12px 14px;margin-bottom:10px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <div>
-            <div style="font-size:16px;font-weight:700;color:var(--navy)">${hk.name}</div>
-            <div style="font-size:11px;color:var(--mu);margin-top:2px">
-              ${hk.rooms.length} ${t("rooms_count")}
-              ${hasCleaning?`&nbsp;·&nbsp;<span style="color:var(--o);font-weight:700">${cleaning.length} ${t("fd_cleaning")}</span>`:""}
-            </div>
-          </div>
-          ${hasCleaning?`<span class="live-dot" style="width:9px;height:9px;flex-shrink:0"></span>`:""}
+    ${shown.length===0?`<div class="empty"><div class="empty-ic">···</div>${t("no_data")}</div>`:""}
+    ${shown.map(r=>`
+      <div class="card">
+        <div class="card-hd">
+          <div><div class="rnum">${r.id}</div><div class="rfloor">${t("floor")} ${r.floor}</div></div>
+          ${sb(r.status)}
         </div>
-        ${sorted.map(r=>roomRow(r)).join("")}
-      </div>`;
-    }).join("")}
+        <div class="rinfo">${t("housekeeper")}: <b>${r.assignedName||"—"}</b>${
+          r.status==="cleaning"&&r.startTime ? ` · <span data-elapsed="${r.startTime}">—</span>` :
+          r.startTime&&r.endTime             ? ` · ${duration(r.startTime,r.endTime)}` : ""
+        }</div>
+      </div>
+    `).join("")}
   `;
 }
 
@@ -1482,7 +1392,7 @@ function adminSeedBanner(){
 function vAdmRooms(){
   const all   = ST.rooms;
   const seedBtn = adminSeedBanner();
-  const flist = ["all","pending","cleaning","done","passed","ack"];
+  const flist = ["all","pending","cleaning","done","passed"];
   const shown = ST.filter==="all" ? all : all.filter(r=>r.status===ST.filter);
   if(all.length===0 && isToday())
     return `${seedBtn}<div class="empty"><div class="empty-ic">···</div><div style="margin-bottom:12px">${t("no_work_today")}</div>
@@ -1570,13 +1480,6 @@ async function doStatus(roomId, newStatus){
   toast(newStatus==="cleaning"?t("toast_start_clean"):t("toast_sent_inspect"),"ok");
 }
 
-async function doAck(roomId){
-  if(!isToday()){ toast(t("toast_no_edit_past"),"err"); return; }
-  ST.rooms = ST.rooms.filter(x=>x.id!==roomId);
-  renderContent();
-  await gasCall({ action:"ackRoom", roomId, staffId:USER.staffId, staffName:USER.name, date:ST.date });
-  toast(t("toast_saved"),"ok");
-}
 
 async function doInitDaily(){
   const res = await gasGet({ action:"initDaily", date:ST.date });
@@ -1601,7 +1504,7 @@ async function doLogComplaint(){
 
 function openAdminOverride(roomId){
   const r = ST.rooms.find(x=>x.id===roomId);
-  const statuses = ["pending","cleaning","done","passed","ack"];
+  const statuses = ["pending","cleaning","done","passed"];
   const opts = ST.staff.length
     ? ST.staff.map(s=>`<option value="${s.id}" data-name="${s.name}" data-nick="${s.nickname}" ${r.assignedTo===s.id?"selected":""}>${s.name} (${s.nickname})</option>`).join("")
     : `<option value="${r.assignedTo||""}" selected>${r.assignedName||"—"}</option>`;

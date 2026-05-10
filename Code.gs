@@ -274,7 +274,7 @@ function getPerformance(startDate, endDate) {
     if (startDate && rowDate < startDate) continue;
     if (endDate   && rowDate > endDate)   continue;
     const status = String(data[i][3]);
-    if (!["done","passed","ack"].includes(status)) continue;
+    if (!["done","passed"].includes(status)) continue;
     const startMs = data[i][6] ? new Date(data[i][6]).getTime() : null;
     const endMs   = data[i][7] ? new Date(data[i][7]).getTime() : null;
     if (!startMs || !endMs || endMs <= startMs) continue;
@@ -370,7 +370,7 @@ function getStaffReport(startDate, endDate) {
       if (!byStaff[name]) byStaff[name] = { name, totalRooms:0, completedRooms:0, totalMs:0, timingCount:0, complaints:0, complaintList:[] };
       byStaff[name].totalRooms++;
       const status = String(data[i][3]);
-      if (["done","passed","ack"].includes(status)) {
+      if (["done","passed"].includes(status)) {
         byStaff[name].completedRooms++;
         const s0 = data[i][6] ? new Date(data[i][6]).getTime() : null;
         const e0 = data[i][7] ? new Date(data[i][7]).getTime() : null;
@@ -414,7 +414,7 @@ function adminSetStatus(req) {
   if (req.note !== undefined) sheet.getRange(row, 9).setValue(req.note);
   if (req.status === "cleaning") sheet.getRange(row, 7).setValue(new Date());
   if (req.status === "done")     sheet.getRange(row, 8).setValue(new Date());
-  if (["pending","passed","ack"].includes(req.status) && req.clearTimes) {
+  if (["pending","passed"].includes(req.status) && req.clearTimes) {
     sheet.getRange(row, 7).setValue(""); sheet.getRange(row, 8).setValue("");
   }
   log(req.roomId, req.staffId, req.staffName, "admin_override:"+req.status, req.note||"");
@@ -490,8 +490,8 @@ function seedTestData() {
       const endDt   = new Date(startDt);
       endDt.setMinutes(endDt.getMinutes() + durMin);
 
-      // Mostly ack (completed), with small chance of passed on recent days
-      const status = daysAgo <= 2 ? (Math.random()<0.4 ? "passed" : "ack") : "ack";
+      // All historical records use "passed" as final status (no ack step)
+      const status = daysAgo <= 2 ? (Math.random()<0.3 ? "done" : "passed") : "passed";
       rows.push([r.room, r.floor, d, status, hk.id, hk.nick, startDt, endDt, ""]);
     });
 
