@@ -254,7 +254,6 @@ textarea{height:74px;resize:none;line-height:1.5}
 <div class="app">
 <div class="test-banner" id="test-banner">
   <span class="test-banner-lbl">⚗ TEST ENVIRONMENT</span>
-  <button class="test-seed-btn" id="test-seed-btn" onclick="doSeedData()">⚙ Seed 3-month Data</button>
 </div>
 
 <!-- LOGIN -->
@@ -323,7 +322,7 @@ if(IS_TEST){ document.title="[TEST] Dusit Connect"; }
 
 // ─── SESSION & STATE ──────────────────────────────────
 let USER = JSON.parse(sessionStorage.getItem("dc_user") || "null");
-const ST = { tabIdx:0, filter:"all", rooms:[], staff:[], date:todayISO(), report:[], perf:[], staffReport:[], complaints:[], reportMode:"daily" };
+const ST = { tabIdx:0, filter:"all", fdFloor:"", fdHk:"", rooms:[], staff:[], date:todayISO(), report:[], perf:[], staffReport:[], complaints:[], reportMode:"daily" };
 
 // ─── LANGUAGE ─────────────────────────────────────────
 let LANG = localStorage.getItem("dc_lang") || "th";
@@ -377,6 +376,7 @@ const LANG_DATA = {
     min_avg_lbl:"นาที/ห้อง (เฉลี่ย)", room_count_today:"ห้องวันนี้",
     fd_all_rooms:"ห้องทั้งหมด", fd_filter_all:"ทั้งหมด",
     tab_hk_track:"ติดตามแม่บ้าน", fd_hk_cleaning_now:"กำลังทำอยู่ตอนนี้", fd_no_active_hk:"ไม่มีแม่บ้านที่ได้รับมอบหมาย",
+    fd_all_floors:"ทุกชั้น", fd_all_hk:"แม่บ้านทั้งหมด",
     score_ok_lbl:"ดี", score_warn_lbl:"พอใช้", score_bad_lbl:"ต้องปรับปรุง",
     no_complaints_yet:"ไม่มีข้อร้องเรียน", total_rooms_lbl:"ห้องทั้งหมด",
     completed_lbl:"เสร็จแล้ว", complaints_lbl:"ข้อร้องเรียน",
@@ -439,6 +439,7 @@ const LANG_DATA = {
     min_avg_lbl:"min/room (avg)", room_count_today:"rooms today",
     fd_all_rooms:"All Rooms", fd_filter_all:"All",
     tab_hk_track:"Track Staff", fd_hk_cleaning_now:"Currently Cleaning", fd_no_active_hk:"No housekeepers assigned",
+    fd_all_floors:"All Floors", fd_all_hk:"All Housekeepers",
     score_ok_lbl:"Good", score_warn_lbl:"Caution", score_bad_lbl:"Needs Work",
     no_complaints_yet:"No complaints", total_rooms_lbl:"Total Rooms",
     completed_lbl:"Done", complaints_lbl:"Complaints",
@@ -501,6 +502,7 @@ const LANG_DATA = {
     min_avg_lbl:"မိနစ်/အခန်း (ပျမ်းမျှ)", room_count_today:"ယနေ့အခန်း",
     fd_all_rooms:"အခန်းများအားလုံး", fd_filter_all:"အားလုံး",
     tab_hk_track:"ဝန်ထမ်းကြည့်", fd_hk_cleaning_now:"သန့်ရှင်းနေ", fd_no_active_hk:"တာဝန်ပေးထားသောအိမ်ရှင်မမရှိ",
+    fd_all_floors:"ထပ်အားလုံး", fd_all_hk:"အိမ်ရှင်မအားလုံး",
     score_ok_lbl:"ကောင်း", score_warn_lbl:"သတိထား", score_bad_lbl:"တိုးတက်ရန်",
     no_complaints_yet:"တိုင်ကြားချက်မရှိ", total_rooms_lbl:"အခန်းစုစုပေါင်း",
     completed_lbl:"ပြီးဆုံး", complaints_lbl:"တိုင်ကြားချက်",
@@ -520,7 +522,6 @@ function t(k){ return (LANG_DATA[LANG]||LANG_DATA.th)[k]||k; }
 function changeLang(l){
   LANG=l; localStorage.setItem("dc_lang",l);
   document.querySelectorAll(".lang-btn").forEach(b=>b.classList.toggle("on",b.dataset.lang===l));
-  const sb=document.getElementById("test-seed-btn"); if(sb) sb.textContent=`⚙ ${t("seed_btn").replace("⚙ ","")}`;
   if(USER) showApp(); else updateLoginLang();
 }
 function langToggleHTML(){
@@ -688,13 +689,9 @@ function showApp(){
   if(hl) hl.innerHTML = langToggleHTML();
   const bl2 = document.getElementById("btn-logout");
   if(bl2) bl2.textContent = t("logout");
-  // show admin tools banner only for admin role
+  // show test banner only on test environment (all roles)
   const tb = document.getElementById("test-banner");
-  if(tb){ tb.style.display = USER.role==="admin" ? "flex" : "none"; }
-  if(tb && USER.role==="admin")
-    tb.querySelector(".test-banner-lbl").textContent = IS_TEST ? "⚗ TEST ENVIRONMENT" : "⚙ ADMIN TOOLS";
-  const sb = document.getElementById("test-seed-btn");
-  if(sb) sb.textContent = `⚙ ${t("seed_btn").replace("⚙ ","")}`;
+  if(tb) tb.style.display = IS_TEST ? "flex" : "none";
 
   renderTabs();
   updateDateNav();
@@ -727,6 +724,8 @@ function goTab(i){
   loadAndRender();
 }
 function setF(f){ ST.filter=f; renderContent(); }
+function setFdFloor(v){ ST.fdFloor=v; renderContent(); }
+function setFdHk(v){ ST.fdHk=v; renderContent(); }
 
 // ─── DATE NAV ────────────────────────────────────────
 function updateDateNav(){
@@ -1279,20 +1278,49 @@ function vMgrReport(){
 function vFdStatus(){
   const all = ST.rooms;
   const sl  = SL();
-  // Chips: All, Pending, Cleaning (cleaning+done), Complete (passed)
+
+  // Build floor & housekeeper option lists from data
+  const floors = [...new Set(all.map(r=>r.floor))].sort((a,b)=>a-b);
+  const hks    = [...new Set(all.filter(r=>r.assignedName).map(r=>r.assignedName))].sort();
+
+  // Status chips count (before secondary filters)
   const chips = [
-    { k:"all",      label:`${t("tab_all_rooms")}`,  count: all.length },
-    { k:"pending",  label: sl.pending,               count: all.filter(r=>r.status==="pending").length },
-    { k:"cleaning", label: sl.cleaning,              count: all.filter(r=>["cleaning","done"].includes(r.status)).length },
-    { k:"passed",   label: sl.passed,                count: all.filter(r=>r.status==="passed").length },
+    { k:"all",     label:t("tab_all_rooms"), count: all.length },
+    { k:"pending", label:sl.pending,         count: all.filter(r=>r.status==="pending").length },
+    { k:"cleaning",label:sl.cleaning,        count: all.filter(r=>["cleaning","done"].includes(r.status)).length },
+    { k:"passed",  label:sl.passed,          count: all.filter(r=>r.status==="passed").length },
   ];
-  const shown = ST.filter==="all"      ? all :
-                ST.filter==="cleaning" ? all.filter(r=>["cleaning","done"].includes(r.status)) :
-                                         all.filter(r=>r.status===ST.filter);
+
+  // Apply all 3 filters together
+  let shown = ST.filter==="all"      ? all :
+              ST.filter==="cleaning" ? all.filter(r=>["cleaning","done"].includes(r.status)) :
+                                       all.filter(r=>r.status===ST.filter);
+  if(ST.fdFloor) shown = shown.filter(r=>String(r.floor)===String(ST.fdFloor));
+  if(ST.fdHk)    shown = shown.filter(r=>r.assignedName===ST.fdHk);
+
+  const selSt = `width:100%;padding:8px 28px 8px 10px;border:1.5px solid var(--br);border-radius:9px;font-family:'Sarabun',sans-serif;font-size:13px;color:var(--tx);background:var(--wh);outline:none;-webkit-appearance:none;cursor:pointer`;
+
   return `
     <div class="chips">
       ${chips.map(c=>`<div class="chip ${ST.filter===c.k?"on":""}" onclick="setF('${c.k}')">${c.label} (${c.count})</div>`).join("")}
     </div>
+    <div style="display:flex;gap:6px;margin-bottom:10px">
+      <div class="sw" style="flex:1;position:relative">
+        <select style="${selSt}" onchange="setFdFloor(this.value)">
+          <option value="">${t("fd_all_floors")}</option>
+          ${floors.map(f=>`<option value="${f}" ${ST.fdFloor==f?"selected":""}>${t("floor")} ${f}</option>`).join("")}
+        </select>
+        <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--mu);font-size:11px">▾</span>
+      </div>
+      <div class="sw" style="flex:1;position:relative">
+        <select style="${selSt}" onchange="setFdHk(this.value)">
+          <option value="">${t("fd_all_hk")}</option>
+          ${hks.map(n=>`<option value="${n}" ${ST.fdHk===n?"selected":""}>${n}</option>`).join("")}
+        </select>
+        <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--mu);font-size:11px">▾</span>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--mu);margin-bottom:8px">${shown.length} ${t("rooms_count")}</div>
     ${shown.length===0?`<div class="empty"><div class="empty-ic">···</div>${t("no_data")}</div>`:""}
     ${shown.map(r=>`
       <div class="card">
@@ -1379,14 +1407,7 @@ function vMgrStaff(){
 }
 
 // ─── ADMIN: shared seed banner (test only) ───────────
-function adminSeedBanner(){
-  if(USER?.role !== "admin") return "";
-  const label = IS_TEST ? "TEST ENV" : "ADMIN TOOLS";
-  return `<div style="background:#2D1B69;color:#fff;border-radius:10px;padding:9px 12px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:8px">
-    <span style="font-size:11px;font-weight:700;opacity:.7;white-space:nowrap">${label}</span>
-    <button style="background:rgba(255,255,255,.18);border:none;color:#fff;padding:5px 12px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Sarabun',sans-serif;white-space:nowrap" onclick="doSeedData()">${t("seed_btn")}</button>
-  </div>`;
-}
+function adminSeedBanner(){ return ""; }
 
 // ─── ADMIN: ห้องทั้งหมด (with override) ─────────────
 function vAdmRooms(){
@@ -1671,6 +1692,7 @@ async function doSeedData(){
 // ─── BOOT ─────────────────────────────────────────────
 const LIFF_ID = "2009946209-cFt4JqH1";
 async function initLiff(){
+  if(IS_TEST) return;   // skip LINE LIFF on test environment
   try { await liff.init({ liffId: LIFF_ID }); } catch(e) {}
 }
 initLiff().then(() => {

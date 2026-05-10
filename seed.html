@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Dusit Connect — Seed Test Data</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Sarabun',sans-serif;background:#1F2433;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.box{background:#2A3148;border-radius:16px;padding:32px 28px;max-width:420px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.logo{font-family:Georgia,serif;font-size:40px;font-weight:700;font-style:italic;color:#fff;text-align:center;line-height:1}
+.spark{color:#C89A5B;font-size:18px}
+.title{text-align:center;margin:12px 0 4px;font-size:18px;font-weight:700;letter-spacing:2px;color:#C89A5B}
+.sub{text-align:center;font-size:12px;color:rgba(255,255,255,.5);letter-spacing:1px;margin-bottom:28px}
+.env-box{background:rgba(200,154,91,.12);border:1.5px solid rgba(200,154,91,.3);border-radius:10px;padding:12px 16px;margin-bottom:20px}
+.env-label{font-size:10px;font-weight:700;color:rgba(200,154,91,.7);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px}
+.env-url{font-size:11px;color:rgba(255,255,255,.6);word-break:break-all;font-family:monospace}
+.desc{font-size:13px;color:rgba(255,255,255,.7);line-height:1.6;margin-bottom:20px}
+.desc ul{padding-left:16px;margin-top:6px}
+.desc li{margin-bottom:3px}
+.btn{width:100%;padding:14px;background:#C89A5B;color:#1F2433;border:none;border-radius:10px;font-family:'Sarabun',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:background .2s;letter-spacing:.5px}
+.btn:hover{background:#A57B3A}
+.btn:disabled{background:#555;color:#888;cursor:not-allowed}
+.status{margin-top:16px;padding:12px 16px;border-radius:10px;font-size:13px;font-weight:600;display:none}
+.status.loading{background:rgba(26,86,219,.2);border:1px solid rgba(26,86,219,.4);color:#93C5FD;display:block}
+.status.ok{background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.3);color:#86EFAC;display:block}
+.status.err{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#FCA5A5;display:block}
+.warn{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);border-radius:10px;padding:12px 16px;margin-bottom:20px;font-size:12px;color:#FCA5A5;display:none}
+.warn.show{display:block}
+.progress{margin-top:8px;height:4px;background:rgba(255,255,255,.1);border-radius:20px;overflow:hidden}
+.progress-bar{height:100%;background:#C89A5B;width:0%;transition:width .5s;border-radius:20px}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="logo">D<span class="spark">✦</span></div>
+  <div class="title">DUSIT CONNECT</div>
+  <div class="sub">SEED TEST DATA TOOL</div>
+
+  <div class="warn" id="warn-prod">
+    ⚠️ หน้านี้ใช้สำหรับ <strong>Test GAS</strong> เท่านั้น<br>
+    กรุณาตรวจสอบ URL ด้านล่างก่อนกด
+  </div>
+
+  <div class="env-box">
+    <div class="env-label">Target GAS Endpoint</div>
+    <div class="env-url" id="gas-url-display"></div>
+  </div>
+
+  <div class="desc">
+    จะสร้างข้อมูลย้อนหลัง <strong>90 วัน</strong> ใน test sheet:
+    <ul>
+      <li>ห้องทั้งโรงแรม 250 ห้อง/วัน (status: passed)</li>
+      <li>แม่บ้าน hk001–hk015 (เพิ่มถ้ายังไม่มี)</li>
+      <li>ข้อร้องเรียน ~2–4 รายการ/5 วัน</li>
+      <li>ข้ามวันที่มีข้อมูลอยู่แล้ว (ไม่ซ้ำ)</li>
+    </ul>
+  </div>
+
+  <button class="btn" id="btn-seed" onclick="runSeed()">⚙ Seed 3-Month Data</button>
+
+  <div class="status" id="status-box">
+    <div id="status-text">กำลังโหลดข้อมูล...</div>
+    <div class="progress"><div class="progress-bar" id="progress-bar"></div></div>
+  </div>
+</div>
+
+<script>
+const GAS_TEST = "https://script.google.com/macros/s/AKfycbz4J1LCWJ4zmj_9LKlHulqXmrJIifp13Kg_oOOwoMrVydYyUWsRXBwqHbbjmzdJwvf9uA/exec";
+
+document.getElementById("gas-url-display").textContent = GAS_TEST;
+
+async function runSeed(){
+  const btn = document.getElementById("btn-seed");
+  const box = document.getElementById("status-box");
+  const txt = document.getElementById("status-text");
+  const bar = document.getElementById("progress-bar");
+
+  if(!confirm("สร้างข้อมูลทดสอบ 90 วัน?\n\nอาจใช้เวลา 30–90 วินาที")) return;
+
+  btn.disabled = true;
+  box.className = "status loading";
+  txt.textContent = "กำลังเชื่อมต่อ GAS...";
+  bar.style.width = "10%";
+
+  // Animate progress while waiting
+  let pct = 10;
+  const ticker = setInterval(()=>{
+    pct = Math.min(pct + Math.random()*8, 85);
+    bar.style.width = pct + "%";
+  }, 1500);
+
+  try {
+    txt.textContent = "กำลังสร้างข้อมูล 90 วัน — อาจใช้เวลา 30–90 วินาที...";
+    const res = await fetch(GAS_TEST, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ action: "seedTestData" }),
+      redirect: "follow"
+    });
+    clearInterval(ticker);
+    bar.style.width = "100%";
+
+    const data = await res.json();
+    if(data.success){
+      box.className = "status ok";
+      txt.textContent = `✓ สำเร็จ! สร้างข้อมูล ${data.rooms} ห้อง, ${data.complaints} ข้อร้องเรียน`;
+      btn.textContent = "✓ Done — Run Again";
+      btn.disabled = false;
+    } else {
+      box.className = "status err";
+      txt.textContent = `✗ Error: ${data.message || "Unknown error"}`;
+      btn.disabled = false;
+    }
+  } catch(e) {
+    clearInterval(ticker);
+    box.className = "status err";
+    txt.textContent = `✗ Network error: ${e.message}`;
+    btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>
