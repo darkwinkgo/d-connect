@@ -303,7 +303,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbx6R2fDH0w0Pt1fYNFZykjD
 
 // ─── SESSION & STATE ──────────────────────────────────
 let USER = JSON.parse(sessionStorage.getItem("dc_user") || "null");
-const ST = { tabIdx:0, filter:"all", fdFloor:"", fdHk:"", rooms:[], staff:[], date:todayISO(), report:[], perf:[], staffReport:[], reportMode:"daily" };
+const ST = { tabIdx:0, filter:"all", fdFloor:"", fdHk:"", supFloor:"", supHk:"", rooms:[], staff:[], date:todayISO(), report:[], perf:[], staffReport:[], reportMode:"daily" };
 
 // ─── LANGUAGE ─────────────────────────────────────────
 let LANG = localStorage.getItem("dc_lang") || "th";
@@ -314,7 +314,7 @@ const LANG_DATA = {
     role_supervisor:"หัวหน้า", role_housekeeper:"แม่บ้าน", role_frontdesk:"Front Desk", role_manager:"ผู้จัดการ", role_admin:"Admin",
     s_pending:"รอทำ", s_cleaning:"กำลังทำ", s_done:"รอตรวจ", s_passed:"เสร็จสมบูรณ์", s_ack:"รับทราบ",
     tab_all_rooms:"ห้องทั้งหมด", tab_assign:"มอบหมาย", tab_perf:"เวลาทำงาน", tab_my_rooms:"ห้องของฉัน",
-    tab_dash:"Dashboard", tab_report:"รายงาน", tab_staff:"สถิติพนักงาน", tab_inspect:"ตรวจห้อง", tab_status:"สถานะห้อง",
+    tab_dash:"Dashboard", tab_daily_report:"รายงานรายวัน", tab_report:"รายงาน", tab_staff:"สถิติพนักงาน (90 วัน)", tab_inspect:"ตรวจห้อง", tab_status:"สถานะห้อง",
     btn_start:"เริ่มทำ", btn_done:"เสร็จแล้ว", btn_inspect:"ตรวจห้อง", btn_assign:"มอบหมาย",
     btn_reassign:"มอบหมายใหม่", btn_pass:"ผ่าน — เสร็จสมบูรณ์", btn_fail:"ไม่ผ่าน — ให้ทำใหม่",
     btn_create:"+ สร้างงานวันนี้", btn_override:"Override", btn_cancel:"ยกเลิก", btn_save:"บันทึก",
@@ -374,7 +374,7 @@ const LANG_DATA = {
     role_supervisor:"Supervisor", role_housekeeper:"Housekeeper", role_frontdesk:"Front Desk", role_manager:"Manager", role_admin:"Admin",
     s_pending:"Pending", s_cleaning:"Cleaning", s_done:"Awaiting", s_passed:"Complete", s_ack:"Checked In",
     tab_all_rooms:"All Rooms", tab_assign:"Assign", tab_perf:"Performance", tab_my_rooms:"My Rooms",
-    tab_dash:"Dashboard", tab_report:"Report", tab_staff:"Staff Stats", tab_inspect:"Inspect", tab_status:"Room Status",
+    tab_dash:"Dashboard", tab_daily_report:"Daily Report", tab_report:"Report", tab_staff:"Staff Stats (90d)", tab_inspect:"Inspect", tab_status:"Room Status",
     btn_start:"Start", btn_done:"Done", btn_inspect:"Inspect", btn_assign:"Assign",
     btn_reassign:"Re-assign", btn_pass:"Pass — Complete", btn_fail:"Fail — Redo",
     btn_create:"+ Create Today", btn_override:"Override", btn_cancel:"Cancel", btn_save:"Save",
@@ -433,7 +433,7 @@ const LANG_DATA = {
     role_supervisor:"ကြီးကြပ်", role_housekeeper:"အိမ်ရှင်မ", role_frontdesk:"ဧည့်ကြိုစားပွဲ", role_manager:"မန်နေဂျာ", role_admin:"အက်ဒမင်",
     s_pending:"စောင့်ဆိုင်း", s_cleaning:"သန့်ရှင်းနေ", s_done:"စစ်ဆေးရန်", s_passed:"ပြီးဆုံးပြီ", s_ack:"လက်ခံပြီး",
     tab_all_rooms:"အခန်းများ", tab_assign:"တာဝန်ပေး", tab_perf:"အချိန်မှတ်တမ်း", tab_my_rooms:"ကျွန်မ၏အခန်း",
-    tab_dash:"ဒက်ရှ်ဘုတ်", tab_report:"အစီရင်ခံ", tab_staff:"ဝန်ထမ်းစာရင်း", tab_inspect:"စစ်ဆေး", tab_status:"အခန်းအခြေအနေ",
+    tab_dash:"ဒက်ရှ်ဘုတ်", tab_daily_report:"နေ့စဉ်အစီရင်ခံ", tab_report:"အစီရင်ခံ", tab_staff:"ဝန်ထမ်းစာရင်း (၉၀ ရက်)", tab_inspect:"စစ်ဆေး", tab_status:"အခန်းအခြေအနေ",
     btn_start:"စတင်မည်", btn_done:"ပြီးပြီ", btn_inspect:"စစ်ဆေးမည်", btn_assign:"တာဝန်ပေးမည်",
     btn_reassign:"ပြန်တာဝန်ပေး", btn_pass:"အောင်မြင် — ပြီးဆုံး", btn_fail:"မအောင်မြင် — ပြန်လုပ်",
     btn_create:"+ ယနေ့အလုပ်ဖန်တီး", btn_override:"ကျော်လွန်", btn_cancel:"ပယ်ဖျက်", btn_save:"သိမ်းဆည်း",
@@ -582,12 +582,18 @@ function startAutoRefresh(){
   _refreshTimer = setInterval(async () => {
     if(!USER) return;
     const v = getView();
-    if(["mgr_report","mgr_perf","mgr_staff"].includes(v)) return;
-    const isFD = USER.role==="frontdesk";
-    const role = (USER.role==="admin") ? "supervisor" : USER.role;
-    const res = await gasGet({ action:"getRooms", role, staffId:USER.staffId, date:ST.date, showAll: isFD || undefined });
-    if(res.success){ ST.rooms = res.rooms||[]; renderContent(); }
-  }, 30000);
+    if(["mgr_report","mgr_staff"].includes(v)) return;
+    const isFD  = USER.role==="frontdesk";
+    const isMgr = USER.role==="manager";
+    const role  = (USER.role==="admin") ? "supervisor" : USER.role;
+    const res = await gasGet({ action:"getRooms", role, staffId:USER.staffId, date:ST.date, showAll: (isFD||isMgr) || undefined });
+    if(res.success){
+      // Only re-render if data actually changed (avoid unnecessary DOM rebuild)
+      const newJson = JSON.stringify(res.rooms||[]);
+      const oldJson = JSON.stringify(ST.rooms);
+      if(newJson !== oldJson){ ST.rooms = res.rooms||[]; renderContent(); }
+    }
+  }, 60000);
 }
 function stopAutoRefresh(){ if(_refreshTimer){ clearInterval(_refreshTimer); _refreshTimer=null; } }
 
@@ -628,7 +634,7 @@ async function doLogin(){
 function doLogout(){
   USER=null;
   sessionStorage.removeItem("dc_user");
-  ST.rooms=[]; ST.staff=[]; ST.tabIdx=0; ST.filter="all"; ST.date=todayISO(); ST.report=[]; ST.perf=[]; ST.staffReport=[]; ST.reportMode="daily";
+  ST.rooms=[]; ST.staff=[]; ST.tabIdx=0; ST.filter="all"; ST.fdFloor=""; ST.fdHk=""; ST.supFloor=""; ST.supHk=""; ST.date=todayISO(); ST.report=[]; ST.perf=[]; ST.staffReport=[]; ST.reportMode="daily";
   stopAutoRefresh(); stopLiveTimer();
   document.getElementById("main-app").style.display="none";
   document.getElementById("login-screen").style.display="flex";
@@ -669,7 +675,7 @@ function tabCfg(){
     supervisor:  [{lbl:t("tab_all_rooms"),v:"sup_rooms"},{lbl:t("tab_assign"),v:"sup_assign"},{lbl:t("tab_perf"),v:"sup_perf"}],
     housekeeper: [{lbl:t("tab_my_rooms"),v:"hk_rooms"}],
     frontdesk:   [{lbl:t("tab_all_rooms"),v:"fd_status"}],
-    manager:     [{lbl:t("tab_dash"),v:"mgr_dash"},{lbl:t("tab_all_rooms"),v:"mgr_all"},{lbl:t("tab_perf"),v:"mgr_perf"},{lbl:t("tab_staff"),v:"mgr_staff"},{lbl:t("tab_report"),v:"mgr_report"}],
+    manager:     [{lbl:t("tab_daily_report"),v:"mgr_dash"},{lbl:t("tab_all_rooms"),v:"mgr_all"},{lbl:t("tab_staff"),v:"mgr_staff"},{lbl:t("tab_report"),v:"mgr_report"}],
     admin:       [{lbl:t("tab_all_rooms"),v:"adm_rooms"},{lbl:t("tab_assign"),v:"sup_assign"},{lbl:t("tab_inspect"),v:"adm_inspect"},{lbl:t("tab_staff"),v:"mgr_staff"}],
   };
 }
@@ -683,10 +689,12 @@ function getView(){
   return ((tabCfg()[USER.role]||[])[ST.tabIdx]||{}).v;
 }
 function goTab(i){
-  ST.tabIdx=i; ST.filter="all";
+  ST.tabIdx=i; ST.filter="all"; ST.supFloor=""; ST.supHk="";
   renderTabs();
   loadAndRender();
 }
+function setSupFloor(v){ ST.supFloor=v; renderContent(); }
+function setSupHk(v){    ST.supHk=v;    renderContent(); }
 function setF(f){ ST.filter=f; renderContent(); }
 function setFdFloor(v){ ST.fdFloor=v; renderContent(); }
 function setFdHk(v){ ST.fdHk=v; renderContent(); }
@@ -777,13 +785,13 @@ function openCalendar(){
 // ─── LOAD DATA ───────────────────────────────────────
 async function loadAndRender(){
   const v = getView();
-  if(v==="mgr_report"){    await loadReport();       return; }
-  if(v==="mgr_perf"){      await loadPerformance();  return; }
-  if(v==="mgr_staff"){     await loadStaffReport();  return; }
+  if(v==="mgr_report"){ await loadReport();       return; }
+  if(v==="mgr_staff"){  await loadStaffReport();  return; }
   showLoader();
-  const isFD = USER.role==="frontdesk";
-  const role = (USER.role==="admin") ? "supervisor" : USER.role;
-  const res = await gasGet({ action:"getRooms", role, staffId:USER.staffId, date:ST.date, showAll: isFD || undefined });
+  const isFD  = USER.role==="frontdesk";
+  const isMgr = USER.role==="manager";
+  const role  = (USER.role==="admin") ? "supervisor" : USER.role;
+  const res = await gasGet({ action:"getRooms", role, staffId:USER.staffId, date:ST.date, showAll: (isFD||isMgr) || undefined });
   if(res.success) ST.rooms = res.rooms||[];
   if((USER.role==="supervisor"||USER.role==="admin") && ST.staff.length===0){
     const sr = await gasGet({ action:"getStaff" });
@@ -803,16 +811,6 @@ async function loadReport(){
   renderContent();
 }
 
-async function loadPerformance(){
-  showLoader();
-  const end = ST.date;
-  const dt = new Date(ST.date);
-  dt.setDate(dt.getDate()-29);
-  const start = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`;
-  const res = await gasGet({ action:"getPerformance", startDate:start, endDate:end });
-  if(res.success) ST.perf = res.byStaff||[];
-  renderContent();
-}
 
 async function loadStaffReport(){
   showLoader();
@@ -835,7 +833,7 @@ function renderContent(){
   renderTabs();
   document.getElementById("content").innerHTML = renderView(getView());
   const v = getView();
-  if(["sup_perf","hk_rooms","fd_status","mgr_all","adm_rooms","adm_inspect"].includes(v)) startLiveTimer();
+  if(["sup_perf","sup_rooms","hk_rooms","fd_status","mgr_dash","mgr_all","adm_rooms","adm_inspect"].includes(v)) startLiveTimer();
   else stopLiveTimer();
 }
 function renderView(v){
@@ -847,7 +845,6 @@ function renderView(v){
     case "fd_status":     return vFdStatus();
     case "mgr_dash":      return vMgrDash();
     case "mgr_all":       return vMgrAll();
-    case "mgr_perf":      return vMgrPerf();
     case "mgr_staff":     return vMgrStaff();
     case "mgr_report":    return vMgrReport();
     case "adm_rooms":     return vAdmRooms();
@@ -861,14 +858,40 @@ function vSupRooms(){
   if(ST.rooms.length===0 && isToday())
     return `<div class="empty"><div class="empty-ic">···</div><div style="margin-bottom:12px">${t("no_work_today")}</div>
       <button class="btn bg" onclick="doInitDaily()">${t("btn_create")} (${fmtDateTH(ST.date)})</button></div>`;
-  const all   = ST.rooms;
-  const sl    = SL();
+  const all = ST.rooms;
+  const sl  = SL();
   const flist = ["all","done","cleaning","pending","passed"];
-  const shown = ST.filter==="all" ? all : all.filter(r=>r.status===ST.filter);
+
+  // secondary filters
+  const floors = [...new Set(all.filter(r=>r.floor).map(r=>r.floor))].sort((a,b)=>a-b);
+  const hks    = [...new Set(all.filter(r=>r.assignedName).map(r=>r.assignedName))].sort();
+  const selSt  = `width:100%;padding:8px 28px 8px 10px;border:1.5px solid var(--br);border-radius:9px;font-family:'Sarabun',sans-serif;font-size:13px;color:var(--tx);background:var(--wh);outline:none;-webkit-appearance:none;cursor:pointer`;
+
+  let shown = ST.filter==="all" ? all : all.filter(r=>r.status===ST.filter);
+  if(ST.supFloor) shown = shown.filter(r=>String(r.floor)===String(ST.supFloor));
+  if(ST.supHk)    shown = shown.filter(r=>r.assignedName===ST.supHk);
+
   return `
     <div class="chips">
       ${flist.map(f=>`<div class="chip ${ST.filter===f?"on":""}" onclick="setF('${f}')">${f==="all"?t("fd_filter_all"):sl[f]} (${f==="all"?all.length:all.filter(r=>r.status===f).length})</div>`).join("")}
     </div>
+    <div style="display:flex;gap:6px;margin-bottom:10px">
+      <div class="sw" style="flex:1;position:relative">
+        <select style="${selSt}" onchange="setSupFloor(this.value)">
+          <option value="">${t("fd_all_floors")}</option>
+          ${floors.map(f=>`<option value="${f}" ${ST.supFloor==f?"selected":""}>${t("floor")} ${f}</option>`).join("")}
+        </select>
+        <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--mu);font-size:11px">▾</span>
+      </div>
+      <div class="sw" style="flex:1;position:relative">
+        <select style="${selSt}" onchange="setSupHk(this.value)">
+          <option value="">${t("fd_all_hk")}</option>
+          ${hks.map(n=>`<option value="${n}" ${ST.supHk===n?"selected":""}>${n}</option>`).join("")}
+        </select>
+        <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--mu);font-size:11px">▾</span>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--mu);margin-bottom:8px">${shown.length} ${t("rooms_count")}</div>
     ${shown.length===0?`<div class="empty"><div class="empty-ic">···</div>${t("no_rooms_status")}</div>`:""}
     ${shown.map(r=>`
       <div class="card">
@@ -882,7 +905,7 @@ function vSupRooms(){
           ${r.status==="done"&&r.startTime&&r.endTime?` · ${t("duration_lbl")} <b>${duration(r.startTime,r.endTime)}</b>`:""}
         </div>
         <div class="acts">
-          ${r.status==="done"&&isToday()?`<button class="btn bg" onclick="openInspect('${r.id}')">${t("btn_inspect")}</button>`:""}
+          ${r.status==="done"?`<button class="btn bg" onclick="openInspect('${r.id}')">${t("btn_inspect")}</button>`:""}
           ${isToday()?`<button class="btn bw" onclick="openAssign('${r.id}')">${t("btn_reassign")}</button>`:""}
         </div>
       </div>
@@ -1052,6 +1075,9 @@ function vMgrDash(){
 
   return `
     ${total===0?`<div class="empty"><div class="empty-ic">···</div>${t("no_data_date")}</div>`:`
+
+    <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu);margin-bottom:8px">${fmtDateTH(ST.date)}</div>
+
     <div class="donut-wrap">
       <div class="donut" style="background:conic-gradient(${gradParts})">
         <div class="donut-hole">
@@ -1070,15 +1096,18 @@ function vMgrDash(){
       </div>
     </div>
 
-    <div class="stats" style="grid-template-columns:repeat(2,1fr)">
+    <div class="stats" style="grid-template-columns:repeat(3,1fr);margin-bottom:4px">
+      <div class="stat"><div class="stat-n" style="color:var(--saged)">${finished}</div><div class="stat-l">${SL()["passed"]}</div></div>
       <div class="stat"><div class="stat-n" style="color:var(--o)">${cnt.cleaning+cnt.done}</div><div class="stat-l">${t("in_progress_section")}</div></div>
       <div class="stat"><div class="stat-n" style="color:var(--mu)">${cnt.pending}</div><div class="stat-l">${t("not_started_section")}</div></div>
     </div>
 
-    <div class="prog">
+    <div class="prog" style="margin-bottom:16px">
       <div class="prog-hd"><span>${t("overview")} ${total} ${t("rooms_count")}</span><span>${finished} ${t("rooms_done_count")}</span></div>
       <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
     </div>
+
+    <div style="border-top:2px solid var(--br);margin-bottom:12px"></div>
 
     <div class="sec">${t("sec_by_staff")}</div>
     ${sarr.length===0?`<div style="font-size:13px;color:var(--mu);padding:8px 0">${t("no_assign_yet")}</div>`:""}
@@ -1105,12 +1134,37 @@ function vMgrDash(){
 // ─── MANAGER: All Rooms ──────────────────────────────
 function vMgrAll(){
   const all   = ST.rooms;
+  const sl    = SL();
   const flist = ["all","pending","cleaning","done","passed"];
-  const shown = ST.filter==="all" ? all : all.filter(r=>r.status===ST.filter);
+  const floors = [...new Set(all.filter(r=>r.floor).map(r=>r.floor))].sort((a,b)=>a-b);
+  const hks    = [...new Set(all.filter(r=>r.assignedName).map(r=>r.assignedName))].sort();
+  const selSt  = `width:100%;padding:8px 28px 8px 10px;border:1.5px solid var(--br);border-radius:9px;font-family:'Sarabun',sans-serif;font-size:13px;color:var(--tx);background:var(--wh);outline:none;-webkit-appearance:none;cursor:pointer`;
+
+  let shown = ST.filter==="all" ? all : all.filter(r=>r.status===ST.filter);
+  if(ST.supFloor) shown = shown.filter(r=>String(r.floor)===String(ST.supFloor));
+  if(ST.supHk)    shown = shown.filter(r=>r.assignedName===ST.supHk);
+
   return `
     <div class="chips">
-      ${flist.map(f=>`<div class="chip ${ST.filter===f?"on":""}" onclick="setF('${f}')">${f==="all"?t("tab_all_rooms"):SL()[f]} (${f==="all"?all.length:all.filter(r=>r.status===f).length})</div>`).join("")}
+      ${flist.map(f=>`<div class="chip ${ST.filter===f?"on":""}" onclick="setF('${f}')">${f==="all"?t("fd_filter_all"):sl[f]} (${f==="all"?all.length:all.filter(r=>r.status===f).length})</div>`).join("")}
     </div>
+    <div style="display:flex;gap:6px;margin-bottom:10px">
+      <div class="sw" style="flex:1;position:relative">
+        <select style="${selSt}" onchange="setSupFloor(this.value)">
+          <option value="">${t("fd_all_floors")}</option>
+          ${floors.map(f=>`<option value="${f}" ${ST.supFloor==f?"selected":""}>${t("floor")} ${f}</option>`).join("")}
+        </select>
+        <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--mu);font-size:11px">▾</span>
+      </div>
+      <div class="sw" style="flex:1;position:relative">
+        <select style="${selSt}" onchange="setSupHk(this.value)">
+          <option value="">${t("fd_all_hk")}</option>
+          ${hks.map(n=>`<option value="${n}" ${ST.supHk===n?"selected":""}>${n}</option>`).join("")}
+        </select>
+        <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--mu);font-size:11px">▾</span>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--mu);margin-bottom:8px">${shown.length} ${t("rooms_count")}</div>
     ${shown.length===0?`<div class="empty"><div class="empty-ic">···</div>${t("no_data")}</div>`:""}
     ${shown.map(r=>`
       <div class="card">
@@ -1128,33 +1182,6 @@ function vMgrAll(){
   `;
 }
 
-// ─── MANAGER: Performance ────────────────────────────
-function vMgrPerf(){
-  const data = ST.perf;
-  if(data.length===0)
-    return `<div class="empty"><div class="empty-ic">···</div>${t("no_timing")}<br><span style="font-size:12px">${t("last_30d")}</span></div>`;
-  const maxAvg = Math.max(...data.map(s=>s.avgDuration),1);
-  return `
-    <div class="sec">${t("perf_30days")} (${t("sort_fast_slow")})</div>
-    ${data.map(s=>{
-      const avgMin = Math.round(s.avgDuration/60000);
-      const barPct = Math.round(s.avgDuration/maxAvg*100);
-      return `<div class="card">
-        <div class="card-hd" style="margin-bottom:8px">
-          <div>
-            <div style="font-size:15px;font-weight:700">${s.name}</div>
-            <div class="rfloor">${s.count} ${t("rooms_count")}</div>
-          </div>
-          <div style="text-align:right">
-            <div class="perf-avg">${avgMin}</div>
-            <div class="perf-sub">${t("min_per_room")}</div>
-          </div>
-        </div>
-        <div class="bar-track"><div class="bar-fill" style="width:${barPct}%;height:8px"></div></div>
-      </div>`;
-    }).join("")}
-  `;
-}
 
 // ─── MANAGER: Report ─────────────────────────────────
 function vMgrReport(){
@@ -1312,32 +1339,36 @@ function vFdStatus(){
   `;
 }
 
-// ─── MANAGER: สถิติพนักงาน ──────────────────────────
+// ─── MANAGER: สถิติพนักงาน 90 วัน ──────────────────
 function vMgrStaff(){
   const data = ST.staffReport||[];
   if(data.length===0)
-    return `<div class="empty"><div class="empty-ic">···</div>${t("no_data")}<br><span style="font-size:12px">${t("last_30d").replace("30","90")}</span></div>`;
+    return `<div class="empty"><div class="empty-ic">···</div>${t("no_data")}<br><span style="font-size:12px">${t("staff_90days")}</span></div>`;
+
+  // Sort by completedRooms desc for ranking
+  const sorted = [...data].sort((a,b)=>b.completedRooms-a.completedRooms||a.avgDuration-b.avgDuration);
+  const maxAvg = Math.max(...data.map(s=>s.avgDuration||0), 1);
 
   return `
-    <div class="sec">${t("staff_90days")}</div>
-    ${data.map(s=>{
-      const avgMin = s.avgDuration>0 ? Math.round(s.avgDuration/60000) : null;
-      return `<div class="staff-score-card">
-        <div class="staff-score-name">${s.name}</div>
-        <div class="staff-score-grid">
-          <div class="staff-score-item">
-            <div class="staff-score-val">${s.totalRooms}</div>
-            <div class="staff-score-lbl">${t("total_rooms_lbl")}</div>
-          </div>
-          <div class="staff-score-item">
-            <div class="staff-score-val">${s.completedRooms}</div>
-            <div class="staff-score-lbl">${t("completed_lbl")}</div>
-          </div>
-          <div class="staff-score-item">
-            <div class="staff-score-val ${!avgMin?'':avgMin>45?'score-warn':''}">${avgMin?avgMin+"'":"—"}</div>
-            <div class="staff-score-lbl">${t("min_per_room")}</div>
-          </div>
-        </div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu);margin-bottom:12px">${t("staff_90days")}</div>
+
+    <div class="sec">${t("sec_by_staff")} — ${t("rooms_done_count")}</div>
+    ${sorted.map(s=>`
+      <div class="bar-row">
+        <div class="bar-lbl" style="min-width:70px">${s.name}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${sorted[0].completedRooms?Math.round(s.completedRooms/sorted[0].completedRooms*100):0}%"></div></div>
+        <div class="bar-val">${s.completedRooms}/${s.totalRooms}</div>
+      </div>
+    `).join("")}
+
+    <div class="sec" style="margin-top:16px">${t("perf_30days").replace("30","90")}</div>
+    ${[...data].filter(s=>s.avgDuration>0).sort((a,b)=>a.avgDuration-b.avgDuration).map(s=>{
+      const avgMin = Math.round(s.avgDuration/60000);
+      const barPct = Math.round(s.avgDuration/maxAvg*100);
+      return `<div class="bar-row">
+        <div class="bar-lbl" style="min-width:70px">${s.name}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${barPct}%;background:${avgMin>45?"var(--o)":"var(--saged)"}"></div></div>
+        <div class="bar-val" style="color:${avgMin>45?"var(--o)":"var(--saged)"}">${avgMin}'</div>
       </div>`;
     }).join("")}
   `;

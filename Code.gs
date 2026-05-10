@@ -2,10 +2,9 @@
 // Dusit Connect — Code.gs
 // ===================================================
 
-const SH_STAFF       = "พนักงาน";
-const SH_ROOMS       = "ห้อง";
-const SH_LOG         = "ประวัติ";
-const SH_COMPLAINTS  = "ข้อร้องเรียน";
+const SH_STAFF = "พนักงาน";
+const SH_ROOMS = "ห้อง";
+const SH_LOG   = "ประวัติ";
 
 // ห้อง columns (0-indexed):
 // 0=ห้อง  1=ชั้น  2=วันที่  3=Status  4=assignedTo  5=assignedName  6=startTime  7=endTime  8=หมายเหตุ
@@ -37,7 +36,6 @@ function doPost(e) {
       case "assignRoom":     res = assignRoom(req); break;
       case "bulkAssign":     res = bulkAssign(req); break;
       case "inspect":        res = inspect(req); break;
-      case "ackRoom":        res = ackRoom(req); break;
       case "getReport":      res = getReport(req.startDate, req.endDate); break;
       case "getPerformance": res = getPerformance(req.startDate, req.endDate); break;
       case "getStaffReport": res = getStaffReport(req.startDate, req.endDate); break;
@@ -255,15 +253,6 @@ function inspect(req) {
   return { success: true };
 }
 
-function ackRoom(req) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SH_ROOMS);
-  const date = req.date || todayStr();
-  const row = findRow(sheet, req.roomId, date);
-  if (row < 0) return { success: false, message: "ไม่พบห้อง" };
-  sheet.getRange(row, 4).setValue("ack");
-  log(req.roomId, req.staffId, req.staffName, "ack", "");
-  return { success: true };
-}
 
 function getReport(startDate, endDate) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SH_ROOMS);
@@ -532,12 +521,12 @@ function resetProductionData() {
     if (lastRow > 1) sh.deleteRows(2, lastRow - 1);
   }
 
-  clearSheetData(SH_ROOMS);       // ล้างข้อมูลห้องทั้งหมด
-  clearSheetData(SH_LOG);         // ล้างประวัติทั้งหมด
-  clearSheetData(SH_COMPLAINTS);  // ล้างข้อร้องเรียนทั้งหมด
+  clearSheetData(SH_ROOMS);         // ล้างข้อมูลห้องทั้งหมด
+  clearSheetData(SH_LOG);           // ล้างประวัติทั้งหมด
+  clearSheetData("ข้อร้องเรียน");   // ล้าง sheet เก่า (ถ้ายังมี)
   // SH_STAFF (พนักงาน) ไม่แตะ — ข้อมูลพนักงานยังอยู่ครบ
 
-  Logger.log("✓ Reset เสร็จแล้ว — ห้อง/ประวัติ/ข้อร้องเรียน ถูกล้างแล้ว พนักงานยังอยู่ครบ");
+  Logger.log("✓ Reset เสร็จแล้ว — ห้อง/ประวัติ ถูกล้างแล้ว พนักงานยังอยู่ครบ");
   return { success: true, message: "Reset complete" };
 }
 
