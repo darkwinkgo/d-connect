@@ -389,6 +389,11 @@ const LANG_DATA = {
     toast_pass_inspect:"ห้องผ่านการตรวจแล้ว", toast_fail_inspect:"ส่งกลับให้ทำใหม่",
     note_fail_default:"ตรวจไม่ผ่าน กรุณาทำใหม่", year_label:"ปี",
     sort_complaints:"เรียงตามข้อร้องเรียน",
+    auto_assign_title:"มอบหมายอัตโนมัติ", auto_assign_pending:"ห้องรอมอบหมาย",
+    auto_assign_distribute:"แจกเท่ากัน", auto_assign_go:"มอบหมายเลย",
+    auto_assign_total:"รวมที่จะมอบหมาย", auto_assign_done:"มอบหมายสำเร็จ",
+    auto_assign_rooms:"ห้อง", no_staff_available:"ไม่มีแม่บ้านที่พร้อมทำงาน",
+    auto_assign_btn:"⚡ มอบหมายอัตโนมัติ",
   },
   en:{
     signin:"Sign In", signing_in:"Signing in...", username:"Username", password:"Password",
@@ -452,6 +457,11 @@ const LANG_DATA = {
     toast_pass_inspect:"Room passed inspection", toast_fail_inspect:"Sent back for redo",
     note_fail_default:"Failed inspection, please redo", year_label:"Year",
     sort_complaints:"sorted by complaints",
+    auto_assign_title:"Auto Assign", auto_assign_pending:"Rooms to assign",
+    auto_assign_distribute:"Distribute Evenly", auto_assign_go:"Assign Now",
+    auto_assign_total:"Total to assign", auto_assign_done:"Assignment complete",
+    auto_assign_rooms:"rooms", no_staff_available:"No active housekeepers",
+    auto_assign_btn:"⚡ Auto Assign",
   },
   my:{
     signin:"ဝင်ရောက်ရန်", signing_in:"ဝင်ရောက်နေသည်...", username:"အသုံးပြုသူ", password:"စကားဝှက်",
@@ -515,6 +525,11 @@ const LANG_DATA = {
     toast_pass_inspect:"အခန်းစစ်ဆေးပြီ", toast_fail_inspect:"ပြန်လုပ်ရန်ပို့ပြီ",
     note_fail_default:"စစ်ဆေးမအောင်မြင်, ပြန်လုပ်ပါ", year_label:"နှစ်",
     sort_complaints:"တိုင်ကြားချက်အများဆုံးမှ",
+    auto_assign_title:"အလိုအလျောက်တာဝန်ပေး", auto_assign_pending:"တာဝန်မပေးရသေးသောအခန်း",
+    auto_assign_distribute:"တန်းတူခွဲ", auto_assign_go:"တာဝန်ပေးမည်",
+    auto_assign_total:"စုစုပေါင်းတာဝန်ပေးမည်", auto_assign_done:"တာဝန်ပေးပြီး",
+    auto_assign_rooms:"အခန်း", no_staff_available:"အိမ်ရှင်မမရှိ",
+    auto_assign_btn:"⚡ အလိုအလျောက်တာဝန်ပေး",
   }
 };
 function t(k){ return (LANG_DATA[LANG]||LANG_DATA.th)[k]||k; }
@@ -944,8 +959,11 @@ function vSupAssign(){
       <button class="btn bg" onclick="doInitDaily()">${t("btn_create")}</button></div>`;
   if(isPast())
     return `${_adm}<div class="empty"><div class="empty-ic">···</div>${t("cur_date_only")}</div>`;
-  const unassigned = ST.rooms.filter(r=>!r.assignedTo||r.status==="pending");
+  const sheetMap={}; ST.rooms.forEach(r=>{ sheetMap[r.id]=r; });
+  const allRooms  = allHotelRooms().map(r=>sheetMap[r.id]||{...r,status:"pending",assignedTo:"",assignedName:""});
+  const unassigned = allRooms.filter(r=>!r.assignedTo||r.status==="pending");
   return `${_adm}
+    ${isToday()?`<button class="btn bg btn-lg" style="margin-bottom:12px" onclick="openAutoAssign()">${t("auto_assign_btn")}</button>`:""}
     <div class="sec">${t("sec_unassigned")} (${unassigned.length})</div>
     ${unassigned.length===0?`<div class="empty"><div class="empty-ic">···</div>${t("all_assigned")}</div>`:""}
     ${unassigned.map(r=>`
@@ -1697,6 +1715,123 @@ function toast(msg, type=""){
   t.textContent=msg; t.className="toast on "+type;
   clearTimeout(_tt);
   _tt = setTimeout(()=>t.className="toast", 2400);
+}
+
+// ─── AUTO ASSIGN ──────────────────────────────────────
+function openAutoAssign(){
+  if(!isToday()){ toast(t("toast_no_edit_past"),"err"); return; }
+  if(ST.staff.length===0){ toast(t("no_staff_available"),"err"); return; }
+
+  // Pending rooms = all 250 minus already-assigned
+  const sheetMap={};
+  ST.rooms.forEach(r=>{ sheetMap[r.id]=r; });
+  const pending = allHotelRooms().filter(r=>{
+    const s=sheetMap[r.id];
+    return !s || !s.assignedTo || s.status==="pending";
+  });
+
+  const hks = ST.staff.filter(s=>s.role==="housekeeper"&&(!s.status||s.status==="active"));
+  if(!hks.length){ toast(t("no_staff_available"),"err"); return; }
+
+  const base = Math.floor(pending.length/hks.length);
+  const rem  = pending.length % hks.length;
+
+  const inp = `background:var(--wh);border:1.5px solid var(--br);border-radius:8px;width:58px;text-align:center;font-size:15px;font-weight:700;padding:5px 4px;font-family:'Sarabun',sans-serif;color:var(--tx)`;
+
+  const rows = hks.map((h,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--br)">
+      <div style="flex:1;font-size:14px;font-weight:600">${h.name}<br><span style="font-size:11px;color:var(--mu);font-weight:400">${h.nickname||""}</span></div>
+      <input id="aa-${h.staffId}" type="number" min="0" max="${pending.length}" value="${i<rem?base+1:base}"
+        style="${inp}" oninput="aaUpdateTotal()"/>
+      <span style="font-size:12px;color:var(--mu);width:28px">${t("auto_assign_rooms")}</span>
+    </div>`).join("");
+
+  const html=`
+    <div class="modal-hd"></div>
+    <div class="modal-room">${t("auto_assign_title")}</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin:10px 0 4px">
+      <span style="font-size:13px;color:var(--mu)">${t("auto_assign_pending")}: <b style="color:var(--tx)">${pending.length}</b></span>
+      <button class="btn bw" style="font-size:12px;padding:5px 12px" onclick="aaDistribute(${pending.length},${hks.length})">${t("auto_assign_distribute")}</button>
+    </div>
+    <div style="font-size:12px;font-weight:700;color:var(--o);margin-bottom:8px" id="aa-warn"></div>
+    <div style="max-height:340px;overflow-y:auto">${rows}</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:10px;border-top:1px solid var(--br)">
+      <span style="font-size:13px;color:var(--mu)">${t("auto_assign_total")}: <b id="aa-total" style="color:var(--tx)">0</b> ${t("auto_assign_rooms")}</span>
+      <button class="btn bg" id="aa-go" onclick="doAutoAssign()">${t("auto_assign_go")}</button>
+    </div>`;
+
+  const ov=document.createElement("div"); ov.className="overlay"; ov.id="ov";
+  ov.innerHTML=`<div class="modal">${html}</div>`;
+  ov.addEventListener("click",e=>{ if(e.target===ov) closeModal(); });
+  document.body.appendChild(ov);
+  // Store pending+hks in closure-accessible vars
+  window._aaPending = pending;
+  window._aaHks     = hks;
+  aaUpdateTotal();
+}
+
+function aaUpdateTotal(){
+  const hks = window._aaHks||[];
+  let total=0;
+  hks.forEach(h=>{ total+=parseInt(document.getElementById("aa-"+h.staffId)?.value||0); });
+  const el=document.getElementById("aa-total"); if(el) el.textContent=total;
+  const pending=(window._aaPending||[]).length;
+  const warn=document.getElementById("aa-warn");
+  if(warn) warn.textContent = total>pending ? `⚠ เกิน ${total-pending} ห้อง — ลดลงก่อน` : "";
+}
+
+function aaDistribute(total,n){
+  const hks=window._aaHks||[];
+  const base=Math.floor(total/n), rem=total%n;
+  hks.forEach((h,i)=>{ const el=document.getElementById("aa-"+h.staffId); if(el) el.value=i<rem?base+1:base; });
+  aaUpdateTotal();
+}
+
+async function doAutoAssign(){
+  const pending = window._aaPending||[];
+  const hks     = window._aaHks||[];
+  let total=0;
+  hks.forEach(h=>{ total+=parseInt(document.getElementById("aa-"+h.staffId)?.value||0); });
+  if(total>pending.length){ toast(`⚠ เกิน ${total-pending.length} ห้อง`,"err"); return; }
+  if(total===0){ toast(t("no_assign_yet"),"err"); return; }
+
+  // Build assignments: distribute rooms in floor order
+  const assignments=[];
+  let roomIdx=0;
+  for(const h of hks){
+    const count=parseInt(document.getElementById("aa-"+h.staffId)?.value||0);
+    for(let i=0;i<count;i++){
+      if(roomIdx>=pending.length) break;
+      const r=pending[roomIdx++];
+      assignments.push({ roomId:r.id, floor:r.floor, staffId:h.staffId, staffName:h.name });
+    }
+  }
+
+  const btn=document.getElementById("aa-go");
+  if(btn){ btn.disabled=true; btn.textContent="กำลังมอบหมาย..."; }
+
+  closeModal();
+  showLoader();
+
+  // Optimistic update
+  const map={};
+  assignments.forEach(a=>{ map[a.roomId]=a; });
+  ST.rooms = allHotelRooms().map(r=>{
+    const existing=ST.rooms.find(x=>x.id===r.id);
+    const assign=map[r.id];
+    if(assign) return {...(existing||r), status:"pending", assignedTo:assign.staffId, assignedName:assign.staffName};
+    return existing||{...r, status:"pending", assignedTo:"", assignedName:""};
+  });
+  renderContent();
+
+  const res = await gasGet({ action:"bulkAssign", assignments, date:ST.date });
+  if(res.success){
+    toast(`${t("auto_assign_done")} — ${res.count} ${t("auto_assign_rooms")} ✓`,"ok");
+    await loadAndRender();
+  } else {
+    toast(res.message||t("err_generic"),"err");
+    await loadAndRender();
+  }
 }
 
 // ─── SEED DATA (test only) ────────────────────────────

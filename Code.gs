@@ -35,6 +35,7 @@ function doPost(e) {
       case "getStaff":       res = getStaff(); break;
       case "updateStatus":   res = updateStatus(req); break;
       case "assignRoom":     res = assignRoom(req); break;
+      case "bulkAssign":     res = bulkAssign(req); break;
       case "inspect":        res = inspect(req); break;
       case "ackRoom":        res = ackRoom(req); break;
       case "getReport":      res = getReport(req.startDate, req.endDate); break;
@@ -171,6 +172,53 @@ function updateStatus(req) {
   if (req.status === "done")     sheet.getRange(row, 8).setValue(new Date());
   log(req.roomId, req.staffId, req.staffName, req.status, "");
   return { success: true };
+}
+
+function bulkAssign(req) {
+  const ss    = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SH_ROOMS);
+  if (!sheet) return { success: false, message: "ไม่พบ Sheet ห้อง" };
+  const date        = req.date || todayStr();
+  const assignments = req.assignments || [];
+  if (!assignments.length) return { success: true, count: 0 };
+
+  // Build row-index map for today's existing data
+  const data   = sheet.getDataRange().getValues();
+  const rowMap = {};
+  for (let i = 1; i < data.length; i++) {
+    if (!data[i][0]) continue;
+    if (fmtDate(data[i][2]) === date) rowMap[String(data[i][0])] = i + 1;
+  }
+
+  const newRows = [];
+  const logRows = [];
+  const now     = new Date();
+
+  for (const a of assignments) {
+    const rowIdx = rowMap[String(a.roomId)];
+    if (rowIdx) {
+      // Update existing: status=pending + staff + clear times
+      sheet.getRange(rowIdx, 4, 1, 6).setValues([["pending", a.staffId, a.staffName, "", "", ""]]);
+    } else {
+      newRows.push([a.roomId, a.floor, date, "pending", a.staffId, a.staffName, "", "", ""]);
+    }
+    logRows.push([now, a.roomId, a.staffId, a.staffName, "assign", "auto"]);
+  }
+
+  // Batch-insert new room rows
+  if (newRows.length)
+    sheet.getRange(sheet.getLastRow() + 1, 1, newRows.length, 9).setValues(newRows);
+
+  // Batch-insert log rows
+  let logSh = ss.getSheetByName(SH_LOG);
+  if (!logSh) {
+    logSh = ss.insertSheet(SH_LOG);
+    logSh.appendRow(["Timestamp","ห้อง","User ID","ชื่อ","Action","หมายเหตุ"]);
+  }
+  if (logRows.length)
+    logSh.getRange(logSh.getLastRow() + 1, 1, logRows.length, 6).setValues(logRows);
+
+  return { success: true, count: assignments.length };
 }
 
 function assignRoom(req) {
@@ -562,11 +610,42 @@ function initSheets() {
     [
       ["admin001","1234","ผู้ดูแลระบบ","แอดมิน","admin","active"],
       ["sup001","1234","สมชาย ดูแลดี","ชาย","supervisor","active"],
+      ["sup002","1234","สุดา ใจดี","สุดา","supervisor","active"],
+      // แม่บ้านไทย hk001–hk015
       ["hk001","1234","สมหญิง ใจดี","หญิง","housekeeper","active"],
       ["hk002","1234","มาลี รักงาน","มาลี","housekeeper","active"],
       ["hk003","1234","นุ่น สวยงาม","นุ่น","housekeeper","active"],
       ["hk004","1234","แอ๊ม ขยัน","แอ๊ม","housekeeper","active"],
+      ["hk005","1234","นภา ทองดี","นภา","housekeeper","active"],
+      ["hk006","1234","กัญญา ใจงาม","กัญญา","housekeeper","active"],
+      ["hk007","1234","มยุรี แสงจันทร์","มยุรี","housekeeper","active"],
+      ["hk008","1234","ฝน พรมดี","ฝน","housekeeper","active"],
+      ["hk009","1234","จิรา สุขใจ","จิรา","housekeeper","active"],
+      ["hk010","1234","ดาว ชมพู","ดาว","housekeeper","active"],
+      ["hk011","1234","อ้อย มีสุข","อ้อย","housekeeper","active"],
+      ["hk012","1234","แป้ง รักดี","แป้ง","housekeeper","active"],
+      ["hk013","1234","ปุ้ย ทำงาน","ปุ้ย","housekeeper","active"],
+      ["hk014","1234","หน่อย ขันที","หน่อย","housekeeper","active"],
+      ["hk015","1234","กิ๊ฟ งานดี","กิ๊ฟ","housekeeper","active"],
+      // แม่บ้านเมียนมา hk016–hk030
+      ["hk016","1234","Aye Aye Khin","Aye","housekeeper","active"],
+      ["hk017","1234","Phyu Phyu Win","Phyu","housekeeper","active"],
+      ["hk018","1234","Moe Moe Lwin","Moe","housekeeper","active"],
+      ["hk019","1234","Su Su Htwe","Su","housekeeper","active"],
+      ["hk020","1234","Win Win Myint","Win","housekeeper","active"],
+      ["hk021","1234","Khin Khin Oo","Khin","housekeeper","active"],
+      ["hk022","1234","Thin Thin Aung","Thin","housekeeper","active"],
+      ["hk023","1234","Nwe Nwe Soe","Nwe","housekeeper","active"],
+      ["hk024","1234","May May Thwe","May","housekeeper","active"],
+      ["hk025","1234","Hnin Hnin Wai","Hnin","housekeeper","active"],
+      ["hk026","1234","Ei Ei Mon","Ei","housekeeper","active"],
+      ["hk027","1234","Cho Cho Zin","Cho","housekeeper","active"],
+      ["hk028","1234","Zin Zin Aye","Zin","housekeeper","active"],
+      ["hk029","1234","Yee Yee Naing","Yee","housekeeper","active"],
+      ["hk030","1234","San San Myat","San","housekeeper","active"],
+      // Front Desk & Manager
       ["fd001","1234","วิชัย ต้อนรับ","วิชัย","frontdesk","active"],
+      ["fd002","1234","กมล สวัสดี","กมล","frontdesk","active"],
       ["mgr001","1234","พิมพ์ใจ บริหาร","พิมพ์","manager","active"],
     ].forEach(r => sh.appendRow(r));
     const hdr = sh.getRange(1,1,1,6);
