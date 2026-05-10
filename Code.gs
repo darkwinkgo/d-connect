@@ -81,6 +81,41 @@ function getRooms(role, staffId, date, showAll) {
   if (!sheet) return { success: true, rooms: [] };
   const targetDate = date || todayStr();
   const data = sheet.getDataRange().getValues();
+
+  // Front Desk with showAll: return FULL hotel (250 rooms), fill from sheet
+  if (role === "frontdesk" && showAll) {
+    const sheetMap = {};
+    for (let i = 1; i < data.length; i++) {
+      const r = data[i];
+      if (!r[0]) continue;
+      const rowDate = r[2] ? fmtDate(r[2]) : "";
+      if (rowDate !== targetDate) continue;
+      sheetMap[String(r[0])] = {
+        id: String(r[0]), floor: Number(r[1]), date: rowDate,
+        status: String(r[3] || "pending"),
+        assignedTo: String(r[4] || ""), assignedName: String(r[5] || ""),
+        startTime: r[6] ? new Date(r[6]).getTime() : null,
+        endTime:   r[7] ? new Date(r[7]).getTime() : null,
+        note: String(r[8] || ""),
+      };
+    }
+    const rooms = [];
+    for (let f = 8; f <= 38; f++) {
+      if (f === 13) continue;
+      for (let n = 1; n <= 9; n++) {
+        const roomId = String(f) + String(n).padStart(2, "0");
+        if (roomId.endsWith("4")) continue;
+        rooms.push(sheetMap[roomId] || {
+          id: roomId, floor: f, date: targetDate,
+          status: "pending", assignedTo: "", assignedName: "",
+          startTime: null, endTime: null, note: "",
+        });
+      }
+    }
+    return { success: true, rooms };
+  }
+
+  // All other roles: read from sheet only
   const rooms = [];
   for (let i = 1; i < data.length; i++) {
     const r = data[i];
@@ -96,9 +131,6 @@ function getRooms(role, staffId, date, showAll) {
       note: String(r[8] || ""),
     };
     if (role === "housekeeper" && room.assignedTo !== staffId) continue;
-    // frontdesk: showAll = entire status board (all statuses), else only passed
-    if (role === "frontdesk" && !showAll && room.status !== "passed") continue;
-    // showAll for frontdesk → return everything (no filter)
     rooms.push(room);
   }
   return { success: true, rooms };
