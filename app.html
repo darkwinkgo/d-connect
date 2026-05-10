@@ -687,7 +687,12 @@ function showApp(){
   if(hl) hl.innerHTML = langToggleHTML();
   const bl2 = document.getElementById("btn-logout");
   if(bl2) bl2.textContent = t("logout");
-  // update seed btn label in test banner
+  // show test banner for IS_TEST OR admin role
+  const tb = document.getElementById("test-banner");
+  if(tb && (IS_TEST || USER.role==="admin")){
+    tb.style.display="flex";
+    tb.querySelector(".test-banner-lbl").textContent = IS_TEST ? "⚗ TEST ENVIRONMENT" : "⚙ ADMIN TOOLS";
+  }
   const sb = document.getElementById("test-seed-btn");
   if(sb) sb.textContent = `⚙ ${t("seed_btn").replace("⚙ ","")}`;
 
@@ -1407,9 +1412,10 @@ function vMgrStaff(){
 
 // ─── ADMIN: shared seed banner (test only) ───────────
 function adminSeedBanner(){
-  if(!IS_TEST) return "";
+  if(USER?.role !== "admin") return "";
+  const label = IS_TEST ? "TEST ENV" : "ADMIN TOOLS";
   return `<div style="background:#2D1B69;color:#fff;border-radius:10px;padding:9px 12px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:8px">
-    <span style="font-size:11px;font-weight:700;opacity:.7;white-space:nowrap">TEST ENV</span>
+    <span style="font-size:11px;font-weight:700;opacity:.7;white-space:nowrap">${label}</span>
     <button style="background:rgba(255,255,255,.18);border:none;color:#fff;padding:5px 12px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Sarabun',sans-serif;white-space:nowrap" onclick="doSeedData()">${t("seed_btn")}</button>
   </div>`;
 }
